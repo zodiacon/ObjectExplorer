@@ -1,19 +1,19 @@
-// View.h : interface of the CView class
-//
-/////////////////////////////////////////////////////////////////////////////
-
 #pragma once
 
-class CView : public CWindowImpl<CView> {
+#include "ViewBase.h"
+
+class CObjectTypesView : public CViewBase<CObjectTypesView> {
 public:
-	DECLARE_WND_CLASS(NULL)
+	using CViewBase::CViewBase;
 
 	BOOL PreTranslateMessage(MSG* pMsg);
 
-	virtual void OnFinalMessage(HWND /*hWnd*/);
+	void OnFinalMessage(HWND /*hWnd*/) override;
+	CString GetTitle() const override;
 
-	BEGIN_MSG_MAP(CView)
+	BEGIN_MSG_MAP(CObjectTypesView)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		CHAIN_MSG_MAP(CViewBase<CObjectTypesView>)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):

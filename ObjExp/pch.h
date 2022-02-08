@@ -24,6 +24,7 @@ extern CAppModule _Module;
 #include <atlctrlx.h>
 #include <atlsplit.h>
 #include <atltypes.h>
+#include <commoncontrols.h>
 
 #include <strsafe.h>
 #include <dontuse.h>

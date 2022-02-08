@@ -5,8 +5,11 @@
 #include "pch.h"
 #include "resource.h"
 #include "aboutdlg.h"
-#include "View.h"
+#include "ViewBase.h"
 #include "MainFrm.h"
+#include "SecurityHelper.h"
+#include "IconHelper.h"
+#include "ViewFactory.h"
 
 #define WINDOW_MENU_POSITION	5
 
@@ -21,11 +24,55 @@ BOOL CMainFrame::OnIdle() {
 	return FALSE;
 }
 
+void CMainFrame::InitMenu() {
+	struct {
+		int id;
+		UINT icon;
+		HICON hIcon{ nullptr };
+	} commands[] = {
+		{ ID_EDIT_COPY, IDI_COPY },
+		{ ID_EDIT_PASTE, IDI_PASTE },
+		{ ID_EDIT_CUT, IDI_CUT },
+		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
+		//{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
+	};
+
+	for (auto& cmd : commands)
+		if (cmd.icon)
+			AddCommand(cmd.id, cmd.icon);
+		else
+			AddCommand(cmd.id, cmd.hIcon);
+}
+
+HWND CMainFrame::GetHwnd() const {
+	return m_hWnd;
+}
+
+BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) {
+	return 0;
+}
+
+CUpdateUIBase& CMainFrame::GetUI() {
+	return *this;
+}
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CreateSimpleStatusBar();
 
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
+
+	CMenuHandle hMenu = GetMenu();
+	if (SecurityHelper::IsRunningElevated()) {
+		hMenu.GetSubMenu(0).DeleteMenu(ID_FILE_RUNASADMINISTRATOR, MF_BYCOMMAND);
+		hMenu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
+		CString text;
+		GetWindowText(text);
+		SetWindowText(text + L" (Administrator)");
+	}
+
+	AddMenu(hMenu);
+	InitMenu();
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -35,6 +82,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CMenuHandle menuMain = GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
+	m_view.SetTitleBarWindow(m_hWnd);
 
 	return 0;
 }
@@ -56,11 +104,8 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CView* pView = new CView;
-	pView->Create(m_view, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
-	m_view.AddPage(pView->m_hWnd, _T("Document"));
-
-	// TODO: add code to initialize document
+	auto view = ViewFactory::CreateView(this, m_hWnd, ViewType::ObjectTypes);
+	m_view.AddPage(view->GetHwnd(), view->GetTitle());
 
 	return 0;
 }
@@ -98,6 +143,14 @@ LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int nPage = wID - ID_WINDOW_TABFIRST;
 	m_view.SetActivePage(nPage);
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnRunAsAdmin(WORD, WORD, HWND, BOOL&) {
+	if (SecurityHelper::RunElevated(nullptr, true)) {
+		SendMessage(WM_CLOSE);
+	}
 
 	return 0;
 }

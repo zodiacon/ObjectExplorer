@@ -53,6 +53,8 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
+        MENUITEM "&Run As Administrator...",    ID_FILE_RUNASADMINISTRATOR
+        MENUITEM SEPARATOR
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
@@ -111,9 +113,19 @@ IDI_JOB                 ICON                    "res\\briefcase.ico"
 
 IDI_COPY                ICON                    "res\\copy.ico"
 
-IDI_DELETE              ICON                    "res\\delete.ico"
+IDI_DELETE              ICON                    "D:\\Dev\\ObjectExplorer\\ObjExp\\res\\delete.ico"
 
 IDI_DESKTOP             ICON                    "res\\desktop.ico"
+
+IDI_PASTE               ICON                    "res\\paste.ico"
+
+IDI_PROCESS             ICON                    "res\\process.ico"
+
+IDI_CUT                 ICON                    "res\\cut.ico"
+
+IDI_KEY                 ICON                    "res\\key.ico"
+
+IDI_PLAY                ICON                    "res\\play.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

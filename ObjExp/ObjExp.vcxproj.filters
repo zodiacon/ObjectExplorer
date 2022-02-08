@@ -16,6 +16,12 @@
     <Filter Include="Resource Files\Icons">
       <UniqueIdentifier>{9c6c877f-2573-4d41-a17a-b9a7c093f3fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{8245c916-cf04-4500-ac22-16485931b862}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Views">
+      <UniqueIdentifier>{e3609ada-62ac-4f96-ab64-a055bfbbbd33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -27,9 +33,6 @@
     <ClCompile Include="MainFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="View.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AboutDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -39,15 +42,21 @@
     <ClCompile Include="ProcessHandleTracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SecurityHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectTypesView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="View.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AboutDlg.h">
@@ -63,6 +72,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ProcessHandleTracker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SecurityHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewBase.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="Interfaces.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectTypesView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -88,6 +112,21 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\ObjExp.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\paste.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\process.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\cut.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\key.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\play.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

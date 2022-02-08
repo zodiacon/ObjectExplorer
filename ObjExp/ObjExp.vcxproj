@@ -89,6 +89,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -121,6 +122,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +155,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -184,6 +187,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -216,17 +220,23 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProcessHandleTracker.cpp" />
-    <ClCompile Include="View.cpp" />
+    <ClCompile Include="SecurityHelper.cpp" />
+    <ClCompile Include="ObjectTypesView.cpp" />
+    <ClCompile Include="ViewFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AccessMaskDecoder.h" />
+    <ClInclude Include="Interfaces.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="NtDll.h" />
     <ClInclude Include="ProcessHandleTracker.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="View.h" />
+    <ClInclude Include="SecurityHelper.h" />
+    <ClInclude Include="ObjectTypesView.h" />
+    <ClInclude Include="ViewBase.h" />
+    <ClInclude Include="ViewFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ObjExp.rc" />
@@ -235,12 +245,22 @@
     <Image Include="res\alpc.ico" />
     <Image Include="res\briefcase.ico" />
     <Image Include="res\copy.ico" />
+    <Image Include="res\cut.ico" />
     <Image Include="res\delete.ico" />
     <Image Include="res\desktop.ico" />
+    <Image Include="res\key.ico" />
     <Image Include="res\ObjExp.ico" />
+    <Image Include="res\paste.ico" />
+    <Image Include="res\play.ico" />
+    <Image Include="res\process.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WTLHelper\WTLHelper\WTLHelper.vcxproj">
+      <Project>{ae53419f-a769-4548-8e15-e311904df7df}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
