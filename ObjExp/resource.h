@@ -13,8 +13,34 @@
 #define IDI_PROCESS                     209
 #define IDI_CUT                         210
 #define IDI_KEY                         211
-#define IDI_ICON3                       212
 #define IDI_PLAY                        212
+#define IDI_OBJECTS                     213
+#define IDI_PACKAGE                     214
+#define IDI_REFRESH                     215
+#define IDI_TYPES                       216
+#define IDI_OBJECT                      217
+#define IDI_THREAD                      218
+#define IDI_EVENT                       219
+#define IDI_MUTEX                       220
+#define IDI_SEMAPHORE                   221
+#define IDI_ATOM                        222
+#define IDI_CALLBACK                    223
+#define IDI_CAR                         224
+#define IDI_DEVICE                      225
+#define IDI_MEMORY                      226
+#define IDI_FILE                        227
+#define IDI_REGISTRY                    228
+#define IDI_STRUCT                      229
+#define IDI_WINSTATION                  230
+#define IDI_DIRECTORY                   231
+#define IDI_LINK                        232
+#define IDI_TIMER                       233
+#define IDI_SHIELD2                     234
+#define IDI_FONT                        235
+#define IDI_USER                        236
+#define IDI_DEBUG                       237
+#define IDI_ICON1                       238
+#define IDI_PROFILE                     238
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -28,13 +54,23 @@
 #define ID_OBJECTS_PIPES                32783
 #define ID_OBJECTS_MAILSLOTS            32784
 #define ID_FILE_RUNASADMINISTRATOR      32785
+#define ID_VIEW_REFRESH32786            32786
+#define ID_VIEW_UPDATEINTERVAL          32787
+#define ID_UPDATEINTERVAL_PAUSE         32788
+#define ID_UPDATEINTERVAL_0             32789
+#define ID_UPDATEINTERVAL_1SECOND       32790
+#define ID_UPDATEINTERVAL_2SECONDS      32791
+#define ID_UPDATEINTERVAL_5SECONDS      32792
+#define ID_UPDATEINTERVAL_10SECONDS     32793
+#define ID_VIEW_PROPERTIES              32794
+#define ID_OBJECTS_OBJECTTYPES          32795
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        213
-#define _APS_NEXT_COMMAND_VALUE         32786
+#define _APS_NEXT_RESOURCE_VALUE        239
+#define _APS_NEXT_COMMAND_VALUE         32796
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

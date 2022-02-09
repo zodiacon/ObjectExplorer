@@ -51,6 +51,15 @@
     <ClCompile Include="ViewFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -88,6 +97,15 @@
     </ClInclude>
     <ClInclude Include="ViewFactory.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringHelper.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +145,84 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\play.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\objects.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\package.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\refresh.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\types.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\generic.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\thread.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\event.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\mutex.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\semaphore.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\atom.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\callback.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\car.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\device.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\file.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\folder.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\link.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\memory.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\timer.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\token.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\type.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\windowstation.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\registry_editor.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\debug.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\font.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\profile.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\user.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

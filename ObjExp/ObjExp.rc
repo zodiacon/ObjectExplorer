@@ -69,9 +69,22 @@ BEGIN
     POPUP "&View"
     BEGIN
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM "&Refresh",                    ID_VIEW_REFRESH
+        POPUP "&Update Interval"
+        BEGIN
+            MENUITEM "&Pause\tSpace",               ID_UPDATEINTERVAL_PAUSE
+            MENUITEM "0.5 Sec",                     ID_UPDATEINTERVAL_0
+            MENUITEM "1 Second",                    ID_UPDATEINTERVAL_1SECOND
+            MENUITEM "2 Seconds",                   ID_UPDATEINTERVAL_2SECONDS
+            MENUITEM "5 Seconds",                   ID_UPDATEINTERVAL_5SECONDS
+            MENUITEM "10 Seconds",                  ID_UPDATEINTERVAL_10SECONDS
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
     POPUP "&Objects"
     BEGIN
+        MENUITEM "&Object Types",               ID_OBJECTS_OBJECTTYPES
         MENUITEM "&All Objects",                ID_OBJECTS_ALLOBJECTS
         MENUITEM "All &Handles",                ID_OBJECTS_ALLHANDLES
         MENUITEM "Handles in &Process...",      ID_OBJECTS_HANDLESINPROCESS
@@ -82,7 +95,7 @@ BEGIN
     END
     POPUP "&Options"
     BEGIN
-        MENUITEM "&Maintain List of Objects per Type", ID_OPTIONS_MAINTAINLISTOFOBJECTSPERTYPE
+        MENUITEM "&Maintain List of Objects Per Type", ID_OPTIONS_MAINTAINLISTOFOBJECTSPERTYPE
         MENUITEM "&Always On Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Font...",                    ID_OPTIONS_FONT
     END
@@ -126,6 +139,58 @@ IDI_CUT                 ICON                    "res\\cut.ico"
 IDI_KEY                 ICON                    "res\\key.ico"
 
 IDI_PLAY                ICON                    "res\\play.ico"
+
+IDI_OBJECTS             ICON                    "res\\objects.ico"
+
+IDI_PACKAGE             ICON                    "res\\package.ico"
+
+IDI_REFRESH             ICON                    "res\\refresh.ico"
+
+IDI_TYPES               ICON                    "res\\types.ico"
+
+IDI_OBJECT              ICON                    "res\\generic.ico"
+
+IDI_THREAD              ICON                    "res\\thread.ico"
+
+IDI_EVENT               ICON                    "res\\event.ico"
+
+IDI_MUTEX               ICON                    "res\\mutex.ico"
+
+IDI_SEMAPHORE           ICON                    "res\\semaphore.ico"
+
+IDI_ATOM                ICON                    "res\\atom.ico"
+
+IDI_CALLBACK            ICON                    "res\\callback.ico"
+
+IDI_CAR                 ICON                    "res\\car.ico"
+
+IDI_DEVICE              ICON                    "res\\device.ico"
+
+IDI_MEMORY              ICON                    "res\\memory.ico"
+
+IDI_FILE                ICON                    "res\\file.ico"
+
+IDI_REGISTRY            ICON                    "res\\registry_editor.ico"
+
+IDI_STRUCT              ICON                    "res\\type.ico"
+
+IDI_WINSTATION          ICON                    "res\\windowstation.ico"
+
+IDI_DIRECTORY           ICON                    "res\\folder.ico"
+
+IDI_LINK                ICON                    "res\\link.ico"
+
+IDI_TIMER               ICON                    "res\\timer.ico"
+
+IDI_SHIELD2             ICON                    "res\\token.ico"
+
+IDI_FONT                ICON                    "res\\font.ico"
+
+IDI_USER                ICON                    "res\\user_generic_blue.ico"
+
+IDI_DEBUG               ICON                    "res\\debug.ico"
+
+IDI_PROFILE             ICON                    "res\\profile.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

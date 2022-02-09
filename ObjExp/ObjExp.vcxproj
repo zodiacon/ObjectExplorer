@@ -212,6 +212,7 @@
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AccessMaskDecoder.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="ObjExp.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -220,8 +221,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProcessHandleTracker.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SecurityHelper.cpp" />
     <ClCompile Include="ObjectTypesView.cpp" />
+    <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="ViewFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -230,11 +233,14 @@
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="NtDll.h" />
+    <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="ProcessHandleTracker.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SecurityHelper.h" />
     <ClInclude Include="ObjectTypesView.h" />
+    <ClInclude Include="StringHelper.h" />
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="ViewFactory.h" />
   </ItemGroup>
@@ -243,16 +249,42 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\alpc.ico" />
+    <Image Include="res\atom.ico" />
     <Image Include="res\briefcase.ico" />
+    <Image Include="res\callback.ico" />
+    <Image Include="res\car.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\cut.ico" />
+    <Image Include="res\debug.ico" />
     <Image Include="res\delete.ico" />
     <Image Include="res\desktop.ico" />
+    <Image Include="res\device.ico" />
+    <Image Include="res\event.ico" />
+    <Image Include="res\file.ico" />
+    <Image Include="res\folder.ico" />
+    <Image Include="res\font.ico" />
+    <Image Include="res\generic.ico" />
     <Image Include="res\key.ico" />
+    <Image Include="res\link.ico" />
+    <Image Include="res\memory.ico" />
+    <Image Include="res\mutex.ico" />
+    <Image Include="res\objects.ico" />
     <Image Include="res\ObjExp.ico" />
+    <Image Include="res\package.ico" />
     <Image Include="res\paste.ico" />
     <Image Include="res\play.ico" />
     <Image Include="res\process.ico" />
+    <Image Include="res\profile.ico" />
+    <Image Include="res\refresh.ico" />
+    <Image Include="res\registry_editor.ico" />
+    <Image Include="res\semaphore.ico" />
+    <Image Include="res\thread.ico" />
+    <Image Include="res\timer.ico" />
+    <Image Include="res\token.ico" />
+    <Image Include="res\type.ico" />
+    <Image Include="res\types.ico" />
+    <Image Include="res\user.ico" />
+    <Image Include="res\windowstation.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

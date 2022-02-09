@@ -33,6 +33,7 @@ void CMainFrame::InitMenu() {
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ ID_EDIT_PASTE, IDI_PASTE },
 		{ ID_EDIT_CUT, IDI_CUT },
+		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		//{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
 	};
@@ -59,7 +60,19 @@ CUpdateUIBase& CMainFrame::GetUI() {
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CreateSimpleStatusBar();
 
-	m_hWndClient = m_view.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+	ToolBarButtonInfo buttons[] = {
+		{ ID_UPDATEINTERVAL_PAUSE, IDI_PLAY },
+		{ 0 },
+		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
+	};
+	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
+	auto tb = ToolbarHelper::CreateAndInitToolBar(m_hWnd, buttons, _countof(buttons));
+	AddSimpleReBarBand(tb);
+
+	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, 
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+	ViewFactory::InitIcons(m_view);
+
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
 	CMenuHandle hMenu = GetMenu();
@@ -103,15 +116,15 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
-LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto view = ViewFactory::CreateView(this, m_hWnd, ViewType::ObjectTypes);
-	m_view.AddPage(view->GetHwnd(), view->GetTitle());
+LRESULT CMainFrame::OnObjectTypes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto view = ViewFactory::CreateView(this, m_view, ViewType::ObjectTypes);
+	m_view.AddPage(view->GetHwnd(), view->GetTitle(), view->GetIconIndex(), view);
 
 	return 0;
 }
 
 LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
+	auto bVisible = !::IsWindowVisible(m_hWndStatusBar);
 	::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
 	UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
 	UpdateLayout();
@@ -151,6 +164,21 @@ LRESULT CMainFrame::OnRunAsAdmin(WORD, WORD, HWND, BOOL&) {
 	if (SecurityHelper::RunElevated(nullptr, true)) {
 		SendMessage(WM_CLOSE);
 	}
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnPageActivated(int, LPNMHDR hdr, BOOL&) {
+	auto page = static_cast<int>(hdr->idFrom);
+	if (m_CurrentPage >= 0 && m_CurrentPage < m_view.GetPageCount()) {
+		((IView*)m_view.GetPageData(m_CurrentPage))->PageActivated(false);
+	}
+	if (page >= 0) {
+		auto view = (IView*)m_view.GetPageData(page);
+		ATLASSERT(view);
+		view->PageActivated(true);
+	}
+	m_CurrentPage = page;
 
 	return 0;
 }

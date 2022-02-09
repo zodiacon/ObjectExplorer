@@ -11,6 +11,7 @@ protected:
 	BEGIN_MSG_MAP(CViewBase)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		CHAIN_MSG_MAP(TBase)
+	ALT_MSG_MAP(1)
 	END_MSG_MAP()
 
 	bool ProcessCommand(UINT cmd) {
