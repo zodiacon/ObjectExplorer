@@ -35,15 +35,17 @@ void CMainFrame::InitMenu() {
 		{ ID_EDIT_PASTE, IDI_PASTE },
 		{ ID_EDIT_CUT, IDI_CUT },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
+		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		//{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
 	};
 
-	for (auto& cmd : commands)
+	for (auto& cmd : commands) {
 		if (cmd.icon)
 			AddCommand(cmd.id, cmd.icon);
 		else
 			AddCommand(cmd.id, cmd.hIcon);
+	}
 }
 
 HWND CMainFrame::GetHwnd() const {
@@ -51,7 +53,7 @@ HWND CMainFrame::GetHwnd() const {
 }
 
 BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) {
-	return 0;
+	return ShowContextMenu(hMenu, flags, x, y);
 }
 
 CUpdateUIBase& CMainFrame::GetUI() {
@@ -65,6 +67,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_RUN, IDI_PLAY, BTNS_CHECK },
 		{ 0 },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
+		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
 	};
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	auto tb = ToolbarHelper::CreateAndInitToolBar(m_hWnd, buttons, _countof(buttons));
@@ -103,6 +106,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_view.SetTitleBarWindow(m_hWnd);
 
 	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTTYPES);
+	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTMANAGERNAMESPACE);
 
 	return 0;
 }
@@ -125,8 +129,11 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnObjectTypes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto view = ViewFactory::CreateView(this, m_view, ViewType::ObjectTypes);
-	m_view.AddPage(view->GetHwnd(), view->GetTitle(), view->GetIconIndex(), view);
+	return 0;
+}
 
+LRESULT CMainFrame::OnObjectManager(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto view = ViewFactory::CreateView(this, m_view, ViewType::ObjectManager);
 	return 0;
 }
 

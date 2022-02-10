@@ -16,7 +16,7 @@ protected:
 
 	bool ProcessCommand(UINT cmd) {
 		LRESULT result;
-		return ProcessWindowMessage(static_cast<T*>(this)->m_hWnd, WM_COMMAND, cmd, 0, result, 1);
+		return ProcessWindowMessage(static_cast<T*>(this)->m_hWnd, WM_COMMAND, LOWORD(cmd), 0, result, 1);
 	}
 
 	BOOL OnIdle() override {
@@ -62,13 +62,13 @@ protected:
 		return hWndToolBar;
 	}
 
+private:
 	//
 	// overridables
 	//
 	void OnPageActivated(bool activate) {}
 	void UpdateUI(CUpdateUIBase& ui) {}
 
-private:
 	IMainFrame* m_pFrame;
 	bool m_IsActive{ false };
 };

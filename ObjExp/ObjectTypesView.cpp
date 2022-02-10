@@ -23,10 +23,6 @@ CString CObjectTypesView::GetTitle() const {
 	return L"Object Types";
 }
 
-int CObjectTypesView::GetIconIndex() const {
-	return 0;
-}
-
 CString CObjectTypesView::GetColumnText(HWND, int row, int col) const {
 	auto& item = m_Items[row];
 	CString text;
@@ -68,7 +64,7 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	m_hWndClient = m_List.Create(*this, rcDefault, nullptr, ListViewDefaultStyle);
 	auto cm = GetColumnManager(m_List);
 
-	cm->AddColumn(L"Name", LVCFMT_LEFT, 180, ColumnType::Name, ColumnFlags::Visible);
+	cm->AddColumn(L"Name", LVCFMT_LEFT, 230, ColumnType::Name, ColumnFlags::Visible);
 	cm->AddColumn(L"Index", LVCFMT_RIGHT, 50, ColumnType::Index, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Objects", LVCFMT_RIGHT, 100, ColumnType::Objects, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Handles", LVCFMT_RIGHT, 100, ColumnType::Handles, ColumnFlags::Visible | ColumnFlags::Numeric);
@@ -103,6 +99,11 @@ void CObjectTypesView::DoTimerUpdate() {
 	DoSort(GetSortInfo(m_List));
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 }
+
+void CObjectTypesView::OnPageActivated(bool activate) {
+	ActivateTimer(activate);
+}
+
 
 LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
 	CString text;

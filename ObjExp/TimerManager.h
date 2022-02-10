@@ -4,15 +4,30 @@ template<typename T>
 struct CTimerManager {
 	BEGIN_MSG_MAP(CTimerManager)
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
-	ALT_MSG_MAP(1)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+		ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_RUN, OnRun)
 		COMMAND_ID_HANDLER(ID_PAUSE, OnRun)
 		COMMAND_RANGE_HANDLER(ID_UPDATEINTERVAL_HALFSEC, ID_UPDATEINTERVAL_10SECONDS, OnUpdateInterval)
 	END_MSG_MAP()
 
+	void ActivateTimer(bool active) {
+		auto p = static_cast<T*>(this);
+		if (active)
+			p->SetTimer(1, m_Interval);
+		else
+			p->KillTimer(1);
+	}
+
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM id, LPARAM lParam, BOOL& bHandled) {
 		if (id == 1)
 			static_cast<T*>(this)->DoTimerUpdate();
+		return 0;
+	}
+
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM id, LPARAM lParam, BOOL& bHandled) {
+		bHandled = FALSE;
+		Run(false);
 		return 0;
 	}
 

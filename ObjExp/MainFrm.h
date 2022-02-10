@@ -26,6 +26,7 @@ protected:
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_OBJECTS_OBJECTTYPES, OnObjectTypes)
+		COMMAND_ID_HANDLER(ID_OBJECTS_OBJECTMANAGERNAMESPACE, OnObjectManager)
 		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(ID_WINDOW_CLOSE, OnWindowClose)
@@ -59,6 +60,7 @@ private:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnObjectTypes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnObjectManager(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

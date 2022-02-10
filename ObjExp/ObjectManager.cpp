@@ -84,3 +84,54 @@ const std::vector<ObjectManager::Change>& ObjectManager::GetChanges() const {
 const std::vector<std::shared_ptr<ObjectTypeInfo>>& ObjectManager::GetObjectTypes() const {
 	return m_types;
 }
+
+std::vector<ObjectNameAndType> ObjectManager::EnumDirectoryObjects(PCWSTR path) {
+	std::vector<ObjectNameAndType> objects;
+	wil::unique_handle hDirectory;
+	OBJECT_ATTRIBUTES attr;
+	UNICODE_STRING name;
+	RtlInitUnicodeString(&name, path);
+	InitializeObjectAttributes(&attr, &name, 0, nullptr, nullptr);
+	if (!NT_SUCCESS(NT::NtOpenDirectoryObject(hDirectory.addressof(), DIRECTORY_QUERY, &attr)))
+		return objects;
+
+	objects.reserve(128);
+	BYTE buffer[1 << 12];
+	auto info = reinterpret_cast<NT::OBJECT_DIRECTORY_INFORMATION*>(buffer);
+	bool first = true;
+	ULONG size, index = 0;
+	for (;;) {
+		auto start = index;
+		if (!NT_SUCCESS(NT::NtQueryDirectoryObject(hDirectory.get(), info, sizeof(buffer), FALSE, first, &index, &size)))
+			break;
+		first = false;
+		for (ULONG i = 0; i < index - start; i++) {
+			ObjectNameAndType data;
+			auto& p = info[i];
+			data.Name = std::wstring(p.Name.Buffer, p.Name.Length / sizeof(WCHAR));
+			data.TypeName = std::wstring(p.TypeName.Buffer, p.TypeName.Length / sizeof(WCHAR));
+
+			objects.push_back(std::move(data));
+		}
+	}
+	return objects;
+
+}
+
+CString ObjectManager::GetSymbolicLinkTarget(PCWSTR path) {
+	wil::unique_handle hLink;
+	OBJECT_ATTRIBUTES attr;
+	CString target;
+	UNICODE_STRING name;
+	RtlInitUnicodeString(&name, path);
+	InitializeObjectAttributes(&attr, &name, 0, nullptr, nullptr);
+	if (NT_SUCCESS(NT::NtOpenSymbolicLinkObject(hLink.addressof(), GENERIC_READ, &attr))) {
+		WCHAR buffer[1 << 10];
+		UNICODE_STRING result;
+		result.Buffer = buffer;
+		result.MaximumLength = sizeof(buffer);
+		if (NT_SUCCESS(NT::NtQuerySymbolicLinkObject(hLink.get(), &result, nullptr)))
+			target.SetString(result.Buffer, result.Length / sizeof(WCHAR));
+	}
+	return target;
+}

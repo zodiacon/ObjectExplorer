@@ -198,6 +198,34 @@ IDI_CHECK               ICON                    "res\\check.ico"
 
 IDI_RADIO               ICON                    "res\\circle.ico"
 
+IDI_FOLDER_CLOSED       ICON                    "res\\folder_closed.ico"
+
+IDI_DATA                ICON                    "res\\data.ico"
+
+IDI_PIN                 ICON                    "res\\pin_green.ico"
+
+IDI_PARTITION           ICON                    "res\\section.ico"
+
+IDI_COMMPORT            ICON                    "res\\commport.ico"
+
+IDI_EVENTVM             ICON                    "res\\crossvmevent.ico"
+
+IDI_MUTEXVM             ICON                    "res\\crossvmmutex.ico"
+
+IDI_EVENT_KEY           ICON                    "res\\event-key.ico"
+
+IDI_SILO                ICON                    "res\\silo.ico"
+
+IDI_DIRECTX             ICON                    "res\\directx.ico"
+
+IDI_COMPONENT           ICON                    "res\\component.ico"
+
+IDI_ETW                 ICON                    "res\\etw.ico"
+
+IDI_ETWREG              ICON                    "res\\etwreg.ico"
+
+IDI_PLUG                ICON                    "res\\plug.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -255,7 +283,7 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_SPACE,       D_RUN,                  VIRTKEY, NOINVERT
+    VK_SPACE,       ID_RUN,                 VIRTKEY, NOINVERT
 END
 
 

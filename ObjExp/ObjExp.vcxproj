@@ -150,7 +150,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ExceptionHandling />
+      <ExceptionHandling>Async</ExceptionHandling>
       <DebugInformationFormat />
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -182,7 +182,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ExceptionHandling />
+      <ExceptionHandling>Async</ExceptionHandling>
       <DebugInformationFormat />
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -213,6 +213,7 @@
     <ClCompile Include="AccessMaskDecoder.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="ObjectManagerView.cpp" />
     <ClCompile Include="ObjExp.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -234,6 +235,7 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="NtDll.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="ObjectManagerView.h" />
     <ClInclude Include="ProcessHandleTracker.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
@@ -256,15 +258,26 @@
     <Image Include="res\car.ico" />
     <Image Include="res\check.ico" />
     <Image Include="res\circle.ico" />
+    <Image Include="res\commport.ico" />
+    <Image Include="res\component.ico" />
     <Image Include="res\copy.ico" />
+    <Image Include="res\crossvmevent.ico" />
+    <Image Include="res\crossvmmutex.ico" />
     <Image Include="res\cut.ico" />
+    <Image Include="res\data.ico" />
     <Image Include="res\debug.ico" />
     <Image Include="res\delete.ico" />
     <Image Include="res\desktop.ico" />
     <Image Include="res\device.ico" />
+    <Image Include="res\directx.ico" />
+    <Image Include="res\etw.ico" />
+    <Image Include="res\etwreg.ico" />
+    <Image Include="res\event-key.ico" />
     <Image Include="res\event.ico" />
+    <Image Include="res\eventpair.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\folder.ico" />
+    <Image Include="res\folder_closed.ico" />
     <Image Include="res\font.ico" />
     <Image Include="res\generic.ico" />
     <Image Include="res\key.ico" />
@@ -276,12 +289,16 @@
     <Image Include="res\ObjExp.ico" />
     <Image Include="res\package.ico" />
     <Image Include="res\paste.ico" />
+    <Image Include="res\pin_green.ico" />
     <Image Include="res\play.ico" />
+    <Image Include="res\plug.ico" />
     <Image Include="res\process.ico" />
     <Image Include="res\profile.ico" />
     <Image Include="res\refresh.ico" />
     <Image Include="res\registry_editor.ico" />
+    <Image Include="res\section.ico" />
     <Image Include="res\semaphore.ico" />
+    <Image Include="res\silo.ico" />
     <Image Include="res\thread.ico" />
     <Image Include="res\timer.ico" />
     <Image Include="res\token.ico" />

@@ -3,7 +3,6 @@
 // Used by ObjExp.rc
 //
 #define IDD_ABOUTBOX                    100
-#define ID_RUN                          101
 #define IDR_MAINFRAME                   128
 #define IDI_ALPC                        202
 #define IDI_JOB                         203
@@ -46,6 +45,21 @@
 #define IDI_MESSAGE                     239
 #define IDI_CHECK                       240
 #define IDI_RADIO                       241
+#define IDI_FOLDER_CLOSED               242
+#define IDI_DATA                        243
+#define IDI_PIN                         245
+#define IDI_PARTITION                   246
+#define IDI_COMMPORT                    247
+#define IDI_EVENTVM                     248
+#define IDI_MUTEXVM                     249
+#define IDI_EVENT_KEY                   250
+#define IDI_SILO                        251
+#define IDI_DIRECTX                     252
+#define IDI_COMPONENT                   253
+#define IDI_ETW                         254
+#define IDI_ETWREG                      255
+#define IDI_ICON3                       256
+#define IDI_PLUG                        256
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -70,15 +84,15 @@
 #define ID_VIEW_PROPERTIES              32794
 #define ID_OBJECTS_OBJECTTYPES          32795
 #define ID_PAUSE                        32796
-#define D_RUN                           32797
+#define ID_RUN                          32797
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        242
+#define _APS_NEXT_RESOURCE_VALUE        257
 #define _APS_NEXT_COMMAND_VALUE         32798
 #define _APS_NEXT_CONTROL_VALUE         1000
-#define _APS_NEXT_SYMED_VALUE           102
+#define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

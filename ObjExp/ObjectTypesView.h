@@ -18,7 +18,6 @@ public:
 
 	void OnFinalMessage(HWND /*hWnd*/) override;
 	CString GetTitle() const override;
-	int GetIconIndex() const override;
 
 	CString GetColumnText(HWND, int row, int col) const;
 	int GetRowImage(HWND, int row, int col) const;
@@ -30,6 +29,7 @@ public:
 
 	void UpdateUI(CUpdateUIBase& ui);
 	void DoTimerUpdate();
+	void OnPageActivated(bool activate);
 
 protected:
 	BEGIN_MSG_MAP(CObjectTypesView)

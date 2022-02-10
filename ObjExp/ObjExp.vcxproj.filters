@@ -60,6 +60,9 @@
     <ClCompile Include="StringHelper.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectManagerView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="TimerManager.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManagerView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -236,6 +242,51 @@
     </Image>
     <Image Include="res\circle.ico">
       <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\folder_closed.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\data.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\eventpair.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\pin_green.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\section.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\commport.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\crossvmevent.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\crossvmmutex.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\event-key.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\silo.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\directx.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\component.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\etw.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\etwreg.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\plug.ico">
+      <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

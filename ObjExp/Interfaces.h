@@ -16,7 +16,4 @@ struct IView {
 	}
 	virtual HWND GetHwnd() const = 0;
 	virtual CString GetTitle() const = 0;
-	virtual int GetIconIndex() const {
-		return -1;
-	}
 };
