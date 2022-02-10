@@ -107,6 +107,9 @@
     <ClInclude Include="StringHelper.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="TimerManager.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ObjExp.rc">
@@ -223,6 +226,15 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\user.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\message.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\check.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\circle.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

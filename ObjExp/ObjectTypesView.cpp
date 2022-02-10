@@ -3,11 +3,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "pch.h"
-#include "resource.h"
 #include "ObjectTypesView.h"
 #include "ResourceManager.h"
 #include "StringHelper.h"
 #include "SortHelper.h"
+#include "ListViewhelper.h"
+#include "ClipboardHelper.h"
 
 BOOL CObjectTypesView::PreTranslateMessage(MSG* pMsg) {
 	pMsg;
@@ -81,7 +82,7 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	cm->AddColumn(L"Generic Write", LVCFMT_RIGHT, 110, ColumnType::GenericWrite);
 	cm->AddColumn(L"Generic Execute", LVCFMT_RIGHT, 110, ColumnType::GenericExecute);
 	cm->AddColumn(L"Generic All", LVCFMT_RIGHT, 110, ColumnType::GenericAll);
-	cm->AddColumn(L"Invalid Attr", LVCFMT_RIGHT, 90, ColumnType::InvalidAttributes);
+	//cm->AddColumn(L"Invalid Attr", LVCFMT_RIGHT, 90, ColumnType::InvalidAttributes);
 
 	cm->UpdateColumns();
 
@@ -92,6 +93,32 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	m_Items = m_mgr.GetObjectTypes();
 	m_List.SetItemCount(count);
 
+	Run(true);
+
+	return 0;
+}
+
+void CObjectTypesView::DoTimerUpdate() {
+	m_mgr.EnumTypes();
+	DoSort(GetSortInfo(m_List));
+	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+}
+
+LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
+	CString text;
+	for (int n = m_List.GetNextItem(-1, LVNI_SELECTED); n >= 0; n = m_List.GetNextItem(n, LVNI_SELECTED)) {
+		auto line = ListViewHelper::GetRowAsString(m_List, n, L",");
+		text += line + L"\r\n";
+	}
+	if (!text.IsEmpty())
+		text = text.Left(text.GetLength() - 2);
+
+	ClipboardHelper::CopyText(m_hWnd, text);
+	return 0;
+}
+
+LRESULT CObjectTypesView::OnStateChanged(int, LPNMHDR, BOOL&) {
+	UpdateUI(GetFrame()->GetUI());
 	return 0;
 }
 
@@ -121,4 +148,57 @@ void CObjectTypesView::DoSort(SortInfo const* si) {
 		return false;
 	};
 	std::sort(m_Items.begin(), m_Items.end(), compare);
+}
+
+DWORD CObjectTypesView::OnPrePaint(int, LPNMCUSTOMDRAW) {
+	return CDRF_NOTIFYITEMDRAW;
+}
+
+DWORD CObjectTypesView::OnSubItemPrePaint(int, LPNMCUSTOMDRAW cd) {
+	auto lcd = (LPNMLVCUSTOMDRAW)cd;
+	lcd->clrTextBk = CLR_INVALID;
+	auto col = GetColumnManager(m_List)->GetColumnTag<ColumnType>(lcd->iSubItem);
+
+	//if ((GetColumnManager(m_List)->GetColumn(GetRealColumn(m_List, sub)).Flags & ColumnFlags::Numeric) == ColumnFlags::Numeric)
+	//	::SelectObject(cd->hdc, (HFONT)GetFrame()->GetMonoFont());
+	//else
+	//	::SelectObject(cd->hdc, m_hFont);
+
+	if (col < ColumnType::Handles || col > ColumnType::PeakObjects)
+		return CDRF_SKIPPOSTPAINT;
+
+	auto index = (int)cd->dwItemSpec;
+	auto item = m_Items[index];
+	auto& changes = m_mgr.GetChanges();
+	lcd->clrText = CLR_INVALID;
+
+	for (auto& change : changes) {
+		if (std::get<0>(change) == item && MapChangeToColumn(std::get<1>(change)) == col) {
+			lcd->clrTextBk = std::get<2>(change) >= 0 ? RGB(0, 255, 0) : RGB(255, 0, 0);
+			lcd->clrText = std::get<2>(change) >= 0 ? RGB(0, 0, 0) : RGB(255, 255, 255);
+		}
+	}
+	return CDRF_SKIPPOSTPAINT;
+}
+
+DWORD CObjectTypesView::OnItemPrePaint(int, LPNMCUSTOMDRAW cd) {
+	//m_hFont = (HFONT)::GetCurrentObject(cd->hdc, OBJ_FONT);
+	return CDRF_NOTIFYSUBITEMDRAW;
+}
+
+void CObjectTypesView::UpdateUI(CUpdateUIBase& ui) {
+	ui.UIEnable(ID_EDIT_COPY, m_List.GetSelectedCount() > 0);
+	ui.UIEnable(ID_EDIT_PASTE, false);
+	ui.UIEnable(ID_EDIT_CUT, false);
+	CTimerManager::UpdateIntervalUI();
+}
+
+CObjectTypesView::ColumnType CObjectTypesView::MapChangeToColumn(ObjectManager::ChangeType type) const {
+	switch (type) {
+		case ObjectManager::ChangeType::TotalHandles: return ColumnType::Handles;
+		case ObjectManager::ChangeType::TotalObjects: return ColumnType::Objects;
+		case ObjectManager::ChangeType::PeakHandles: return ColumnType::PeakHandles;
+		case ObjectManager::ChangeType::PeakObjects: return ColumnType::PeakObjects;
+	}
+	return ColumnType::None;
 }

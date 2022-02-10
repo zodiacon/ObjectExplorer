@@ -77,6 +77,10 @@ int ObjectManager::EnumTypes() {
 	return static_cast<int>(m_types.size());
 }
 
+const std::vector<ObjectManager::Change>& ObjectManager::GetChanges() const {
+	return m_changes;
+}
+
 const std::vector<std::shared_ptr<ObjectTypeInfo>>& ObjectManager::GetObjectTypes() const {
 	return m_types;
 }

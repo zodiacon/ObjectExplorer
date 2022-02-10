@@ -63,6 +63,7 @@ ResourceManager::ResourceManager() {
         { L"Session", IDI_USER },
         { L"DebugObject", IDI_DEBUG },
         { L"Profile", IDI_PROFILE },
+        { L"CoreMessageing", IDI_MESSAGE },
     };
 
     ObjectManager mgr;

@@ -72,8 +72,8 @@ BEGIN
         MENUITEM "&Refresh",                    ID_VIEW_REFRESH
         POPUP "&Update Interval"
         BEGIN
-            MENUITEM "&Pause\tSpace",               ID_UPDATEINTERVAL_PAUSE
-            MENUITEM "0.5 Sec",                     ID_UPDATEINTERVAL_0
+            MENUITEM "&Pause\tSpace",               ID_PAUSE
+            MENUITEM "0.5 Seconds",                 ID_UPDATEINTERVAL_HALFSEC
             MENUITEM "1 Second",                    ID_UPDATEINTERVAL_1SECOND
             MENUITEM "2 Seconds",                   ID_UPDATEINTERVAL_2SECONDS
             MENUITEM "5 Seconds",                   ID_UPDATEINTERVAL_5SECONDS
@@ -126,7 +126,7 @@ IDI_JOB                 ICON                    "res\\briefcase.ico"
 
 IDI_COPY                ICON                    "res\\copy.ico"
 
-IDI_DELETE              ICON                    "D:\\Dev\\ObjectExplorer\\ObjExp\\res\\delete.ico"
+IDI_DELETE              ICON                    "res\\delete.ico"
 
 IDI_DESKTOP             ICON                    "res\\desktop.ico"
 
@@ -186,11 +186,17 @@ IDI_SHIELD2             ICON                    "res\\token.ico"
 
 IDI_FONT                ICON                    "res\\font.ico"
 
-IDI_USER                ICON                    "res\\user_generic_blue.ico"
+IDI_USER                ICON                    "res\\user.ico"
 
 IDI_DEBUG               ICON                    "res\\debug.ico"
 
 IDI_PROFILE             ICON                    "res\\profile.ico"
+
+IDI_MESSAGE             ICON                    "res\\message.ico"
+
+IDI_CHECK               ICON                    "res\\check.ico"
+
+IDI_RADIO               ICON                    "res\\circle.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -235,20 +241,21 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
-    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
-    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
-    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_SPACE,       D_RUN,                  VIRTKEY, NOINVERT
 END
 
 

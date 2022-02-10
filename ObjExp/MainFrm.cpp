@@ -21,6 +21,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 }
 
 BOOL CMainFrame::OnIdle() {
+	UIUpdateToolBar();
 	return FALSE;
 }
 
@@ -61,16 +62,18 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateSimpleStatusBar();
 
 	ToolBarButtonInfo buttons[] = {
-		{ ID_UPDATEINTERVAL_PAUSE, IDI_PLAY },
+		{ ID_RUN, IDI_PLAY, BTNS_CHECK },
 		{ 0 },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 	};
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	auto tb = ToolbarHelper::CreateAndInitToolBar(m_hWnd, buttons, _countof(buttons));
 	AddSimpleReBarBand(tb);
+	UIAddToolBar(tb);
 
+	m_view.m_bTabCloseButton = FALSE;
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, 
-		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_WINDOWEDGE);
 	ViewFactory::InitIcons(m_view);
 
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
@@ -85,7 +88,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	}
 
 	AddMenu(hMenu);
+	SetCheckIcon(AtlLoadIconImage(IDI_CHECK, 0, 16, 16), AtlLoadIconImage(IDI_RADIO, 0, 16, 16));
 	InitMenu();
+	UIAddMenu(hMenu);
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -96,6 +101,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CMenuHandle menuMain = GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
 	m_view.SetTitleBarWindow(m_hWnd);
+
+	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTTYPES);
 
 	return 0;
 }

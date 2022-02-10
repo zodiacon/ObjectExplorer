@@ -127,7 +127,6 @@ public:
 	CString GetObjectName(HANDLE hObject, ULONG pid, USHORT type) const;
 	static CString GetObjectName(HANDLE hDup, USHORT type);
 
-
 	std::shared_ptr<ObjectTypeInfo> GetType(USHORT index);
 	std::shared_ptr<ObjectTypeInfo> GetType(PCWSTR name);
 	const std::vector<ObjectTypePtr>& GetObjectTypes() const;

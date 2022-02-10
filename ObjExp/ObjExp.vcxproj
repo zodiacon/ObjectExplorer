@@ -241,6 +241,7 @@
     <ClInclude Include="SecurityHelper.h" />
     <ClInclude Include="ObjectTypesView.h" />
     <ClInclude Include="StringHelper.h" />
+    <ClInclude Include="TimerManager.h" />
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="ViewFactory.h" />
   </ItemGroup>
@@ -253,6 +254,8 @@
     <Image Include="res\briefcase.ico" />
     <Image Include="res\callback.ico" />
     <Image Include="res\car.ico" />
+    <Image Include="res\check.ico" />
+    <Image Include="res\circle.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\cut.ico" />
     <Image Include="res\debug.ico" />
@@ -267,6 +270,7 @@
     <Image Include="res\key.ico" />
     <Image Include="res\link.ico" />
     <Image Include="res\memory.ico" />
+    <Image Include="res\message.ico" />
     <Image Include="res\mutex.ico" />
     <Image Include="res\objects.ico" />
     <Image Include="res\ObjExp.ico" />
