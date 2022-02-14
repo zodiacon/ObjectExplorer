@@ -19,15 +19,20 @@ public:
 	int GetRowImage(HWND, int row, int col) const;
 	CString GetTitle() const override;
 	void DoFind(const CString& text, DWORD flags);
+	void UpdateUI(CUpdateUIBase& ui, bool force = false);
 
 	BEGIN_MSG_MAP(CObjectManagerView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnTreeSelectionChanged)
-		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnRefresh)
+		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnListStateChanged)
+		NOTIFY_CODE_HANDLER(LVN_ODSTATECHANGED, OnListStateChanged)
 		//COMMAND_ID_HANDLER(ID_EDIT_SECURITY, OnEditSecurity)
-		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		CHAIN_MSG_MAP(CVirtualListView<CObjectManagerView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectManagerView>)
+	ALT_MSG_MAP(1)
+		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
+		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnRefresh)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 	END_MSG_MAP()
 
 private:
@@ -36,6 +41,8 @@ private:
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditSecurity(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnListStateChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void InitTree();
 	void UpdateList(bool newNode);

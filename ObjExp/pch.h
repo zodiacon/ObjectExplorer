@@ -22,9 +22,11 @@ extern CAppModule _Module;
 #include <atlctrls.h>
 #include <atldlgs.h>
 #include <atlctrlx.h>
+#include <atlctrlw.h>
 #include <atlsplit.h>
 #include <atltypes.h>
 #include <commoncontrols.h>
+#include <aclui.h>
 
 #include <strsafe.h>
 #include <dontuse.h>

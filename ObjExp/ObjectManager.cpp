@@ -135,3 +135,44 @@ CString ObjectManager::GetSymbolicLinkTarget(PCWSTR path) {
 	}
 	return target;
 }
+
+NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject, DWORD access) {
+	//auto hObject = DriverHelper::OpenHandle(path, access);
+	//if (hObject) {
+	//	*pHandle = hObject;
+	//	return STATUS_SUCCESS;
+	//}
+
+	hObject = nullptr;
+	CString type(typeName);
+	OBJECT_ATTRIBUTES attr;
+	UNICODE_STRING uname;
+	RtlInitUnicodeString(&uname, path);
+	InitializeObjectAttributes(&attr, &uname, 0, nullptr, nullptr);
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+
+	if (type == L"Event")
+		status = NT::NtOpenEvent(&hObject, access, &attr);
+	else if (type == L"Mutant")
+		status = NT::NtOpenMutant(&hObject, access, &attr);
+	else if (type == L"Section")
+		status = NT::NtOpenSection(&hObject, access, &attr);
+	else if (type == L"Semaphore")
+		status = NT::NtOpenSemaphore(&hObject, access, &attr);
+	else if (type == "EventPair")
+		status = NT::NtOpenEventPair(&hObject, access, &attr);
+	else if (type == L"IoCompletion")
+		status = NT::NtOpenIoCompletion(&hObject, access, &attr);
+	else if (type == L"SymbolicLink")
+		status = NT::NtOpenSymbolicLinkObject(&hObject, access, &attr);
+	else if (type == L"Key")
+		status = NT::NtOpenKey(&hObject, access, &attr);
+	else if (type == L"Job")
+		status = NT::NtOpenJobObject(&hObject, access, &attr);
+	else if (type == L"File" || type == L"Device") {
+		IO_STATUS_BLOCK ioStatus;
+		status = NT::NtOpenFile(&hObject, access, &attr, &ioStatus, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0);
+	}
+
+	return status;
+}

@@ -3,6 +3,7 @@
 // Used by ObjExp.rc
 //
 #define IDD_ABOUTBOX                    100
+#define IDD_PROPERTIES                  107
 #define IDR_MAINFRAME                   128
 #define IDI_ALPC                        202
 #define IDI_JOB                         203
@@ -60,6 +61,21 @@
 #define IDI_ETWREG                      255
 #define IDI_ICON3                       256
 #define IDI_PLUG                        256
+#define IDR_CONTEXT                     257
+#define IDD_OBJECTPROPS                 261
+#define IDC_EDIT1                       1000
+#define IDC_TYPE                        1000
+#define IDC_EDIT2                       1001
+#define IDC_NAME                        1001
+#define IDC_HANDLES                     1002
+#define IDC_REFS                        1003
+#define IDC_PAGED                       1004
+#define IDC_NPAGED                      1005
+#define IDC_PERMANENT                   1006
+#define IDC_EXCLUSIVE                   1007
+#define IDC_TABS                        1007
+#define IDC_BUTTON1                     1008
+#define IDC_SECURITY                    1008
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -90,9 +106,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        257
+#define _APS_NEXT_RESOURCE_VALUE        263
 #define _APS_NEXT_COMMAND_VALUE         32798
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -9,6 +9,7 @@
 #include "SortHelper.h"
 #include "ListViewhelper.h"
 #include "ClipboardHelper.h"
+#include "ObjectHelpers.h"
 
 BOOL CObjectTypesView::PreTranslateMessage(MSG* pMsg) {
 	pMsg;
@@ -106,14 +107,7 @@ void CObjectTypesView::OnPageActivated(bool activate) {
 
 
 LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
-	CString text;
-	for (int n = m_List.GetNextItem(-1, LVNI_SELECTED); n >= 0; n = m_List.GetNextItem(n, LVNI_SELECTED)) {
-		auto line = ListViewHelper::GetRowAsString(m_List, n, L",");
-		text += line + L"\r\n";
-	}
-	if (!text.IsEmpty())
-		text = text.Left(text.GetLength() - 2);
-
+	auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
 	ClipboardHelper::CopyText(m_hWnd, text);
 	return 0;
 }
@@ -151,6 +145,12 @@ void CObjectTypesView::DoSort(SortInfo const* si) {
 	std::sort(m_Items.begin(), m_Items.end(), compare);
 }
 
+bool CObjectTypesView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	return GetFrame()->TrackPopupMenu(menu.GetSubMenu(0), 0, pt.x, pt.y);
+}
+
 DWORD CObjectTypesView::OnPrePaint(int, LPNMCUSTOMDRAW) {
 	return CDRF_NOTIFYITEMDRAW;
 }
@@ -159,11 +159,6 @@ DWORD CObjectTypesView::OnSubItemPrePaint(int, LPNMCUSTOMDRAW cd) {
 	auto lcd = (LPNMLVCUSTOMDRAW)cd;
 	lcd->clrTextBk = CLR_INVALID;
 	auto col = GetColumnManager(m_List)->GetColumnTag<ColumnType>(lcd->iSubItem);
-
-	//if ((GetColumnManager(m_List)->GetColumn(GetRealColumn(m_List, sub)).Flags & ColumnFlags::Numeric) == ColumnFlags::Numeric)
-	//	::SelectObject(cd->hdc, (HFONT)GetFrame()->GetMonoFont());
-	//else
-	//	::SelectObject(cd->hdc, m_hFont);
 
 	if (col < ColumnType::Handles || col > ColumnType::PeakObjects)
 		return CDRF_SKIPPOSTPAINT;

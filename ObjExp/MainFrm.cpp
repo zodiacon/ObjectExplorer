@@ -1,6 +1,3 @@
-// MainFrm.cpp : implmentation of the CMainFrame class
-//
-/////////////////////////////////////////////////////////////////////////////
 
 #include "pch.h"
 #include "resource.h"
@@ -10,8 +7,6 @@
 #include "SecurityHelper.h"
 #include "IconHelper.h"
 #include "ViewFactory.h"
-
-#define WINDOW_MENU_POSITION	5
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -37,7 +32,7 @@ void CMainFrame::InitMenu() {
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
-		//{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
+		{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
 	};
 
 	for (auto& cmd : commands) {
@@ -65,6 +60,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	ToolBarButtonInfo buttons[] = {
 		{ ID_RUN, IDI_PLAY, BTNS_CHECK },
+		{ 0 },
+		{ ID_EDIT_COPY, IDI_COPY },
 		{ 0 },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
@@ -96,13 +93,15 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UIAddMenu(hMenu);
 
 	// register object for message filtering and idle updates
-	CMessageLoop* pLoop = _Module.GetMessageLoop();
-	ATLASSERT(pLoop != NULL);
+	auto pLoop = _Module.GetMessageLoop();
+	ATLASSERT(pLoop);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
+	const int WindowMenuPosition = 5;
+
 	CMenuHandle menuMain = GetMenu();
-	m_view.SetWindowMenu(menuMain.GetSubMenu(WINDOW_MENU_POSITION));
+	m_view.SetWindowMenu(menuMain.GetSubMenu(WindowMenuPosition));
 	m_view.SetTitleBarWindow(m_hWnd);
 
 	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTTYPES);

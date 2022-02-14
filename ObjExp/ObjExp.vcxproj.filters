@@ -22,6 +22,9 @@
     <Filter Include="Views">
       <UniqueIdentifier>{e3609ada-62ac-4f96-ab64-a055bfbbbd33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Dialogs">
+      <UniqueIdentifier>{1cec88d0-c1fa-4272-9ec8-d19027a1eee1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -31,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AboutDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AccessMaskDecoder.cpp">
@@ -63,15 +63,27 @@
     <ClCompile Include="ObjectManagerView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="AboutDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectHelpers.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="SecurityInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GenericObjectProperties.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectPropertiesDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AboutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NtDll.h">
@@ -115,6 +127,21 @@
     </ClInclude>
     <ClInclude Include="ObjectManagerView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="GenericObjectProperties.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectHelpers.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="SecurityInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectPropertiesDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -246,47 +273,47 @@
     <Image Include="res\folder_closed.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
-    <Image Include="res\data.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\eventpair.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\pin_green.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\section.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\commport.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\crossvmevent.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\crossvmmutex.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\event-key.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\silo.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\directx.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\component.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\crossvmevent.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\crossvmmutex.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\data.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\directx.ico">
+      <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\etw.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\etwreg.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\event-key.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\eventpair.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\silo.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\section.ico">
+      <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\plug.ico">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\pin_green.ico">
+      <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,8 @@
 #include "IconHelper.h"
 //#include "SecurityInfo.h"
 #include "ClipboardHelper.h"
+#include "ListViewhelper.h"
+#include "ObjectHelpers.h"
 
 CString CObjectManagerView::GetDirectoryPath() const {
 	auto item = m_Tree.GetSelectedItem();
@@ -88,6 +90,17 @@ void CObjectManagerView::DoFind(const CString& text, DWORD flags) {
 	m_List.SetFocus();
 }
 
+void CObjectManagerView::UpdateUI(CUpdateUIBase& ui, bool force) {
+	ui.UISetCheck(ID_RUN, false);
+	ui.UIEnable(ID_RUN, false);
+	ui.UISetCheck(ID_PAUSE, false);
+	ui.UIEnable(ID_PAUSE, false);
+	bool copy = (force || ::GetFocus() == m_List) && m_List.GetSelectedCount() > 0;
+	ui.UIEnable(ID_EDIT_COPY, copy);
+	if (!copy && m_Tree.GetSelectedItem() != nullptr)
+		ui.UIEnable(ID_EDIT_COPY, true);
+}
+
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_Splitter.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
@@ -101,7 +114,7 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	images.AddIcon(AtlLoadIconImage(IDI_FOLDER_CLOSED, 0, 16, 16));
 	m_Tree.SetImageList(images, TVSIL_NORMAL);
 
-	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 	m_List.InsertColumn(0, L"Name", LVCFMT_LEFT, 400);
 	m_List.InsertColumn(1, L"Type", LVCFMT_LEFT, 150);
 	m_List.InsertColumn(2, L"Symbolic Link Target", LVCFMT_LEFT, 600);
@@ -141,9 +154,8 @@ LRESULT CObjectManagerView::OnEditSecurity(WORD, WORD, HWND, BOOL&) {
 LRESULT CObjectManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
 	auto hFocus = ::GetFocus();
 	if (m_List == hFocus) {
-		auto index = m_List.GetSelectedIndex();
-		if (index >= 0)
-			ClipboardHelper::CopyText(*this, m_Objects[index].Name);
+		auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
+		ClipboardHelper::CopyText(m_hWnd, text);
 	}
 	else if (m_Tree == hFocus) {
 		auto hSelected = m_Tree.GetSelectedItem();
@@ -153,6 +165,11 @@ LRESULT CObjectManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
 			ClipboardHelper::CopyText(*this, text);
 		}
 	}
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnListStateChanged(int, LPNMHDR, BOOL&) {
+	UpdateUI(GetFrame()->GetUI(), true);
 	return 0;
 }
 
@@ -210,4 +227,15 @@ bool CObjectManagerView::CompareItems(const ObjectData& data1, const ObjectData&
 		case 2: return SortHelper::Sort(data1.SymbolicLinkTarget, data2.SymbolicLinkTarget, asc);
 	}
 	return false;
+}
+
+LRESULT CObjectManagerView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
+	auto& item = m_Objects[m_List.GetSelectionMark()];
+	HANDLE hObject;
+	auto status = ObjectManager::OpenObject(item.FullName, item.Type, hObject);
+	if (hObject) {
+		ObjectHelpers::ShowObjectProperties(hObject, item.Type, item.FullName);
+		::CloseHandle(hObject);
+	}
+	return 0;
 }

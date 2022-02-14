@@ -110,6 +110,14 @@ BEGIN
     END
 END
 
+IDR_CONTEXT MENU
+BEGIN
+    POPUP "typeslist"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -238,8 +246,39 @@ CAPTION "About"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,65,50,14
-    CTEXT           "Object Explorer v1.0\n\n(c)2022 Pavel Yosifovich",IDC_STATIC,47,17,78,32
-    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,18,17
+    CTEXT           "Object Explorer v1.0\n\n©2022 Pavel Yosifovich",IDC_STATIC,47,17,78,32
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+END
+
+IDD_PROPERTIES DIALOGEX 0, 0, 318, 177
+STYLE DS_SETFONT | WS_CHILD | WS_CLIPCHILDREN
+FONT 8, "Tahoma", 400, 0, 0x0
+BEGIN
+    LTEXT           "Type:",IDC_STATIC,8,9,20,8
+    EDITTEXT        IDC_TYPE,33,7,92,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Name:",IDC_STATIC,7,28,22,8
+    EDITTEXT        IDC_NAME,33,26,277,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Handles:",IDC_STATIC,7,50,27,8
+    RTEXT           "Static",IDC_HANDLES,38,50,58,10,0,WS_EX_STATICEDGE
+    LTEXT           "Refs:",IDC_STATIC,17,69,16,8
+    RTEXT           "Static",IDC_REFS,38,69,58,10,0,WS_EX_STATICEDGE
+    LTEXT           "Paged Pool:",IDC_STATIC,139,51,41,8
+    RTEXT           "Static",IDC_PAGED,184,51,34,11,0,WS_EX_STATICEDGE
+    LTEXT           "Non Paged Pool:",IDC_STATIC,125,68,55,8
+    RTEXT           "Static",IDC_NPAGED,184,68,34,11,0,WS_EX_STATICEDGE
+    CONTROL         "Permament",IDC_PERMANENT,"Button",BS_AUTOCHECKBOX | WS_DISABLED,235,52,52,10
+    CONTROL         "Exclusive",IDC_EXCLUSIVE,"Button",BS_AUTOCHECKBOX | WS_DISABLED,235,68,45,10
+    PUSHBUTTON      "Security...",IDC_SECURITY,248,7,63,14
+END
+
+IDD_OBJECTPROPS DIALOGEX 0, 0, 353, 211
+STYLE DS_SETFONT | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Dialog"
+FONT 8, "Tahoma", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,236,190,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,296,190,50,14
+    CONTROL         "",IDC_TABS,"SysTabControl32",TCS_MULTILINE | TCS_FOCUSNEVER,7,7,339,175
 END
 
 
@@ -257,6 +296,22 @@ BEGIN
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 79
+    END
+
+    IDD_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 311
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 170
+    END
+
+    IDD_OBJECTPROPS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 346
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 204
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -333,6 +388,34 @@ END
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
 BEGIN
     0
+END
+
+IDD_PROPERTIES AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+END
+
+IDD_OBJECTPROPS AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    0, 0, 100, 100
 END
 
 

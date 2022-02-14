@@ -22,6 +22,7 @@ public:
 	CString GetColumnText(HWND, int row, int col) const;
 	int GetRowImage(HWND, int row, int col) const;
 	void DoSort(SortInfo const* si);
+	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
 
 	DWORD OnPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
 	DWORD OnSubItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
@@ -33,6 +34,7 @@ public:
 
 protected:
 	BEGIN_MSG_MAP(CObjectTypesView)
+		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnStateChanged)
 		NOTIFY_CODE_HANDLER(LVN_ODSTATECHANGED, OnStateChanged)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CTimerManager<CObjectTypesView>)

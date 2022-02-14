@@ -22,6 +22,13 @@ int ResourceManager::GetTypeImage(PCWSTR typeName) const {
 	return 0;
 }
 
+HICON ResourceManager::GetTypeIcon(PCWSTR typeName) const {
+	int index = 0;
+	if (auto it = m_typeNameToImage.find(typeName); it != m_typeNameToImage.end())
+		index = it->second;
+	return m_typeImages.GetIcon(index);
+}
+
 HIMAGELIST ResourceManager::GetTypesImageList() const {
 	return m_typeImages.m_hImageList;
 }

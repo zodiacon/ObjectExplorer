@@ -14,6 +14,7 @@ public:
 
 	int GetTypeImage(int typeIndex) const;
 	int GetTypeImage(PCWSTR typeName) const;
+	HICON GetTypeIcon(PCWSTR typeName) const;
 	HIMAGELIST GetTypesImageList() const;
 	void Destroy();
 
