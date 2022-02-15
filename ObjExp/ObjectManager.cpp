@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ObjectManager.h"
 #include "NtDll.h"
+#include "DriverHelper.h"
 
 int ObjectManager::EnumTypes() {
 	const ULONG len = 1 << 14;
@@ -137,12 +138,6 @@ CString ObjectManager::GetSymbolicLinkTarget(PCWSTR path) {
 }
 
 NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject, DWORD access) {
-	//auto hObject = DriverHelper::OpenHandle(path, access);
-	//if (hObject) {
-	//	*pHandle = hObject;
-	//	return STATUS_SUCCESS;
-	//}
-
 	hObject = nullptr;
 	CString type(typeName);
 	OBJECT_ATTRIBUTES attr;
@@ -155,6 +150,13 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 		status = NT::NtOpenEvent(&hObject, access, &attr);
 	else if (type == L"Mutant")
 		status = NT::NtOpenMutant(&hObject, access, &attr);
+	else if (type == L"WindowStation") {
+		static auto OpenWinSta = (decltype(NT::NtUserOpenWindowStation)*)::GetProcAddress(::GetModuleHandle(L"win32u"), "NtUserOpenWindowStation");
+		if (OpenWinSta) {
+			hObject = OpenWinSta(&attr, access);
+			status = hObject ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
+		}
+	}
 	else if (type == L"Section")
 		status = NT::NtOpenSection(&hObject, access, &attr);
 	else if (type == L"Semaphore")
@@ -175,4 +177,119 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 	}
 
 	return status;
+}
+
+bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
+	EnumTypes();
+
+	ULONG len = 1 << 25;
+	wil::unique_virtualalloc_ptr<> buffer;
+	do {
+		buffer.reset(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		auto status = NT::NtQuerySystemInformation(NT::SystemExtendedHandleInformation, buffer.get(), len, &len);
+		if (status == STATUS_INFO_LENGTH_MISMATCH) {
+			len <<= 1;
+			continue;
+		}
+		if (status == 0)
+			break;
+		return false;
+	} while (true);
+
+	auto filteredTypeIndex = type == nullptr || ::wcslen(type) == 0 ? -1 : m_typesNameMap.at(type)->TypeIndex;
+
+	auto p = (NT::SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
+	auto count = p->NumberOfHandles;
+	m_handles.clear();
+	m_handles.reserve(count);
+	for (decltype(count) i = 0; i < count; i++) {
+		auto& handle = p->Handles[i];
+		if (pid && handle.UniqueProcessId != pid)
+			continue;
+
+		if (filteredTypeIndex >= 0 && handle.ObjectTypeIndex != filteredTypeIndex)
+			continue;
+
+		// skip current process
+		if (m_skipThisProcess && handle.UniqueProcessId == ::GetCurrentProcessId())
+			continue;
+
+		CString name;
+		if (namedObjectsOnly && (name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex)).IsEmpty())
+			continue;
+
+		auto hi = std::make_shared<HandleInfo>();
+		hi->HandleValue = (ULONG)handle.HandleValue;
+		hi->GrantedAccess = handle.GrantedAccess;
+		hi->Object = handle.Object;
+		hi->HandleAttributes = handle.HandleAttributes;
+		hi->ProcessId = (ULONG)handle.UniqueProcessId;
+		hi->ObjectTypeIndex = handle.ObjectTypeIndex;
+		hi->Name = name;
+
+		m_handles.emplace_back(hi);
+	}
+
+	return true;
+}
+
+CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type) const {
+	ATLASSERT(!m_types.empty());
+	static int processTypeIndex = m_typesNameMap.at(L"Process")->TypeIndex;
+	static int threadTypeIndex = m_typesNameMap.at(L"Thread")->TypeIndex;
+	static int fileTypeIndex = m_typesNameMap.at(L"File")->TypeIndex;
+	ATLASSERT(processTypeIndex > 0 && threadTypeIndex > 0);
+
+	CString sname;
+
+	do {
+		if (type == processTypeIndex || type == threadTypeIndex)
+			break;
+
+		BYTE buffer[2048];
+		if (type == fileTypeIndex) {
+			// special case for files in case they're locked
+			struct Data {
+				HANDLE hDup;
+				BYTE* buffer;
+			} data = { hDup, buffer };
+
+			wil::unique_handle hThread(::CreateThread(nullptr, 1 << 13, [](auto p) {
+				auto d = (Data*)p;
+				return (DWORD)NT::NtQueryObject(d->hDup, NT::ObjectNameInformation, d->buffer, sizeof(buffer), nullptr);
+				}, &data, STACK_SIZE_PARAM_IS_A_RESERVATION, nullptr));
+			if (::WaitForSingleObject(hThread.get(), 10) == WAIT_TIMEOUT) {
+				::TerminateThread(hThread.get(), 1);
+			}
+			else {
+				DWORD code;
+				::GetExitCodeThread(hThread.get(), &code);
+				if (code == STATUS_SUCCESS) {
+					auto name = (NT::POBJECT_NAME_INFORMATION)buffer;
+					sname = CString(name->Name.Buffer, name->Name.Length / sizeof(WCHAR));
+				}
+			}
+		}
+		else if (NT_SUCCESS(NT::NtQueryObject(hDup, NT::ObjectNameInformation, buffer, sizeof(buffer), nullptr))) {
+			auto name = (NT::POBJECT_NAME_INFORMATION)buffer;
+			sname = CString(name->Name.Buffer, name->Name.Length / sizeof(WCHAR));
+		}
+	} while (false);
+
+	return sname;
+}
+
+CString ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type) const {
+	wil::unique_handle hProcess(::OpenProcess(PROCESS_DUP_HANDLE, FALSE, pid));
+	if (!hProcess)
+		return L"";
+
+	HANDLE hDup = DriverHelper::DupHandle(hObject, pid, 0);
+	CString name;
+	if (hDup || ::DuplicateHandle(hProcess.get(), hObject, ::GetCurrentProcess(), &hDup, MAXIMUM_ALLOWED, FALSE, 0)) {
+		name = GetObjectName(hDup, type);
+		::CloseHandle(hDup);
+	}
+
+	return name;
 }

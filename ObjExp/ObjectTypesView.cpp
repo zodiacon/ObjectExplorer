@@ -117,6 +117,12 @@ LRESULT CObjectTypesView::OnStateChanged(int, LPNMHDR, BOOL&) {
 	return 0;
 }
 
+LRESULT CObjectTypesView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
+	auto& item = m_Items[m_List.GetSelectionMark()];
+	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
+	return 0;
+}
+
 void CObjectTypesView::DoSort(SortInfo const* si) {
 	if (si == nullptr)
 		return;
@@ -149,6 +155,12 @@ bool CObjectTypesView::OnRightClickList(HWND, int row, int col, POINT const& pt)
 	CMenu menu;
 	menu.LoadMenu(IDR_CONTEXT);
 	return GetFrame()->TrackPopupMenu(menu.GetSubMenu(0), 0, pt.x, pt.y);
+}
+
+bool CObjectTypesView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const {
+	auto& item = m_Items[row];
+	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
+	return true;
 }
 
 DWORD CObjectTypesView::OnPrePaint(int, LPNMCUSTOMDRAW) {

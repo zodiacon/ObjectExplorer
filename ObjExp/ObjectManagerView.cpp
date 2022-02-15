@@ -95,10 +95,16 @@ void CObjectManagerView::UpdateUI(CUpdateUIBase& ui, bool force) {
 	ui.UIEnable(ID_RUN, false);
 	ui.UISetCheck(ID_PAUSE, false);
 	ui.UIEnable(ID_PAUSE, false);
+	ui.UIEnable(ID_VIEW_PROPERTIES, m_List.GetSelectedCount() == 1);
 	bool copy = (force || ::GetFocus() == m_List) && m_List.GetSelectedCount() > 0;
 	ui.UIEnable(ID_EDIT_COPY, copy);
 	if (!copy && m_Tree.GetSelectedItem() != nullptr)
 		ui.UIEnable(ID_EDIT_COPY, true);
+}
+
+bool CObjectManagerView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const {
+	ShowProperties(row);
+	return false;
 }
 
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
@@ -211,6 +217,20 @@ void CObjectManagerView::UpdateList(bool newNode) {
 	}
 }
 
+bool CObjectManagerView::ShowProperties(int index) const {
+	ATLASSERT(index >= 0);
+	auto& item = m_Objects[index];
+	HANDLE hObject;
+	auto status = ObjectManager::OpenObject(item.FullName, item.Type, hObject);
+	if (hObject) {
+		ObjectHelpers::ShowObjectProperties(hObject, item.Type, item.FullName, item.SymbolicLinkTarget);
+		::CloseHandle(hObject);
+		return true;
+	}
+	AtlMessageBox(m_hWnd, L"Error opening object.", IDS_TITLE, MB_ICONERROR);
+	return false;
+}
+
 void CObjectManagerView::EnumDirectory(CTreeItem root, const CString& path) {
 	for (auto& dir : ObjectManager::EnumDirectoryObjects(path)) {
 		if (dir.TypeName == L"Directory") {
@@ -230,12 +250,6 @@ bool CObjectManagerView::CompareItems(const ObjectData& data1, const ObjectData&
 }
 
 LRESULT CObjectManagerView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
-	auto& item = m_Objects[m_List.GetSelectionMark()];
-	HANDLE hObject;
-	auto status = ObjectManager::OpenObject(item.FullName, item.Type, hObject);
-	if (hObject) {
-		ObjectHelpers::ShowObjectProperties(hObject, item.Type, item.FullName);
-		::CloseHandle(hObject);
-	}
+	ShowProperties(m_List.GetSelectionMark());
 	return 0;
 }

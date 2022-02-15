@@ -5,6 +5,7 @@
 #define IDD_ABOUTBOX                    100
 #define IDD_PROPERTIES                  107
 #define IDR_MAINFRAME                   128
+#define IDS_TITLE                       129
 #define IDI_ALPC                        202
 #define IDI_JOB                         203
 #define IDI_COPY                        204
@@ -63,6 +64,7 @@
 #define IDI_PLUG                        256
 #define IDR_CONTEXT                     257
 #define IDD_OBJECTPROPS                 261
+#define IDD_SIMPLEPROP                  262
 #define IDC_EDIT1                       1000
 #define IDC_TYPE                        1000
 #define IDC_EDIT2                       1001
@@ -74,8 +76,20 @@
 #define IDC_PERMANENT                   1006
 #define IDC_EXCLUSIVE                   1007
 #define IDC_TABS                        1007
-#define IDC_BUTTON1                     1008
 #define IDC_SECURITY                    1008
+#define IDC_ADDRESS                     1009
+#define IDC_ADDRESSLABEL                1010
+#define IDC_ALLHANDLES                  1011
+#define IDC_LABEL                       1012
+#define IDC_LABEL2                      1013
+#define IDC_LABEL3                      1014
+#define IDC_LABEL4                      1015
+#define IDC_LABEL5                      1016
+#define IDC_VALUE                       1017
+#define IDC_VALUE2                      1018
+#define IDC_VALUE3                      1019
+#define IDC_VALUE4                      1020
+#define IDC_VALUE5                      1021
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -106,9 +120,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        263
+#define _APS_NEXT_RESOURCE_VALUE        264
 #define _APS_NEXT_COMMAND_VALUE         32798
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -20,6 +20,7 @@ public:
 	CString GetTitle() const override;
 	void DoFind(const CString& text, DWORD flags);
 	void UpdateUI(CUpdateUIBase& ui, bool force = false);
+	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 
 	BEGIN_MSG_MAP(CObjectManagerView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -46,6 +47,7 @@ private:
 
 	void InitTree();
 	void UpdateList(bool newNode);
+	bool ShowProperties(int index) const;
 	void EnumDirectory(CTreeItem root, const CString& path);
 
 	struct ObjectData {

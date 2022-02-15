@@ -23,6 +23,7 @@ public:
 	int GetRowImage(HWND, int row, int col) const;
 	void DoSort(SortInfo const* si);
 	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
+	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 
 	DWORD OnPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
 	DWORD OnSubItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
@@ -43,6 +44,7 @@ protected:
 		CHAIN_MSG_MAP(CVirtualListView<CObjectTypesView>)
 	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
+		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		CHAIN_MSG_MAP_ALT(CTimerManager<CObjectTypesView>, 1)
 	END_MSG_MAP()
 
@@ -64,6 +66,7 @@ private:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnStateChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	ObjectManager m_mgr;

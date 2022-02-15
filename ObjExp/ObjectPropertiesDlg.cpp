@@ -38,14 +38,11 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
 LRESULT CObjectPropertiesDlg::OnTabChanged(int, LPNMHDR, BOOL&) {
     int newPage = m_Tabs.GetCurSel();
-    if (m_LastActivePage == newPage) {
-        m_Pages[m_SelectedPage].win.ShowWindow(SW_SHOW);
-        return 0;
+    if (m_SelectedPage >= 0) {
+        auto& win = m_Pages[m_SelectedPage].win;
+        win.ShowWindow(SW_HIDE);
     }
-
-    auto win = m_Pages[m_SelectedPage].win;
-    win.ShowWindow(SW_HIDE);
-    win = m_Pages[m_LastActivePage = newPage].win;
+    auto& win = m_Pages[m_SelectedPage = newPage].win;
     win.ShowWindow(SW_SHOW);
     win.RedrawWindow();
 

@@ -19,6 +19,7 @@ typedef _Return_type_success_(return >= 0) LONG NTSTATUS;
 
 #define STATUS_ACCESS_DENIED             ((NTSTATUS)0xC0000022L)
 #define STATUS_BUFFER_TOO_SMALL          ((NTSTATUS)0xC0000023L)
+#define STATUS_INFO_LENGTH_MISMATCH      ((NTSTATUS)0xC0000004L)
 
 typedef LONG KPRIORITY;
 
@@ -695,6 +696,10 @@ extern "C" {
 			_Out_ PHANDLE hDirectory,
 			_In_ ACCESS_MASK AccessMask,
 			_In_ POBJECT_ATTRIBUTES ObjectAttributes);
+
+		HWINSTA NTAPI NtUserOpenWindowStation(
+			_In_ POBJECT_ATTRIBUTES attr,
+			_In_ ACCESS_MASK access);
 
 		NTSTATUS NTAPI NtOpenSymbolicLinkObject(
 			_Out_  PHANDLE LinkHandle,

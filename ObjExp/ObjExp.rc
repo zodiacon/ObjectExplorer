@@ -242,7 +242,7 @@ IDI_PLUG                ICON                    "res\\plug.ico"
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 187, 86
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About"
+CAPTION "About Object Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,65,50,14
@@ -266,9 +266,12 @@ BEGIN
     RTEXT           "Static",IDC_PAGED,184,51,34,11,0,WS_EX_STATICEDGE
     LTEXT           "Non Paged Pool:",IDC_STATIC,125,68,55,8
     RTEXT           "Static",IDC_NPAGED,184,68,34,11,0,WS_EX_STATICEDGE
-    CONTROL         "Permament",IDC_PERMANENT,"Button",BS_AUTOCHECKBOX | WS_DISABLED,235,52,52,10
-    CONTROL         "Exclusive",IDC_EXCLUSIVE,"Button",BS_AUTOCHECKBOX | WS_DISABLED,235,68,45,10
-    PUSHBUTTON      "Security...",IDC_SECURITY,248,7,63,14
+    CONTROL         "Permament",IDC_PERMANENT,"Button",BS_3STATE,235,52,52,10
+    CHECKBOX        "Exclusive",IDC_EXCLUSIVE,235,68,45,10,NOT WS_TABSTOP
+    PUSHBUTTON      "Security...",IDC_SECURITY,7,90,60,14
+    LTEXT           "Address:",IDC_ADDRESSLABEL,141,10,30,8
+    EDITTEXT        IDC_ADDRESS,172,7,85,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "All &Handles...",IDC_ALLHANDLES,82,90,81,14
 END
 
 IDD_OBJECTPROPS DIALOGEX 0, 0, 353, 211
@@ -278,7 +281,23 @@ FONT 8, "Tahoma", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,236,190,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,296,190,50,14
-    CONTROL         "",IDC_TABS,"SysTabControl32",TCS_MULTILINE | TCS_FOCUSNEVER,7,7,339,175
+    CONTROL         "",IDC_TABS,"SysTabControl32",TCS_MULTILINE | TCS_FOCUSNEVER,7,7,339,177
+END
+
+IDD_SIMPLEPROP DIALOGEX 0, 0, 309, 147
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    RTEXT           "",IDC_LABEL,7,12,55,8
+    RTEXT           "",IDC_LABEL2,7,31,55,8
+    RTEXT           "",IDC_LABEL3,7,50,55,8
+    RTEXT           "",IDC_LABEL4,7,69,55,8
+    RTEXT           "",IDC_LABEL5,7,88,55,8
+    LTEXT           "",IDC_VALUE,76,12,219,11
+    LTEXT           "",IDC_VALUE2,76,31,219,11
+    LTEXT           "",IDC_VALUE3,76,50,219,11
+    LTEXT           "",IDC_VALUE4,76,69,219,11
+    LTEXT           "",IDC_VALUE5,76,88,219,11
 END
 
 
@@ -312,6 +331,14 @@ BEGIN
         RIGHTMARGIN, 346
         TOPMARGIN, 7
         BOTTOMMARGIN, 204
+    END
+
+    IDD_SIMPLEPROP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 140
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -407,6 +434,9 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0
 END
 
@@ -418,6 +448,21 @@ BEGIN
     0, 0, 100, 100
 END
 
+IDD_SIMPLEPROP AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 0,
+    0, 0, 100, 0,
+    0, 0, 100, 0,
+    0, 0, 100, 0,
+    0, 0, 100, 0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -426,7 +471,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Object Explorer"
+    IDR_MAINFRAME           "Object Explorer v0.1"
+    IDS_TITLE               "Object Explorer"
 END
 
 STRINGTABLE

@@ -4,22 +4,21 @@
 #include "DialogHelper.h"
 #include "ResourceManager.h"
 
-class CGenericPropertiesPage : 
-	public CDialogImpl<CGenericPropertiesPage>,
-	public CDialogHelper<CGenericPropertiesPage>,
-	public CDynamicDialogLayout<CGenericPropertiesPage> {
+class CSimplePropertiesPage :
+	public CDialogImpl<CSimplePropertiesPage>,
+	public CDialogHelper<CSimplePropertiesPage>,
+	public CDynamicDialogLayout<CSimplePropertiesPage> {
 public:
-	enum { IDD = IDD_PROPERTIES };
+	enum { IDD = IDD_SIMPLEPROP };
 
-	CGenericPropertiesPage(HANDLE hObject, PCWSTR typeName, PCWSTR name) : m_hObject(hObject), m_TypeName(typeName), m_Name(name) {}
+	CSimplePropertiesPage(std::vector<std::pair<CString, CString>> const& properties);
 
-	BEGIN_MSG_MAP(CGenericPropertiesPage)
+	BEGIN_MSG_MAP(CSimplePropertiesPage)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, OnDialogColor)
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, OnDialogColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnDialogColor)
-		COMMAND_ID_HANDLER(IDC_SECURITY, OnEditSecurity)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		CHAIN_MSG_MAP(CDynamicDialogLayout<CGenericPropertiesPage>)
+		CHAIN_MSG_MAP(CDynamicDialogLayout<CSimplePropertiesPage>)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):
@@ -29,12 +28,9 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDialogColor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT OnEditSecurity(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 protected:
-	HANDLE m_hObject;
-	CString m_TypeName;
-	CString m_Name;
+	std::vector<std::pair<CString, CString>> m_Properties;
 };
 
 
