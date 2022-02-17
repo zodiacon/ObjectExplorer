@@ -3,6 +3,7 @@
 #include "NtDll.h"
 #include "SecurityInfo.h"
 #include "DriverHelper.h"
+#include "ObjectHelpers.h"
 
 LRESULT CGenericPropertiesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	ATLASSERT(!m_TypeName.IsEmpty());
@@ -43,6 +44,19 @@ LRESULT CGenericPropertiesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	SetDlgItemText(IDC_NAME, m_Name);
 	SetDialogIcon(ResourceManager::Get().GetTypeIcon(m_TypeName));
 
+	auto props = ObjectHelpers::GetSimpleProps(m_hObject, m_TypeName, m_Name, m_Target);
+	if (!props.empty()) {
+		SetDlgItemText(IDC_FRAME, m_TypeName + L" Info");
+		int i = 0;
+		for (auto& [label, text] : props) {
+			SetDlgItemText(IDC_LABEL + i, label);
+			SetDlgItemText(IDC_VALUE + i, text);
+			i++;
+		}
+	}
+	else {
+		GetDlgItem(IDC_FRAME).ShowWindow(SW_HIDE);
+	}
 	return 0;
 }
 

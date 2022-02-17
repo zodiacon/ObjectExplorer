@@ -231,7 +231,6 @@
     <ClCompile Include="SecurityHelper.cpp" />
     <ClCompile Include="ObjectTypesView.cpp" />
     <ClCompile Include="SecurityInfo.cpp" />
-    <ClCompile Include="SimplePropertiesDlg.cpp" />
     <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="ViewFactory.cpp" />
   </ItemGroup>
@@ -255,7 +254,6 @@
     <ClInclude Include="SecurityHelper.h" />
     <ClInclude Include="ObjectTypesView.h" />
     <ClInclude Include="SecurityInfo.h" />
-    <ClInclude Include="SimplePropertiesDlg.h" />
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="TimerManager.h" />
     <ClInclude Include="ViewBase.h" />

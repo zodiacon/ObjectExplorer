@@ -3,22 +3,17 @@
 #include "GenericObjectProperties.h"
 #include "ObjectPropertiesDlg.h"
 #include "NtDll.h"
-#include "SimplePropertiesDlg.h"
 #include "ProcessHelper.h"
 #include <atltime.h>
+#include "StringHelper.h"
 
 UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target) {
 	CString title = CString(typeName) + CString(name ? (L" (" + CString(name) + L")") : CString());
 	CObjectPropertiesDlg dlg((PCWSTR)title, typeName);
-	CGenericPropertiesPage page1(hObject, typeName, name);
+	CGenericPropertiesPage page1(hObject, typeName, name, target);
 	page1.Create(::GetActiveWindow());
 	auto props = GetSimpleProps(hObject, typeName, name, target);
-	CSimplePropertiesPage page2(props);
 	dlg.AddPage(L"General", page1);
-	if (!props.empty()) {
-		page2.Create(::GetActiveWindow());
-		dlg.AddPage(typeName, page2);
-	}
 	dlg.DoModal();
 
 	return 0;
@@ -38,7 +33,7 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 		if (NT_SUCCESS(NT::NtQueryMutant(hObject, NT::MutantOwnerInformation, &owner, sizeof(owner), nullptr))) {
 			if (owner.ClientId.UniqueThread) {
 				auto pid = HandleToUlong(owner.ClientId.UniqueProcess);
-				text.Format(L"%u (%s)", pid, ProcessHelper::GetProcessName(pid));
+				text.Format(L"%u (%s)", pid, (PCWSTR)ProcessHelper::GetProcessName(pid));
 				props.push_back({ L"Owner PID:", text });
 				props.push_back({ L"Owner TID:", std::to_wstring(HandleToUlong(owner.ClientId.UniqueThread)).c_str() });
 			}
@@ -72,36 +67,10 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 		if (NT_SUCCESS(NT::NtQuerySection(hObject, NT::SectionBasicInformation, &info, sizeof(info), nullptr))) {
 			text.Format(L"0x%llX Bytes", info.MaximumSize.QuadPart);
 			props.push_back({ L"Size:", text });
-			text.Format(L"0x%08X (%s)", info.AllocationAttributes, SectionAttributesToString(info.AllocationAttributes));
+			text.Format(L"0x%08X (%s)", info.AllocationAttributes, (PCWSTR)StringHelper::SectionAttributesToString(info.AllocationAttributes));
 			props.push_back({ L"Attributes:", text });
 		}
 	}
 	return props;
 }
 
-CString ObjectHelpers::SectionAttributesToString(DWORD value) {
-	CString text;
-	struct {
-		DWORD attribute;
-		PCWSTR text;
-	} attributes[] = {
-		{ SEC_COMMIT, L"Commit" },
-		{ SEC_RESERVE, L"Reserve" },
-		{ SEC_IMAGE, L"Image" },
-		{ SEC_NOCACHE, L"No Cache" },
-		{ SEC_FILE, L"File" },
-		{ SEC_WRITECOMBINE, L"Write Combine" },
-		{ SEC_PROTECTED_IMAGE, L"Protected Image" },
-		{ SEC_LARGE_PAGES, L"Large Pages" },
-		{ SEC_IMAGE_NO_EXECUTE, L"No Execute" },
-	};
-
-	for (auto& item : attributes)
-		if (value & item.attribute)
-			(text += item.text) += L", ";
-	if (text.GetLength() == 0)
-		text = L"None";
-	else
-		text = text.Left(text.GetLength() - 2);
-	return text;
-}

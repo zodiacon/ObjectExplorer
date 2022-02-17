@@ -11,7 +11,7 @@ class CGenericPropertiesPage :
 public:
 	enum { IDD = IDD_PROPERTIES };
 
-	CGenericPropertiesPage(HANDLE hObject, PCWSTR typeName, PCWSTR name) : m_hObject(hObject), m_TypeName(typeName), m_Name(name) {}
+	CGenericPropertiesPage(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target) : m_hObject(hObject), m_TypeName(typeName), m_Name(name), m_Target(target) {}
 
 	BEGIN_MSG_MAP(CGenericPropertiesPage)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, OnDialogColor)
@@ -35,6 +35,7 @@ protected:
 	HANDLE m_hObject;
 	CString m_TypeName;
 	CString m_Name;
+	CString m_Target;
 };
 
 

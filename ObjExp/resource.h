@@ -64,10 +64,7 @@
 #define IDI_PLUG                        256
 #define IDR_CONTEXT                     257
 #define IDD_OBJECTPROPS                 261
-#define IDD_SIMPLEPROP                  262
-#define IDC_EDIT1                       1000
 #define IDC_TYPE                        1000
-#define IDC_EDIT2                       1001
 #define IDC_NAME                        1001
 #define IDC_HANDLES                     1002
 #define IDC_REFS                        1003
@@ -83,13 +80,10 @@
 #define IDC_LABEL                       1012
 #define IDC_LABEL2                      1013
 #define IDC_LABEL3                      1014
-#define IDC_LABEL4                      1015
-#define IDC_LABEL5                      1016
 #define IDC_VALUE                       1017
 #define IDC_VALUE2                      1018
 #define IDC_VALUE3                      1019
-#define IDC_VALUE4                      1020
-#define IDC_VALUE5                      1021
+#define IDC_FRAME                       1022
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -122,7 +116,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        264
 #define _APS_NEXT_COMMAND_VALUE         32798
-#define _APS_NEXT_CONTROL_VALUE         1018
+#define _APS_NEXT_CONTROL_VALUE         1023
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
