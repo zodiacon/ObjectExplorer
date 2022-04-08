@@ -11,19 +11,7 @@
 #include "ObjectHelpers.h"
 
 CString CObjectManagerView::GetDirectoryPath() const {
-	auto item = m_Tree.GetSelectedItem();
-	CString path;
-	while (item.GetParent()) {
-		CString text;
-		item.GetText(text);
-		path = L"\\" + text + path;
-		item = item.GetParent();
-	}
-
-	if (path.IsEmpty())
-		path = L"\\";
-
-	return path;
+	return GetFullItemPath(m_Tree, m_Tree.GetSelectedItem()).Mid(1);
 }
 
 void CObjectManagerView::OnFinalMessage(HWND) {
@@ -108,8 +96,10 @@ bool CObjectManagerView::OnDoubleClickList(HWND, int row, int col, POINT const& 
 }
 
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
+	m_Splitter.SetSplitterExtendedStyle(SPLIT_FIXEDBARSIZE | SPLIT_FLATBAR);
+	m_Splitter.m_cxySplitBar = 6;
 	m_hWndClient = m_Splitter.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
+	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | 
 		WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS);
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
 		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS);
@@ -137,11 +127,13 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	return 0;
 }
 
-LRESULT CObjectManagerView::OnTreeSelectionChanged(int, LPNMHDR, BOOL&) {
-	auto item = m_Tree.GetSelectedItem();
-	ATLASSERT(item);
+void CObjectManagerView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
+	ATLASSERT(hNew);
 	UpdateList(true);
-	return 0;
+}
+
+bool CObjectManagerView::OnTreeDoubleClick([[maybe_unused]]HWND tree, HTREEITEM hItem) {
+	return ShowProperties(hItem);
 }
 
 LRESULT CObjectManagerView::OnRefresh(WORD, WORD, HWND, BOOL&) {
@@ -220,10 +212,19 @@ void CObjectManagerView::UpdateList(bool newNode) {
 bool CObjectManagerView::ShowProperties(int index) const {
 	ATLASSERT(index >= 0);
 	auto& item = m_Objects[index];
+	return ShowProperties(item.FullName, item.Type, item.SymbolicLinkTarget);
+}
+
+bool CObjectManagerView::ShowProperties(HTREEITEM hItem) const {
+	auto path = GetFullItemPath(m_Tree, hItem);
+	return ShowProperties(path.Mid(1), L"Directory");
+}
+
+bool CObjectManagerView::ShowProperties(PCWSTR fullName, PCWSTR type, PCWSTR target) const {
 	HANDLE hObject;
-	auto status = ObjectManager::OpenObject(item.FullName, item.Type, hObject);
+	auto status = ObjectManager::OpenObject(fullName, type, hObject);
 	if (hObject) {
-		ObjectHelpers::ShowObjectProperties(hObject, item.Type, item.FullName, item.SymbolicLinkTarget);
+		ObjectHelpers::ShowObjectProperties(hObject, type, fullName, target);
 		::CloseHandle(hObject);
 		return true;
 	}
@@ -232,7 +233,7 @@ bool CObjectManagerView::ShowProperties(int index) const {
 }
 
 void CObjectManagerView::EnumDirectory(CTreeItem root, const CString& path) {
-	for (auto& dir : ObjectManager::EnumDirectoryObjects(path)) {
+	for (auto const& dir : ObjectManager::EnumDirectoryObjects(path)) {
 		if (dir.TypeName == L"Directory") {
 			auto node = m_Tree.InsertItem(dir.Name.c_str(), 1, 0, root, TVI_LAST);
 			EnumDirectory(node, path.Right(1) == L"\\" ? path + dir.Name.c_str() : path + L"\\" + dir.Name.c_str());

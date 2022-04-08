@@ -112,11 +112,6 @@ LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
 	return 0;
 }
 
-LRESULT CObjectTypesView::OnStateChanged(int, LPNMHDR, BOOL&) {
-	UpdateUI(GetFrame()->GetUI());
-	return 0;
-}
-
 LRESULT CObjectTypesView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
 	auto& item = m_Items[m_List.GetSelectionMark()];
 	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
@@ -135,8 +130,8 @@ void CObjectTypesView::DoSort(SortInfo const* si) {
 			case ColumnType::Index: return SortHelper::Sort(item1->TypeIndex, item2->TypeIndex, asc);
 			case ColumnType::Objects: return SortHelper::Sort(item1->TotalNumberOfObjects, item2->TotalNumberOfObjects, asc);
 			case ColumnType::Handles: return SortHelper::Sort(item1->TotalNumberOfHandles, item2->TotalNumberOfHandles, asc);
-			case ColumnType::PeakHandles: return SortHelper::Sort(item1->HighWaterNumberOfObjects, item2->HighWaterNumberOfObjects, asc);
-			case ColumnType::PeakObjects: return SortHelper::Sort(item1->HighWaterNumberOfHandles, item2->HighWaterNumberOfHandles, asc);
+			case ColumnType::PeakObjects: return SortHelper::Sort(item1->HighWaterNumberOfObjects, item2->HighWaterNumberOfObjects, asc);
+			case ColumnType::PeakHandles: return SortHelper::Sort(item1->HighWaterNumberOfHandles, item2->HighWaterNumberOfHandles, asc);
 			case ColumnType::Pool: return SortHelper::Sort(item1->PoolType, item2->PoolType, asc);
 			case ColumnType::DefaultNonPaged: return SortHelper::Sort(item1->DefaultNonPagedPoolCharge, item2->DefaultNonPagedPoolCharge, asc);
 			case ColumnType::DefaultPaged: return SortHelper::Sort(item1->DefaultPagedPoolCharge, item2->DefaultPagedPoolCharge, asc);
@@ -161,6 +156,10 @@ bool CObjectTypesView::OnDoubleClickList(HWND, int row, int col, POINT const& pt
 	auto& item = m_Items[row];
 	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
 	return true;
+}
+
+void CObjectTypesView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
+	UpdateUI(GetFrame()->GetUI());
 }
 
 DWORD CObjectTypesView::OnPrePaint(int, LPNMCUSTOMDRAW) {

@@ -5,10 +5,12 @@
 #include "resource.h"
 #include "ViewBase.h"
 #include "ObjectManager.h"
+#include "TreeViewHelper.h"
 
 class CObjectManagerView :
 	public CViewBase<CObjectManagerView>,
-	public CVirtualListView<CObjectManagerView> {
+	public CVirtualListView<CObjectManagerView>,
+	public CTreeViewHelper<CObjectManagerView> {
 public:
 	using CViewBase::CViewBase;
 
@@ -22,13 +24,20 @@ public:
 	void UpdateUI(CUpdateUIBase& ui, bool force = false);
 	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 
+	//
+	// treeview overrides
+	//
+	void OnTreeSelChanged(HWND tree, HTREEITEM hOld, HTREEITEM hNew);
+	//bool OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT const& pt);
+	bool OnTreeDoubleClick(HWND tree, HTREEITEM hItem);
+
 	BEGIN_MSG_MAP(CObjectManagerView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		NOTIFY_CODE_HANDLER(TVN_SELCHANGED, OnTreeSelectionChanged)
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnListStateChanged)
 		NOTIFY_CODE_HANDLER(LVN_ODSTATECHANGED, OnListStateChanged)
 		//COMMAND_ID_HANDLER(ID_EDIT_SECURITY, OnEditSecurity)
 		CHAIN_MSG_MAP(CVirtualListView<CObjectManagerView>)
+		CHAIN_MSG_MAP(CTreeViewHelper<CObjectManagerView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectManagerView>)
 	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
@@ -38,7 +47,6 @@ public:
 
 private:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT OnTreeSelectionChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditSecurity(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -48,6 +56,8 @@ private:
 	void InitTree();
 	void UpdateList(bool newNode);
 	bool ShowProperties(int index) const;
+	bool ShowProperties(HTREEITEM hItem) const;
+	bool ShowProperties(PCWSTR fullName, PCWSTR type, PCWSTR target = nullptr) const;
 	void EnumDirectory(CTreeItem root, const CString& path);
 
 	struct ObjectData {

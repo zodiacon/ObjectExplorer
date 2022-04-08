@@ -58,7 +58,7 @@ CUpdateUIBase& CMainFrame::GetUI() {
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CreateSimpleStatusBar();
 
-	ToolBarButtonInfo buttons[] = {
+	ToolBarButtonInfo const buttons[] = {
 		{ ID_RUN, IDI_PLAY, BTNS_CHECK },
 		{ 0 },
 		{ ID_EDIT_COPY, IDI_COPY },

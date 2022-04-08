@@ -171,6 +171,8 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 		status = NT::NtOpenKey(&hObject, access, &attr);
 	else if (type == L"Job")
 		status = NT::NtOpenJobObject(&hObject, access, &attr);
+	else if (type == L"Directory")
+		status = NT::NtOpenDirectoryObject(&hObject, access, &attr);
 	else if (type == L"File" || type == L"Device") {
 		IO_STATUS_BLOCK ioStatus;
 		status = NT::NtOpenFile(&hObject, access, &attr, &ioStatus, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0);

@@ -24,6 +24,7 @@ public:
 	void DoSort(SortInfo const* si);
 	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
 	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
+	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
 
 	DWORD OnPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
 	DWORD OnSubItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
@@ -35,8 +36,6 @@ public:
 
 protected:
 	BEGIN_MSG_MAP(CObjectTypesView)
-		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnStateChanged)
-		NOTIFY_CODE_HANDLER(LVN_ODSTATECHANGED, OnStateChanged)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CTimerManager<CObjectTypesView>)
 		CHAIN_MSG_MAP(CCustomDraw<CObjectTypesView>)
@@ -65,7 +64,6 @@ private:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnStateChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;

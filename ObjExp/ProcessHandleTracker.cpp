@@ -11,7 +11,7 @@ bool HandleEntryInfo::operator==(const HandleEntryInfo& other) const {
 template<>
 struct std::hash<HandleEntryInfo> {
 	size_t operator()(const HandleEntryInfo& key) const {
-		return (size_t)key.HandleValue ^ ((int32_t)key.ObjectTypeIndex << 16);
+		return (size_t)key.HandleValue ^ ((uint32_t)key.ObjectTypeIndex << 16);
 	}
 };
 
@@ -84,7 +84,7 @@ ULONG ProcessHandlesTracker::Impl::EnumHandles(bool clearHostory) {
 	m_newHandles.clear();
 	m_closedHandles.clear();
 	if (m_handles.empty()) {
-		m_newHandles.reserve(1024);
+		m_newHandles.reserve(512);
 		m_closedHandles.reserve(32);
 	}
 
