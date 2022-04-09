@@ -72,7 +72,7 @@ BEGIN
         MENUITEM "&Refresh",                    ID_VIEW_REFRESH
         POPUP "&Update Interval"
         BEGIN
-            MENUITEM "&Pause\tSpace",               ID_PAUSE
+            MENUITEM "&Pause\tSpace",               ID_PAUSERESUME
             MENUITEM "0.5 Seconds",                 ID_UPDATEINTERVAL_HALFSEC
             MENUITEM "1 Second",                    ID_UPDATEINTERVAL_1SECOND
             MENUITEM "2 Seconds",                   ID_UPDATEINTERVAL_2SECONDS
@@ -98,8 +98,9 @@ BEGIN
         MENUITEM "&Maintain List of Objects Per Type", ID_OPTIONS_MAINTAINLISTOFOBJECTSPERTYPE
         MENUITEM "&Always On Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Font...",                    ID_OPTIONS_FONT
+        MENUITEM "&Dark Mode",                  ID_OPTIONS_THEME
     END
-    POPUP "&Window"
+    POPUP "&Tab"
     BEGIN
         MENUITEM "&Close\tCtrl+F4",             ID_WINDOW_CLOSE
         MENUITEM "Close &All",                  ID_WINDOW_CLOSE_ALL
@@ -115,6 +116,21 @@ BEGIN
     POPUP "typeslist"
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+    END
+    POPUP "objecttree"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "Copy Full Directory Name",    ID_OBJECTTREE_COPYFULLDIRECTORYNAME
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
+    END
+    POPUP "objectlist"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "Copy Full Object Path",       ID_OBJECTLIST_COPYFULLOBJECTPATH
+        MENUITEM "&Jump to Target",             ID_OBJECTLIST_JUMPTOTARGET
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
 END
 
@@ -348,7 +364,8 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_SPACE,       ID_RUN,                 VIRTKEY, NOINVERT
+    VK_SPACE,       ID_PAUSERESUME,         VIRTKEY, NOINVERT
+    VK_RETURN,      ID_VIEW_PROPERTIES,     VIRTKEY, ALT, NOINVERT
 END
 
 

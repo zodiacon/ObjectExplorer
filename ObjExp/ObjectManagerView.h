@@ -28,7 +28,7 @@ public:
 	// treeview overrides
 	//
 	void OnTreeSelChanged(HWND tree, HTREEITEM hOld, HTREEITEM hNew);
-	//bool OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT const& pt);
+	bool OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT const& pt);
 	bool OnTreeDoubleClick(HWND tree, HTREEITEM hItem);
 
 	BEGIN_MSG_MAP(CObjectManagerView)
@@ -43,6 +43,7 @@ public:
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnRefresh)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
+		COMMAND_ID_HANDLER(ID_OBJECTTREE_COPYFULLDIRECTORYNAME, OnCopyDirectoryName)
 	END_MSG_MAP()
 
 private:
@@ -52,6 +53,7 @@ private:
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnListStateChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCopyDirectoryName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void InitTree();
 	void UpdateList(bool newNode);

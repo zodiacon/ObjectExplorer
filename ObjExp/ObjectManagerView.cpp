@@ -83,7 +83,8 @@ void CObjectManagerView::UpdateUI(CUpdateUIBase& ui, bool force) {
 	ui.UIEnable(ID_RUN, false);
 	ui.UISetCheck(ID_PAUSE, false);
 	ui.UIEnable(ID_PAUSE, false);
-	ui.UIEnable(ID_VIEW_PROPERTIES, m_List.GetSelectedCount() == 1);
+	auto active = m_Splitter.GetActivePane();
+	ui.UIEnable(ID_VIEW_PROPERTIES, (active == 1 && m_List.GetSelectedCount() == 1) || active == 0);
 	bool copy = (force || ::GetFocus() == m_List) && m_List.GetSelectedCount() > 0;
 	ui.UIEnable(ID_EDIT_COPY, copy);
 	if (!copy && m_Tree.GetSelectedItem() != nullptr)
@@ -96,8 +97,6 @@ bool CObjectManagerView::OnDoubleClickList(HWND, int row, int col, POINT const& 
 }
 
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
-	m_Splitter.SetSplitterExtendedStyle(SPLIT_FIXEDBARSIZE | SPLIT_FLATBAR);
-	m_Splitter.m_cxySplitBar = 6;
 	m_hWndClient = m_Splitter.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | 
 		WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS);
@@ -118,6 +117,7 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_Splitter.SetSplitterExtendedStyle(SPLIT_FLATBAR | SPLIT_PROPORTIONAL);
 	m_Splitter.SetSplitterPanes(m_Tree, m_List);
 	m_Splitter.SetSplitterPosPct(20);
+	m_Splitter.SetActivePane(0);
 	m_Splitter.UpdateSplitterLayout();
 
 	m_mgr.EnumTypes();
@@ -130,6 +130,19 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 void CObjectManagerView::OnTreeSelChanged(HWND, HTREEITEM hOld, HTREEITEM hNew) {
 	ATLASSERT(hNew);
 	UpdateList(true);
+}
+
+bool CObjectManagerView::OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT const& pt) {
+	ATLASSERT(hItem);
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	auto cmd = GetFrame()->TrackPopupMenu(menu.GetSubMenu(1), TPM_RETURNCMD, pt.x, pt.y);
+	if (cmd) {
+		LRESULT result;
+		ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 1);
+		return true;
+	}
+	return false;
 }
 
 bool CObjectManagerView::OnTreeDoubleClick([[maybe_unused]]HWND tree, HTREEITEM hItem) {
@@ -150,12 +163,11 @@ LRESULT CObjectManagerView::OnEditSecurity(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CObjectManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
-	auto hFocus = ::GetFocus();
-	if (m_List == hFocus) {
+	if(m_Splitter.GetActivePane() == 1) {
 		auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
 		ClipboardHelper::CopyText(m_hWnd, text);
 	}
-	else if (m_Tree == hFocus) {
+	else if (m_Splitter.GetActivePane() == 0) {
 		auto hSelected = m_Tree.GetSelectedItem();
 		if (hSelected) {
 			CString text;
@@ -251,6 +263,14 @@ bool CObjectManagerView::CompareItems(const ObjectData& data1, const ObjectData&
 }
 
 LRESULT CObjectManagerView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
-	ShowProperties(m_List.GetSelectionMark());
+	if (m_Splitter.GetActivePane() == 1)
+		ShowProperties(m_List.GetSelectionMark());
+	else
+		ShowProperties(m_Tree.GetSelectedItem());
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnCopyDirectoryName(WORD, WORD, HWND, BOOL&) {
+	ClipboardHelper::CopyText(m_hWnd, GetDirectoryPath());
 	return 0;
 }

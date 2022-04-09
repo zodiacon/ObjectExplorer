@@ -19,6 +19,10 @@ protected:
 		return ProcessWindowMessage(static_cast<T*>(this)->m_hWnd, WM_COMMAND, LOWORD(cmd), 0, result, 1);
 	}
 
+	CUpdateUIBase& UI() {
+		return m_pFrame->GetUI();
+	}
+
 	BOOL OnIdle() override {
 		CAutoUpdateUI<T>::UIUpdateToolBar();
 		return FALSE;

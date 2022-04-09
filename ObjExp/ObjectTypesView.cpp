@@ -102,17 +102,18 @@ void CObjectTypesView::DoTimerUpdate() {
 }
 
 void CObjectTypesView::OnPageActivated(bool activate) {
+	UI().UIEnable(ID_RUN, true);
 	ActivateTimer(activate);
 }
 
 
-LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
+LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) const {
 	auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
 	ClipboardHelper::CopyText(m_hWnd, text);
 	return 0;
 }
 
-LRESULT CObjectTypesView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
+LRESULT CObjectTypesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
 	auto& item = m_Items[m_List.GetSelectionMark()];
 	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
 	return 0;
