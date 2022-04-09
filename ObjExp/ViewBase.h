@@ -28,7 +28,7 @@ protected:
 		return FALSE;
 	}
 
-	IMainFrame* GetFrame() {
+	IMainFrame* GetFrame() const {
 		return m_pFrame;
 	}
 

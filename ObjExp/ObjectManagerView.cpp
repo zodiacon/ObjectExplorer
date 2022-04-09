@@ -96,6 +96,22 @@ bool CObjectManagerView::OnDoubleClickList(HWND, int row, int col, POINT const& 
 	return false;
 }
 
+bool CObjectManagerView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
+	if (row >= 0) {
+		CMenu menu;
+		menu.LoadMenu(IDR_CONTEXT);
+		auto& item = m_Objects[row];
+		menu.EnableMenuItem(ID_OBJECTLIST_JUMPTOTARGET, item.SymbolicLinkTarget.IsEmpty() ? MF_DISABLED : MF_ENABLED);
+		auto cmd = GetFrame()->TrackPopupMenu(menu.GetSubMenu(2), TPM_RETURNCMD, pt.x, pt.y);
+		if (cmd) {
+			LRESULT result;
+			ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 1);
+			return true;
+		}
+	}
+	return false;
+}
+
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_Splitter.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | 
@@ -150,7 +166,11 @@ bool CObjectManagerView::OnTreeDoubleClick([[maybe_unused]]HWND tree, HTREEITEM 
 }
 
 LRESULT CObjectManagerView::OnRefresh(WORD, WORD, HWND, BOOL&) {
+	auto dir = GetDirectoryPath();
 	InitTree();
+	auto hItem = FindItem(m_Tree, m_Tree.GetRootItem(), dir.Mid(1));
+	if (hItem)
+		m_Tree.SelectItem(hItem);
 	return 0;
 }
 
@@ -184,7 +204,7 @@ LRESULT CObjectManagerView::OnListStateChanged(int, LPNMHDR, BOOL&) {
 }
 
 void CObjectManagerView::InitTree() {
-	m_Tree.LockWindowUpdate();
+	m_Tree.SetRedraw(FALSE);
 	m_Tree.DeleteAllItems();
 
 	auto root = m_Tree.InsertItem(L"\\", 1, 0, TVI_ROOT, TVI_SORT);
@@ -193,11 +213,13 @@ void CObjectManagerView::InitTree() {
 	root.Expand(TVE_EXPAND);
 	root.Select(TVGN_CARET);
 
-	m_Tree.LockWindowUpdate(FALSE);
+	m_Tree.SetRedraw();
 }
 
 void CObjectManagerView::UpdateList(bool newNode) {
 	auto path = GetDirectoryPath();
+	if (path.IsEmpty())
+		path = L"\\";
 	m_Objects.clear();
 	m_Objects.reserve(128);
 	for (auto& item : ObjectManager::EnumDirectoryObjects(path)) {
@@ -272,5 +294,41 @@ LRESULT CObjectManagerView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
 
 LRESULT CObjectManagerView::OnCopyDirectoryName(WORD, WORD, HWND, BOOL&) {
 	ClipboardHelper::CopyText(m_hWnd, GetDirectoryPath());
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnCopyFullObjectPath(WORD, WORD, HWND, BOOL&) {
+	CString text;
+	for (auto row : SelectedItemsView(m_List)) {
+		auto const& item = m_Objects[row];
+		text += item.FullName + L"\n";
+	}
+	if (!text.IsEmpty()) {
+		text = text.Left(text.GetLength() - 1);
+		ClipboardHelper::CopyText(m_hWnd, text);
+	}
+
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnJumpToTarget(WORD, WORD, HWND, BOOL&) {
+	auto& item = m_Objects[m_List.GetSelectionMark()];
+	ATLASSERT(!item.SymbolicLinkTarget.IsEmpty());
+	auto dir = item.SymbolicLinkTarget.Mid(1);
+	auto name = dir.Mid(dir.ReverseFind(L'\\') + 1);
+	dir = dir.Left(dir.ReverseFind(L'\\'));
+	auto hItem = FindItem(m_Tree, m_Tree.GetRootItem(), dir);
+	if (hItem) {
+		m_Tree.SelectItem(hItem);
+		UpdateList(true);
+		int n = m_List.FindItem(name, false);
+		if (n >= 0) {
+			m_List.SetItemState(n, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+			m_List.EnsureVisible(n, FALSE);
+			return 0;
+		}
+	}
+	AtlMessageBox(m_hWnd, L"Unable to locate symbolic link target", IDS_TITLE, MB_ICONEXCLAMATION);
+
 	return 0;
 }
