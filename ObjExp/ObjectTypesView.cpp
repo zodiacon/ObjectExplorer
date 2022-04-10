@@ -86,8 +86,8 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
 
-	auto count = m_mgr.EnumTypes();
-	m_Items = m_mgr.GetObjectTypes();
+	auto count = ObjectManager::EnumTypes();
+	m_Items = ObjectManager::GetObjectTypes();
 	m_List.SetItemCount(count);
 
 	Run(true);
@@ -96,7 +96,7 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 }
 
 void CObjectTypesView::DoTimerUpdate() {
-	m_mgr.EnumTypes();
+	ObjectManager::EnumTypes();
 	DoSort(GetSortInfo(m_List));
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 }

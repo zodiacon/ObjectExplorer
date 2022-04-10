@@ -71,6 +71,17 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 			props.push_back({ L"Attributes:", text });
 		}
 	}
+	else if (::_wcsicmp(type, L"Type") == 0) {
+		ObjectManager::EnumTypes();
+		auto info = ObjectManager::GetType(name);
+		ATLASSERT(info);
+		if (info) {
+			text.Format(L"%u", info->TotalNumberOfObjects);
+			props.push_back({ L"Objects: ", text });
+			text.Format(L"%u", info->TotalNumberOfHandles);
+			props.push_back({ L"Handles: ", text });
+		}
+	}
 	return props;
 }
 

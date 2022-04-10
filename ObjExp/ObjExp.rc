@@ -116,6 +116,10 @@ BEGIN
     POPUP "typeslist"
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "All &Objects",                ID_TYPESLIST_ALLOBJECTS
+        MENUITEM "All &Handles",                ID_TYPESLIST_ALLHANDLES
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
     POPUP "objecttree"
     BEGIN

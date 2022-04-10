@@ -136,7 +136,7 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_Splitter.SetActivePane(0);
 	m_Splitter.UpdateSplitterLayout();
 
-	m_mgr.EnumTypes();
+	ObjectManager::EnumTypes();
 
 	InitTree();
 
@@ -255,7 +255,16 @@ bool CObjectManagerView::ShowProperties(HTREEITEM hItem) const {
 }
 
 bool CObjectManagerView::ShowProperties(PCWSTR fullName, PCWSTR type, PCWSTR target) const {
-	HANDLE hObject;
+	if (type == CString(L"Type")) {
+		//
+		// special treatment for type objects
+		//
+		CString name(fullName);
+		int bs = name.ReverseFind(L'\\');
+		ObjectHelpers::ShowObjectProperties(nullptr, type, name.Mid(bs + 1));
+		return true;
+	}
+	HANDLE hObject{ nullptr };
 	auto status = ObjectManager::OpenObject(fullName, type, hObject);
 	if (hObject) {
 		ObjectHelpers::ShowObjectProperties(hObject, type, fullName, target);

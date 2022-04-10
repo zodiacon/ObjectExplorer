@@ -4,6 +4,7 @@
 #include "SecurityInfo.h"
 #include "DriverHelper.h"
 #include "ObjectHelpers.h"
+#include "ObjectManager.h"
 
 LRESULT CGenericPropertiesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	ATLASSERT(!m_TypeName.IsEmpty());
@@ -12,8 +13,17 @@ LRESULT CGenericPropertiesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
 	NT::OBJECT_BASIC_INFORMATION info;
 	PVOID address{ nullptr };
-	if (m_hObject && STATUS_SUCCESS == NT::NtQueryObject(m_hObject, NT::ObjectBasicInformation, &info, sizeof(info), nullptr)) {
-		SetDlgItemInt(IDC_HANDLES, info.HandleCount);
+	if (m_hObject == nullptr && m_TypeName == L"Type") {
+		ObjectManager mgr;
+		auto type = mgr.GetType(m_Name);
+		SetDlgItemInt(IDC_PAGED, type->DefaultPagedPoolCharge);
+		SetDlgItemInt(IDC_NPAGED, type->DefaultNonPagedPoolCharge);
+		SetDlgItemText(IDC_HANDLES, L"");
+		SetDlgItemText(IDC_REFS, L"");
+		GetDlgItem(IDC_SECURITY).EnableWindow(FALSE);
+	}
+	else if (m_hObject && STATUS_SUCCESS == NT::NtQueryObject(m_hObject, NT::ObjectBasicInformation, &info, sizeof(info), nullptr)) {
+		SetDlgItemInt(IDC_HANDLES, info.HandleCount - 1);	// subtract our own handle?
 		SetDlgItemInt(IDC_REFS, info.PointerCount);
 		SetDlgItemInt(IDC_PAGED, info.PagedPoolCharge);
 		SetDlgItemInt(IDC_NPAGED, info.NonPagedPoolCharge);

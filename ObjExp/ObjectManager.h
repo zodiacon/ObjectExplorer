@@ -100,7 +100,7 @@ public:
 
 	bool EnumHandlesAndObjects(PCWSTR type = nullptr, DWORD pid = 0, PCWSTR prefix = nullptr, bool namedOnly = false);
 	bool EnumHandles(PCWSTR type = nullptr, DWORD pid = 0, bool namedObjectsOnly = false);
-	int EnumTypes();
+	static int EnumTypes();
 
 	const std::vector<std::shared_ptr<ObjectInfo>>& GetObjects() const;
 
@@ -108,6 +108,7 @@ public:
 	static HANDLE DupHandle(HANDLE h, DWORD pid, USHORT type, ACCESS_MASK access = GENERIC_READ, DWORD flags = 0);
 	static NTSTATUS OpenObject(PCWSTR path, PCWSTR type, HANDLE& handle, DWORD access = GENERIC_READ);
 	static bool GetStats(ObjectAndHandleStats& stats);
+	static std::pair<HANDLE, DWORD> FindFirstHandle(PCWSTR name, USHORT index, DWORD pid = 0);
 
 	int64_t GetTotalHandles();
 	int64_t GetTotalObjects();
@@ -121,30 +122,30 @@ public:
 	};
 
 	using Change = std::tuple<std::shared_ptr<ObjectTypeInfo>, ChangeType, int32_t>;
-	const std::vector<Change>& GetChanges() const;
+	static const std::vector<Change>& GetChanges();
 
 	bool GetObjectInfo(ObjectInfo* p, HANDLE hObject, ULONG pid, USHORT type) const;
-	CString GetObjectName(HANDLE hObject, ULONG pid, USHORT type) const;
-	CString GetObjectName(HANDLE hDup, USHORT type) const;
+	static CString GetObjectName(HANDLE hObject, ULONG pid, USHORT type);
+	static CString GetObjectName(HANDLE hDup, USHORT type);
 
-	std::shared_ptr<ObjectTypeInfo> GetType(USHORT index);
-	std::shared_ptr<ObjectTypeInfo> GetType(PCWSTR name);
-	const std::vector<ObjectTypePtr>& GetObjectTypes() const;
+	static std::shared_ptr<ObjectTypeInfo> GetType(USHORT index);
+	static std::shared_ptr<ObjectTypeInfo> GetType(PCWSTR name);
+	static const std::vector<ObjectTypePtr>& GetObjectTypes();
 	const std::vector<std::shared_ptr<HandleInfo>>& GetHandles() const;
 
 	static std::vector<ObjectNameAndType> EnumDirectoryObjects(PCWSTR path);
 	static CString GetSymbolicLinkTarget(PCWSTR path);
 
 private:
-	std::vector<ObjectTypePtr> m_types;
-	std::unordered_map<int16_t, ObjectTypePtr> m_typesMap;
-	std::unordered_map<std::wstring, ObjectTypePtr> m_typesNameMap;
+	inline static std::vector<ObjectTypePtr> s_types;
+	inline static std::unordered_map<int16_t, ObjectTypePtr> s_typesMap;
+	inline static std::unordered_map<std::wstring, ObjectTypePtr> s_typesNameMap;
+	inline static std::vector<Change> s_changes;
+	inline static int64_t s_totalHandles, s_totalObjects;
 
 	std::vector<std::shared_ptr<ObjectInfo>> m_objects;
 	std::unordered_map<PVOID, std::shared_ptr<ObjectInfo>> m_objectsByAddress;
 	std::vector<std::shared_ptr<HandleInfo>> m_handles;
-	std::vector<Change> m_changes;
-	int64_t m_totalHandles, m_totalObjects;
 	bool m_skipThisProcess = false;
 };
 

@@ -10,27 +10,27 @@ int ObjectManager::EnumTypes() {
 		return 0;
 
 	auto p = static_cast<NT::OBJECT_TYPES_INFORMATION*>(buffer.get());
-	bool empty = m_types.empty();
+	bool empty = s_types.empty();
 
 	auto count = p->NumberOfTypes;
 	if (empty) {
-		m_types.reserve(count);
-		m_typesMap.reserve(count);
-		m_changes.reserve(32);
+		s_types.reserve(count);
+		s_typesMap.reserve(count);
+		s_changes.reserve(32);
 	}
 	else {
-		m_changes.clear();
-		ATLASSERT(count == m_types.size());
+		s_changes.clear();
+		ATLASSERT(count == s_types.size());
 	}
 	auto raw = &p->TypeInformation[0];
-	m_totalHandles = m_totalObjects = 0;
+	s_totalHandles = s_totalObjects = 0;
 
 	for (ULONG i = 0; i < count; i++) {
 		if (!::IsWindows8OrGreater()) {
 			// TypeIndex is only supported since Win8. Uses the fake index for previous OS.
 			raw->TypeIndex = static_cast<decltype(raw->TypeIndex)>(i);
 		}
-		auto type = empty ? std::make_shared<ObjectTypeInfo>() : m_typesMap[raw->TypeIndex];
+		auto type = empty ? std::make_shared<ObjectTypeInfo>() : s_typesMap[raw->TypeIndex];
 		if (empty) {
 			type->GenericMapping = raw->GenericMapping;
 			type->TypeIndex = raw->TypeIndex;
@@ -45,13 +45,13 @@ int ObjectManager::EnumTypes() {
 		}
 		else {
 			if (type->TotalNumberOfHandles != raw->TotalNumberOfHandles)
-				m_changes.push_back({ type, ChangeType::TotalHandles, (int32_t)raw->TotalNumberOfHandles - (int32_t)type->TotalNumberOfHandles });
+				s_changes.push_back({ type, ChangeType::TotalHandles, (int32_t)raw->TotalNumberOfHandles - (int32_t)type->TotalNumberOfHandles });
 			if (type->TotalNumberOfObjects != raw->TotalNumberOfObjects)
-				m_changes.push_back({ type, ChangeType::TotalObjects, (int32_t)raw->TotalNumberOfObjects - (int32_t)type->TotalNumberOfObjects });
+				s_changes.push_back({ type, ChangeType::TotalObjects, (int32_t)raw->TotalNumberOfObjects - (int32_t)type->TotalNumberOfObjects });
 			if (type->HighWaterNumberOfHandles != raw->HighWaterNumberOfHandles)
-				m_changes.push_back({ type, ChangeType::PeakHandles, (int32_t)raw->HighWaterNumberOfHandles - (int32_t)type->HighWaterNumberOfHandles });
+				s_changes.push_back({ type, ChangeType::PeakHandles, (int32_t)raw->HighWaterNumberOfHandles - (int32_t)type->HighWaterNumberOfHandles });
 			if (type->HighWaterNumberOfObjects != raw->HighWaterNumberOfObjects)
-				m_changes.push_back({ type, ChangeType::PeakObjects, (int32_t)raw->HighWaterNumberOfObjects - (int32_t)type->HighWaterNumberOfObjects });
+				s_changes.push_back({ type, ChangeType::PeakObjects, (int32_t)raw->HighWaterNumberOfObjects - (int32_t)type->HighWaterNumberOfObjects });
 		}
 
 		type->TotalNumberOfHandles = raw->TotalNumberOfHandles;
@@ -62,28 +62,35 @@ int ObjectManager::EnumTypes() {
 		type->HighWaterNumberOfHandles = raw->HighWaterNumberOfHandles;
 		type->TotalNamePoolUsage = raw->TotalNamePoolUsage;
 
-		m_totalObjects += raw->TotalNumberOfObjects;
-		m_totalHandles += raw->TotalNumberOfHandles;
+		s_totalObjects += raw->TotalNumberOfObjects;
+		s_totalHandles += raw->TotalNumberOfHandles;
 
 		if (empty) {
-			m_types.emplace_back(type);
-			m_typesMap.insert({ type->TypeIndex, type });
-			m_typesNameMap.insert({ std::wstring(type->TypeName), type });
+			s_types.emplace_back(type);
+			s_typesMap.insert({ type->TypeIndex, type });
+			s_typesNameMap.insert({ std::wstring(type->TypeName), type });
 		}
 
 		auto temp = (BYTE*)raw + sizeof(NT::OBJECT_TYPE_INFORMATION) + raw->TypeName.MaximumLength;
 		temp += sizeof(PVOID) - 1;
 		raw = reinterpret_cast<NT::OBJECT_TYPE_INFORMATION*>((ULONG_PTR)temp / sizeof(PVOID) * sizeof(PVOID));
 	}
-	return static_cast<int>(m_types.size());
+	return static_cast<int>(s_types.size());
 }
 
-const std::vector<ObjectManager::Change>& ObjectManager::GetChanges() const {
-	return m_changes;
+const std::vector<ObjectManager::Change>& ObjectManager::GetChanges() {
+	return s_changes;
 }
 
-const std::vector<std::shared_ptr<ObjectTypeInfo>>& ObjectManager::GetObjectTypes() const {
-	return m_types;
+std::shared_ptr<ObjectTypeInfo> ObjectManager::GetType(PCWSTR name) {
+	if (s_types.empty())
+		EnumTypes();
+
+	return s_typesNameMap.at(name);
+}
+
+const std::vector<std::shared_ptr<ObjectTypeInfo>>& ObjectManager::GetObjectTypes() {
+	return s_types;
 }
 
 std::vector<ObjectNameAndType> ObjectManager::EnumDirectoryObjects(PCWSTR path) {
@@ -157,6 +164,13 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 			status = hObject ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
 		}
 	}
+	else if (type == L"ALPC Port") {
+		//
+		// special case: find a handle to this named object and duplicate the handle
+		//
+		auto [handle, pid] = FindFirstHandle(path, GetType(typeName)->TypeIndex);
+		hObject = DriverHelper::DupHandle(handle, pid, GENERIC_READ, 0);
+	}
 	else if (type == L"Section")
 		status = NT::NtOpenSection(&hObject, access, &attr);
 	else if (type == L"Semaphore")
@@ -181,6 +195,39 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 	return status;
 }
 
+std::pair<HANDLE, DWORD> ObjectManager::FindFirstHandle(PCWSTR name, USHORT index, DWORD pid) {
+	ULONG len = 1 << 25;
+	wil::unique_virtualalloc_ptr<> buffer;
+	do {
+		buffer.reset(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		auto status = NT::NtQuerySystemInformation(NT::SystemExtendedHandleInformation, buffer.get(), len, &len);
+		if (status == STATUS_INFO_LENGTH_MISMATCH) {
+			len <<= 1;
+			continue;
+		}
+		if (status == 0)
+			break;
+		return {};
+	} while (true);
+
+	auto p = (NT::SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
+	auto count = p->NumberOfHandles;
+	for (decltype(count) i = 0; i < count; i++) {
+		auto& handle = p->Handles[i];
+		if (pid && handle.UniqueProcessId != pid)
+			continue;
+
+		if (index && handle.ObjectTypeIndex != index)
+			continue;
+
+		CString oname = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex);
+		if (oname == name)
+			return { (HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId };
+	}
+
+	return {};
+}
+
 bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 	EnumTypes();
 
@@ -198,7 +245,7 @@ bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 		return false;
 	} while (true);
 
-	auto filteredTypeIndex = type == nullptr || ::wcslen(type) == 0 ? -1 : m_typesNameMap.at(type)->TypeIndex;
+	auto filteredTypeIndex = type == nullptr || ::wcslen(type) == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
 
 	auto p = (NT::SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
 	auto count = p->NumberOfHandles;
@@ -235,11 +282,11 @@ bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 	return true;
 }
 
-CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type) const {
-	ATLASSERT(!m_types.empty());
-	static int processTypeIndex = m_typesNameMap.at(L"Process")->TypeIndex;
-	static int threadTypeIndex = m_typesNameMap.at(L"Thread")->TypeIndex;
-	static int fileTypeIndex = m_typesNameMap.at(L"File")->TypeIndex;
+CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type) {
+	ATLASSERT(!s_types.empty());
+	static int processTypeIndex = s_typesNameMap.at(L"Process")->TypeIndex;
+	static int threadTypeIndex = s_typesNameMap.at(L"Thread")->TypeIndex;
+	static int fileTypeIndex = s_typesNameMap.at(L"File")->TypeIndex;
 	ATLASSERT(processTypeIndex > 0 && threadTypeIndex > 0);
 
 	CString sname;
@@ -281,14 +328,16 @@ CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type) const {
 	return sname;
 }
 
-CString ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type) const {
-	wil::unique_handle hProcess(::OpenProcess(PROCESS_DUP_HANDLE, FALSE, pid));
-	if (!hProcess)
-		return L"";
+std::shared_ptr<ObjectTypeInfo> ObjectManager::GetType(USHORT index) {
+	if (s_types.empty())
+		EnumTypes();
+	return s_typesMap.at(index);
+}
 
+CString ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type) {
 	HANDLE hDup = DriverHelper::DupHandle(hObject, pid, 0);
 	CString name;
-	if (hDup || ::DuplicateHandle(hProcess.get(), hObject, ::GetCurrentProcess(), &hDup, MAXIMUM_ALLOWED, FALSE, 0)) {
+	if (hDup) {
 		name = GetObjectName(hDup, type);
 		::CloseHandle(hDup);
 	}

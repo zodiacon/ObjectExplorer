@@ -33,6 +33,7 @@ void CMainFrame::InitMenu() {
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
+		{ ID_VIEW_REFRESH, IDI_REFRESH },
 	};
 
 	for (auto& cmd : commands) {
@@ -59,6 +60,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateSimpleStatusBar();
 
 	ToolBarButtonInfo const buttons[] = {
+		{ ID_VIEW_REFRESH, IDI_REFRESH },
+		{ 0 },
 		{ ID_RUN, IDI_PLAY, BTNS_CHECK },
 		{ 0 },
 		{ ID_EDIT_COPY, IDI_COPY },
