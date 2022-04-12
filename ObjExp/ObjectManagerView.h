@@ -6,6 +6,8 @@
 #include "ViewBase.h"
 #include "ObjectManager.h"
 #include "TreeViewHelper.h"
+#include "QuickFindEdit.h"
+#include "SortedFilteredVector.h"
 
 class CObjectManagerView :
 	public CViewBase<CObjectManagerView>,
@@ -35,7 +37,9 @@ public:
 
 	BEGIN_MSG_MAP(CObjectManagerView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		COMMAND_CODE_HANDLER(EN_DELAYCHANGE, OnQuickTextChanged)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_JUMPTOTARGET, OnJumpToTarget)
+		COMMAND_ID_HANDLER(ID_VIEW_QUICKFIND, OnQuickFind)
 		//COMMAND_ID_HANDLER(ID_EDIT_SECURITY, OnEditSecurity)
 		CHAIN_MSG_MAP(CVirtualListView<CObjectManagerView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CObjectManagerView>)
@@ -45,6 +49,7 @@ public:
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_OBJECTTREE_COPYFULLDIRECTORYNAME, OnCopyDirectoryName)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_COPYFULLOBJECTPATH, OnCopyFullObjectPath)
+		COMMAND_ID_HANDLER(ID_OBJECTLIST_SHOWDIRECTORIESINLIST, OnShowDirectories)
 	END_MSG_MAP()
 
 private:
@@ -52,11 +57,13 @@ private:
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditSecurity(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnListStateChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCopyDirectoryName(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCopyFullObjectPath(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnJumpToTarget(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnQuickTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnQuickFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnShowDirectories(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void InitTree();
 	void UpdateList(bool newNode);
@@ -73,10 +80,10 @@ private:
 private:
 	CTreeViewCtrlEx m_Tree;
 	CListViewCtrl m_List;
-	CEdit m_QuickFind;
-	std::vector<ObjectData> m_Objects;
+	CQuickFindEdit m_QuickFind;
+	SortedFilteredVector<ObjectData> m_Objects;
 	CSplitterWindow m_Splitter;
-	CPaneContainer m_RightPane;
 	ObjectManager m_mgr;
+	bool m_ShowDirectories{ false };
 };
 

@@ -42,9 +42,7 @@
 #define IDI_FONT                        235
 #define IDI_USER                        236
 #define IDI_DEBUG                       237
-#define IDI_ICON1                       238
 #define IDI_PROFILE                     238
-#define IDI_ICON2                       239
 #define IDI_MESSAGE                     239
 #define IDI_CHECK                       240
 #define IDI_RADIO                       241
@@ -61,7 +59,6 @@
 #define IDI_COMPONENT                   253
 #define IDI_ETW                         254
 #define IDI_ETWREG                      255
-#define IDI_ICON3                       256
 #define IDI_PLUG                        256
 #define IDR_CONTEXT                     257
 #define IDD_OBJECTPROPS                 261
@@ -69,6 +66,7 @@
 #define IDI_SAVE                        265
 #define IDI_PROPERTIES                  266
 #define IDI_TARGET                      267
+#define IDI_SEARCH                      269
 #define IDC_TYPE                        1000
 #define IDC_NAME                        1001
 #define IDC_HANDLES                     1002
@@ -89,7 +87,6 @@
 #define IDC_VALUE2                      1018
 #define IDC_VALUE3                      1019
 #define IDC_FRAME                       1022
-#define IDC_EDIT1                       1023
 #define IDC_TEXT                        1023
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
@@ -125,13 +122,14 @@
 #define ID_TYPESLIST_ALLHANDLES         32805
 #define ID_VIEW_FIND                    32806
 #define ID_VIEW_QUICKFIND               32807
+#define ID_OBJECTLIST_SHOWDIRECTORIESINLIST 32811
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        269
-#define _APS_NEXT_COMMAND_VALUE         32808
+#define _APS_NEXT_RESOURCE_VALUE        270
+#define _APS_NEXT_COMMAND_VALUE         32812
 #define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -22,7 +22,7 @@ void CObjectManagerView::DoSort(const SortInfo* si) {
 	if (si == nullptr)
 		return;
 
-	std::sort(m_Objects.begin(), m_Objects.end(), [=](const auto& data1, const auto& data2) {
+	m_Objects.Sort(0, m_Objects.size(), [&](const auto& data1, const auto& data2) {
 		return CompareItems(data1, data2, si->SortColumn, si->SortAscending);
 		});
 }
@@ -116,16 +116,27 @@ void CObjectManagerView::OnStateChanged(HWND, int from, int to, UINT oldState, U
 
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	ToolBarButtonInfo const buttons[] = {
-		{ ID_OBJECTLIST_JUMPTOTARGET, IDI_TARGET },
+		{ ID_OBJECTLIST_JUMPTOTARGET, IDI_TARGET, BTNS_BUTTON, L"Jump to Target" },
+		{ ID_OBJECTLIST_SHOWDIRECTORIESINLIST, IDI_DIRECTORY, BTNS_CHECK, L"Show Directories" },
 	};
-	auto hToolBar = CreateAndInitToolBar(buttons, _countof(buttons));
+	CToolBarCtrl tb = CreateAndInitToolBar(buttons, _countof(buttons), 16);
 
+	CReBarCtrl rb(m_hWndToolBar);
 	CRect rc(0, 0, 120, 20);
 	m_QuickFind.Create(m_hWnd, rc, L"", WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 123);
 	m_QuickFind.SetLimitText(20);
 	m_QuickFind.SetFont((HFONT)::SendMessage(m_hWndToolBar, WM_GETFONT, 0, 0));
-	AddSimpleReBarBand(m_QuickFind, L"Quick Find:", FALSE, 140, FALSE);
-	CReBarCtrl rb(m_hWndToolBar);
+	m_QuickFind.SetWatermark(L"Type to filter");
+
+	WCHAR text[] = L"Quick Find:";
+	REBARBANDINFO info = { sizeof(info) };
+	info.hwndChild = m_QuickFind;
+	info.fMask = RBBIM_IDEALSIZE | RBBIM_STYLE | RBBIM_TEXT | RBBIM_CHILD | RBBIM_SIZE | RBBIM_CHILDSIZE;
+	info.fStyle = RBBS_CHILDEDGE;
+	info.lpText = text;
+	info.cxIdeal = info.cx = info.cxMinChild = 200;
+	rb.InsertBand(-1, &info);
+	rb.MaximizeBand(1);
 	rb.LockBands(true);
 
 	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
@@ -134,7 +145,6 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
 		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
-
 
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR | ILC_COLOR32, 2, 0);
@@ -234,7 +244,7 @@ void CObjectManagerView::UpdateList(bool newNode) {
 	m_Objects.clear();
 	m_Objects.reserve(128);
 	for (auto& item : ObjectManager::EnumDirectoryObjects(path)) {
-		if (item.TypeName != L"Directory") {
+		if (m_ShowDirectories || item.TypeName != L"Directory") {
 			ObjectData data;
 			data.Name = item.Name.c_str();
 			data.Type = item.TypeName.c_str();
@@ -349,12 +359,49 @@ LRESULT CObjectManagerView::OnJumpToTarget(WORD, WORD, HWND, BOOL&) {
 			n++;
 		}
 		if (n < m_Objects.size()) {
-			m_List.SetItemState(n, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-			m_List.EnsureVisible(n, FALSE);
+			m_List.SelectItem(n);
 			return 0;
 		}
 	}
 	AtlMessageBox(m_hWnd, L"Unable to locate symbolic link target", IDS_TITLE, MB_ICONEXCLAMATION);
+
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnQuickTextChanged(WORD, WORD, HWND, BOOL&) {
+	CString text;
+	m_QuickFind.GetWindowText(text);
+	if (text.IsEmpty())
+		m_Objects.Filter(nullptr);
+	else {
+		text.MakeLower();
+		m_Objects.Filter([&](auto& item, auto) {
+			CString search(item.Name);
+			search.MakeLower();
+			if (search.Find(text) >= 0)
+				return true;
+			search = item.Type;
+			search.MakeLower();
+			if (search.Find(text) >= 0)
+				return true;
+			search = item.SymbolicLinkTarget;
+			search.MakeLower();
+			return search.Find(text) >= 0;
+		});
+	}
+	m_List.SetItemCountEx((int)m_Objects.size(), LVSICF_NOSCROLL);
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnQuickFind(WORD, WORD, HWND, BOOL&) {
+	m_QuickFind.SetFocus();
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnShowDirectories(WORD, WORD, HWND, BOOL&) {
+	m_ShowDirectories = !m_ShowDirectories;
+	UI().UISetCheck(ID_OBJECTLIST_SHOWDIRECTORIESINLIST, m_ShowDirectories);
+	UpdateList(false);
 
 	return 0;
 }

@@ -38,6 +38,7 @@ void CMainFrame::InitMenu() {
 		{ ID_VIEW_FIND, IDI_FIND },
 		{ ID_VIEW_PROPERTIES, IDI_PROPERTIES },
 		{ ID_OBJECTLIST_JUMPTOTARGET, IDI_TARGET },
+		{ ID_VIEW_QUICKFIND, IDI_SEARCH },
 	};
 
 	for (auto& cmd : commands) {
