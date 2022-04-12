@@ -30,7 +30,7 @@ public:
 	DWORD OnSubItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
 	DWORD OnItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
 
-	void UpdateUI(CUpdateUIBase& ui);
+	void UpdateUI(bool force = false);
 	void DoTimerUpdate();
 	void OnPageActivated(bool activate);
 

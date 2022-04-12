@@ -160,7 +160,7 @@ bool CObjectTypesView::OnDoubleClickList(HWND, int row, int col, POINT const& pt
 }
 
 void CObjectTypesView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
-	UpdateUI(GetFrame()->GetUI());
+	UpdateUI();
 }
 
 DWORD CObjectTypesView::OnPrePaint(int, LPNMCUSTOMDRAW) {
@@ -194,7 +194,8 @@ DWORD CObjectTypesView::OnItemPrePaint(int, LPNMCUSTOMDRAW cd) {
 	return CDRF_NOTIFYSUBITEMDRAW;
 }
 
-void CObjectTypesView::UpdateUI(CUpdateUIBase& ui) {
+void CObjectTypesView::UpdateUI(bool force) {
+	auto& ui = UI();
 	ui.UIEnable(ID_EDIT_COPY, m_List.GetSelectedCount() > 0);
 	ui.UIEnable(ID_EDIT_PASTE, false);
 	ui.UIEnable(ID_EDIT_CUT, false);

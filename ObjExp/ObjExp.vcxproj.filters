@@ -95,9 +95,6 @@
     <ClInclude Include="NtDll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="AccessMaskDecoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -154,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="ProcessHelper.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files\Icons</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -325,6 +325,18 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\pin_green.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\save.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\find.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Properties.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\target.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

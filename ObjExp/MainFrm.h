@@ -43,6 +43,7 @@ protected:
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(COwnerDrawnMenu<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
+		REFLECT_NOTIFICATIONS_EX()
 	END_MSG_MAP()
 
 private:
@@ -50,6 +51,7 @@ private:
 	HWND GetHwnd() const override;
 	BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) override;
 	CUpdateUIBase& GetUI() override;
+	bool AddToolBar(HWND tb) override;
 
 	void InitMenu();
 

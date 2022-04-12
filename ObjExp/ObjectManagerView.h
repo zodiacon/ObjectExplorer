@@ -21,9 +21,10 @@ public:
 	int GetRowImage(HWND, int row, int col) const;
 	CString GetTitle() const override;
 	void DoFind(const CString& text, DWORD flags);
-	void UpdateUI(CUpdateUIBase& ui, bool force = false);
+	void UpdateUI(bool force = false);
 	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
+	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
 
 	//
 	// treeview overrides
@@ -34,19 +35,16 @@ public:
 
 	BEGIN_MSG_MAP(CObjectManagerView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnListStateChanged)
-		NOTIFY_CODE_HANDLER(LVN_ODSTATECHANGED, OnListStateChanged)
+		COMMAND_ID_HANDLER(ID_OBJECTLIST_JUMPTOTARGET, OnJumpToTarget)
 		//COMMAND_ID_HANDLER(ID_EDIT_SECURITY, OnEditSecurity)
 		CHAIN_MSG_MAP(CVirtualListView<CObjectManagerView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CObjectManagerView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectManagerView>)
-	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnRefresh)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_OBJECTTREE_COPYFULLDIRECTORYNAME, OnCopyDirectoryName)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_COPYFULLOBJECTPATH, OnCopyFullObjectPath)
-		COMMAND_ID_HANDLER(ID_OBJECTLIST_JUMPTOTARGET, OnJumpToTarget)
 	END_MSG_MAP()
 
 private:
@@ -75,8 +73,10 @@ private:
 private:
 	CTreeViewCtrlEx m_Tree;
 	CListViewCtrl m_List;
+	CEdit m_QuickFind;
 	std::vector<ObjectData> m_Objects;
 	CSplitterWindow m_Splitter;
+	CPaneContainer m_RightPane;
 	ObjectManager m_mgr;
 };
 

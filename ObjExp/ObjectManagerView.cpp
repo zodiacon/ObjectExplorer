@@ -78,7 +78,8 @@ void CObjectManagerView::DoFind(const CString& text, DWORD flags) {
 	m_List.SetFocus();
 }
 
-void CObjectManagerView::UpdateUI(CUpdateUIBase& ui, bool force) {
+void CObjectManagerView::UpdateUI(bool force) {
+	auto& ui = UI();
 	ui.UISetCheck(ID_RUN, false);
 	ui.UIEnable(ID_RUN, false);
 	ui.UISetCheck(ID_PAUSE, false);
@@ -89,6 +90,7 @@ void CObjectManagerView::UpdateUI(CUpdateUIBase& ui, bool force) {
 	ui.UIEnable(ID_EDIT_COPY, copy);
 	if (!copy && m_Tree.GetSelectedItem() != nullptr)
 		ui.UIEnable(ID_EDIT_COPY, true);
+	ui.UIEnable(ID_OBJECTLIST_JUMPTOTARGET, m_List.GetSelectedCount() == 1 && m_Objects[m_List.GetNextItem(-1, LVNI_SELECTED)].Type == L"SymbolicLink");
 }
 
 bool CObjectManagerView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const {
@@ -102,23 +104,38 @@ bool CObjectManagerView::OnRightClickList(HWND, int row, int col, POINT const& p
 		menu.LoadMenu(IDR_CONTEXT);
 		auto& item = m_Objects[row];
 		menu.EnableMenuItem(ID_OBJECTLIST_JUMPTOTARGET, item.SymbolicLinkTarget.IsEmpty() ? MF_DISABLED : MF_ENABLED);
-		auto cmd = GetFrame()->TrackPopupMenu(menu.GetSubMenu(2), TPM_RETURNCMD, pt.x, pt.y);
-		if (cmd) {
-			LRESULT result;
-			ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 1);
-			return true;
-		}
+		GetFrame()->TrackPopupMenu(menu.GetSubMenu(2), 0*TPM_RETURNCMD, pt.x, pt.y);
+		return true;
 	}
 	return false;
 }
 
+void CObjectManagerView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
+	UpdateUI();
+}
+
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
-	m_hWndClient = m_Splitter.Create(*this, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	ToolBarButtonInfo const buttons[] = {
+		{ ID_OBJECTLIST_JUMPTOTARGET, IDI_TARGET },
+	};
+	auto hToolBar = CreateAndInitToolBar(buttons, _countof(buttons));
+
+	CRect rc(0, 0, 120, 20);
+	m_QuickFind.Create(m_hWnd, rc, L"", WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 123);
+	m_QuickFind.SetLimitText(20);
+	m_QuickFind.SetFont((HFONT)::SendMessage(m_hWndToolBar, WM_GETFONT, 0, 0));
+	AddSimpleReBarBand(m_QuickFind, L"Quick Find:", FALSE, 140, FALSE);
+	CReBarCtrl rb(m_hWndToolBar);
+	rb.LockBands(true);
+
+	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | 
-		WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS);
+		WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
-		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS);
+		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
+
+
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR | ILC_COLOR32, 2, 0);
 	images.AddIcon(AtlLoadIconImage(IDI_DIRECTORY, 0, 16, 16));
@@ -130,7 +147,6 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_List.InsertColumn(1, L"Type", LVCFMT_LEFT, 150);
 	m_List.InsertColumn(2, L"Symbolic Link Target", LVCFMT_LEFT, 600);
 
-	m_Splitter.SetSplitterExtendedStyle(SPLIT_FLATBAR | SPLIT_PROPORTIONAL);
 	m_Splitter.SetSplitterPanes(m_Tree, m_List);
 	m_Splitter.SetSplitterPosPct(20);
 	m_Splitter.SetActivePane(0);
@@ -198,11 +214,6 @@ LRESULT CObjectManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
 	return 0;
 }
 
-LRESULT CObjectManagerView::OnListStateChanged(int, LPNMHDR, BOOL&) {
-	UpdateUI(GetFrame()->GetUI(), true);
-	return 0;
-}
-
 void CObjectManagerView::InitTree() {
 	m_Tree.SetRedraw(FALSE);
 	m_Tree.DeleteAllItems();
@@ -239,8 +250,8 @@ void CObjectManagerView::UpdateList(bool newNode) {
 		auto si = GetSortInfo(m_List);
 		DoSort(si);
 		m_List.SetItemCountEx(static_cast<int>(m_Objects.size()), LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
-		m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetCountPerPage() + m_List.GetTopIndex());
 	}
+	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetCountPerPage() + m_List.GetTopIndex());
 }
 
 bool CObjectManagerView::ShowProperties(int index) const {
@@ -321,7 +332,7 @@ LRESULT CObjectManagerView::OnCopyFullObjectPath(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CObjectManagerView::OnJumpToTarget(WORD, WORD, HWND, BOOL&) {
-	auto& item = m_Objects[m_List.GetSelectionMark()];
+	auto& item = m_Objects[m_List.GetNextItem(-1, LVNI_SELECTED)];
 	ATLASSERT(!item.SymbolicLinkTarget.IsEmpty());
 	auto dir = item.SymbolicLinkTarget.Mid(1);
 	auto name = dir.Mid(dir.ReverseFind(L'\\') + 1);
@@ -329,9 +340,15 @@ LRESULT CObjectManagerView::OnJumpToTarget(WORD, WORD, HWND, BOOL&) {
 	auto hItem = FindItem(m_Tree, m_Tree.GetRootItem(), dir);
 	if (hItem) {
 		m_Tree.SelectItem(hItem);
+		m_Tree.EnsureVisible(hItem);
 		UpdateList(true);
-		int n = m_List.FindItem(name, false);
-		if (n >= 0) {
+		int n = 0;
+		for (auto const& obj : m_Objects) {
+			if (obj.Name == name)
+				break;
+			n++;
+		}
+		if (n < m_Objects.size()) {
 			m_List.SetItemState(n, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 			m_List.EnsureVisible(n, FALSE);
 			return 0;

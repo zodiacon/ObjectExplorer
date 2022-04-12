@@ -80,6 +80,9 @@ BEGIN
             MENUITEM "10 Seconds",                  ID_UPDATEINTERVAL_10SECONDS
         END
         MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_VIEW_FIND
+        MENUITEM "&Quick Find\tCtrl+Q",         ID_VIEW_QUICKFIND
+        MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
     POPUP "&Objects"
@@ -254,19 +257,27 @@ IDI_ETWREG              ICON                    "res\\etwreg.ico"
 
 IDI_PLUG                ICON                    "res\\plug.ico"
 
+IDI_FIND                ICON                    "res\\find.ico"
+
+IDI_SAVE                ICON                    "res\\save.ico"
+
+IDI_PROPERTIES          ICON                    "res\\Properties.ico"
+
+IDI_TARGET              ICON                    "res\\target.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 187, 86
+IDD_ABOUTBOX DIALOGEX 0, 0, 187, 75
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Object Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,68,65,50,14
-    CTEXT           "Object Explorer v1.0\n\n©2022 Pavel Yosifovich",IDC_STATIC,47,17,78,32
+    DEFPUSHBUTTON   "OK",IDOK,68,54,50,14
+    CTEXT           "Object Explorer v2.0 Alpha\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,44,7,108,32
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
@@ -311,6 +322,13 @@ BEGIN
     CONTROL         "",IDC_TABS,"SysTabControl32",TCS_MULTILINE | TCS_FOCUSNEVER,7,7,339,193
 END
 
+IDD_QUICKFIND DIALOGEX 0, 0, 330, 16
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_TEXT,16,2,69,14,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -325,7 +343,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 180
         TOPMARGIN, 7
-        BOTTOMMARGIN, 79
+        BOTTOMMARGIN, 68
     END
 
     IDD_PROPERTIES, DIALOG
@@ -342,6 +360,14 @@ BEGIN
         RIGHTMARGIN, 346
         TOPMARGIN, 7
         BOTTOMMARGIN, 221
+    END
+
+    IDD_QUICKFIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 323
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 9
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -379,8 +405,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -393,15 +419,15 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "ObjExp Module"
-            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "FileDescription", "Object Explorer"
+            VALUE "FileVersion", "2.0.0.0"
             VALUE "InternalName", "ObjExp"
-            VALUE "LegalCopyright", "Copyright 2022"
+            VALUE "LegalCopyright", "©2021-2022 Pavel Yosifovich"
             VALUE "OriginalFilename", "ObjExp.exe"
-            VALUE "ProductName", "ObjExp Module"
-            VALUE "ProductVersion", "1, 0, 0, 1"
+            VALUE "ProductName", "Object Explorer"
+            VALUE "ProductVersion", "2.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -459,6 +485,11 @@ BEGIN
     0, 0, 100, 100
 END
 
+IDD_QUICKFIND AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -467,7 +498,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Object Explorer v0.1"
+    IDR_MAINFRAME           "Object Explorer v2.0 Alpha"
     IDS_TITLE               "Object Explorer"
 END
 

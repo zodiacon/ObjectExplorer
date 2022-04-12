@@ -34,6 +34,10 @@ void CMainFrame::InitMenu() {
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
+		{ ID_FILE_SAVE, IDI_SAVE },
+		{ ID_VIEW_FIND, IDI_FIND },
+		{ ID_VIEW_PROPERTIES, IDI_PROPERTIES },
+		{ ID_OBJECTLIST_JUMPTOTARGET, IDI_TARGET },
 	};
 
 	for (auto& cmd : commands) {
@@ -56,6 +60,10 @@ CUpdateUIBase& CMainFrame::GetUI() {
 	return *this;
 }
 
+bool CMainFrame::AddToolBar(HWND tb) {
+	return UIAddToolBar(tb);
+}
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CreateSimpleStatusBar();
 
@@ -65,6 +73,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_RUN, IDI_PLAY, BTNS_CHECK },
 		{ 0 },
 		{ ID_EDIT_COPY, IDI_COPY },
+		{ 0 },
+		{ ID_VIEW_FIND, IDI_FIND },
 		{ 0 },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },

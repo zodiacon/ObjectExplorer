@@ -94,6 +94,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -127,6 +128,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -159,6 +161,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -176,6 +179,9 @@
       <TypeLibraryName>$(IntDir)/ObjExp.tlb</TypeLibraryName>
       <DllDataFileName />
     </Midl>
+    <PostBuildEvent>
+      <Command>signtool sign /i DigiCert /fd sha256 $(TargetPath)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -191,6 +197,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -207,6 +214,9 @@
       <TypeLibraryName>$(IntDir)/ObjExp.tlb</TypeLibraryName>
       <DllDataFileName />
     </Midl>
+    <PostBuildEvent>
+      <Command>signtool sign /i DigiCert /fd sha256 $(TargetPath)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
@@ -288,6 +298,7 @@
     <Image Include="res\event.ico" />
     <Image Include="res\eventpair.ico" />
     <Image Include="res\file.ico" />
+    <Image Include="res\find.ico" />
     <Image Include="res\folder.ico" />
     <Image Include="res\folder_closed.ico" />
     <Image Include="res\font.ico" />
@@ -306,11 +317,14 @@
     <Image Include="res\plug.ico" />
     <Image Include="res\process.ico" />
     <Image Include="res\profile.ico" />
+    <Image Include="res\Properties.ico" />
     <Image Include="res\refresh.ico" />
     <Image Include="res\registry_editor.ico" />
+    <Image Include="res\save.ico" />
     <Image Include="res\section.ico" />
     <Image Include="res\semaphore.ico" />
     <Image Include="res\silo.ico" />
+    <Image Include="res\target.ico" />
     <Image Include="res\thread.ico" />
     <Image Include="res\timer.ico" />
     <Image Include="res\token.ico" />
