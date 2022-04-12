@@ -50,6 +50,7 @@ public:
 		COMMAND_ID_HANDLER(ID_OBJECTTREE_COPYFULLDIRECTORYNAME, OnCopyDirectoryName)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_COPYFULLOBJECTPATH, OnCopyFullObjectPath)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_SHOWDIRECTORIESINLIST, OnShowDirectories)
+		COMMAND_ID_HANDLER(ID_OBJECTLIST_LISTMODE, OnSwitchToListMode)
 	END_MSG_MAP()
 
 private:
@@ -64,6 +65,11 @@ private:
 	LRESULT OnQuickTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnQuickFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowDirectories(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnSwitchToListMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	struct ObjectData {
+		CString Name, FullName, Type, SymbolicLinkTarget;
+	};
 
 	void InitTree();
 	void UpdateList(bool newNode);
@@ -71,10 +77,10 @@ private:
 	bool ShowProperties(HTREEITEM hItem) const;
 	bool ShowProperties(PCWSTR fullName, PCWSTR type, PCWSTR target = nullptr) const;
 	void EnumDirectory(CTreeItem root, const CString& path);
+	void EnumAllObjects();
+	void EnumObjectsInDirectory(CString const path, SortedFilteredVector<ObjectData>& objects);
+	void ApplyFilter();
 
-	struct ObjectData {
-		CString Name, FullName, Type, SymbolicLinkTarget;
-	};
 	static bool CompareItems(const ObjectData& data1, const ObjectData& data2, int col, bool asc);
 
 private:
@@ -84,6 +90,8 @@ private:
 	SortedFilteredVector<ObjectData> m_Objects;
 	CSplitterWindow m_Splitter;
 	ObjectManager m_mgr;
+	CString m_FilterText;
 	bool m_ShowDirectories{ false };
+	bool m_ListMode{ false };
 };
 

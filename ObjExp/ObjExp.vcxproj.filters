@@ -342,6 +342,9 @@
     <Image Include="res\view.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\list.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -32,10 +32,11 @@ CString CObjectManagerView::GetColumnText(HWND, int row, int col) {
 	switch (col) {
 		case 0:	return data.Name;
 		case 1:	return data.Type;
-		case 2: 
-			if(data.Type == L"SymbolicLink" && data.SymbolicLinkTarget.IsEmpty())
+		case 2:
+			if (data.Type == L"SymbolicLink" && data.SymbolicLinkTarget.IsEmpty())
 				data.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(data.FullName);
 			return data.SymbolicLinkTarget;
+		case 3:	return data.FullName;
 	}
 	return L"";
 }
@@ -99,15 +100,15 @@ bool CObjectManagerView::OnDoubleClickList(HWND, int row, int col, POINT const& 
 }
 
 bool CObjectManagerView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	int index = row < 0 ? 3 : 2;
 	if (row >= 0) {
-		CMenu menu;
-		menu.LoadMenu(IDR_CONTEXT);
 		auto& item = m_Objects[row];
 		menu.EnableMenuItem(ID_OBJECTLIST_JUMPTOTARGET, item.SymbolicLinkTarget.IsEmpty() ? MF_DISABLED : MF_ENABLED);
-		GetFrame()->TrackPopupMenu(menu.GetSubMenu(2), 0*TPM_RETURNCMD, pt.x, pt.y);
-		return true;
 	}
-	return false;
+	GetFrame()->TrackPopupMenu(menu.GetSubMenu(index), 0, pt.x, pt.y);
+	return true;
 }
 
 void CObjectManagerView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
@@ -116,6 +117,7 @@ void CObjectManagerView::OnStateChanged(HWND, int from, int to, UINT oldState, U
 
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	ToolBarButtonInfo const buttons[] = {
+		{ ID_OBJECTLIST_LISTMODE, IDI_LIST, BTNS_CHECK, L"List Mode" },
 		{ ID_OBJECTLIST_JUMPTOTARGET, IDI_TARGET, BTNS_BUTTON, L"Jump to Target" },
 		{ ID_OBJECTLIST_SHOWDIRECTORIESINLIST, IDI_DIRECTORY, BTNS_CHECK, L"Show Directories" },
 	};
@@ -140,7 +142,7 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	rb.LockBands(true);
 
 	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | 
+	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
 		WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
 		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
@@ -156,6 +158,7 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_List.InsertColumn(0, L"Name", LVCFMT_LEFT, 400);
 	m_List.InsertColumn(1, L"Type", LVCFMT_LEFT, 150);
 	m_List.InsertColumn(2, L"Symbolic Link Target", LVCFMT_LEFT, 600);
+	m_List.InsertColumn(3, L"Full Name", LVCFMT_LEFT, 600);
 
 	m_Splitter.SetSplitterPanes(m_Tree, m_List);
 	m_Splitter.SetSplitterPosPct(20);
@@ -187,7 +190,7 @@ bool CObjectManagerView::OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT cons
 	return false;
 }
 
-bool CObjectManagerView::OnTreeDoubleClick([[maybe_unused]]HWND tree, HTREEITEM hItem) {
+bool CObjectManagerView::OnTreeDoubleClick([[maybe_unused]] HWND tree, HTREEITEM hItem) {
 	return ShowProperties(hItem);
 }
 
@@ -209,7 +212,7 @@ LRESULT CObjectManagerView::OnEditSecurity(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CObjectManagerView::OnEditCopy(WORD, WORD, HWND, BOOL&) {
-	if(m_Splitter.GetActivePane() == 1) {
+	if (m_Splitter.GetActivePane() == 1) {
 		auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
 		ClipboardHelper::CopyText(m_hWnd, text);
 	}
@@ -238,20 +241,28 @@ void CObjectManagerView::InitTree() {
 }
 
 void CObjectManagerView::UpdateList(bool newNode) {
-	auto path = GetDirectoryPath();
-	if (path.IsEmpty())
-		path = L"\\";
-	m_Objects.clear();
-	m_Objects.reserve(128);
-	for (auto& item : ObjectManager::EnumDirectoryObjects(path)) {
-		if (m_ShowDirectories || item.TypeName != L"Directory") {
-			ObjectData data;
-			data.Name = item.Name.c_str();
-			data.Type = item.TypeName.c_str();
-			data.FullName = path.Right(1) == L"\\" ? path + data.Name : path + L"\\" + data.Name;
-			m_Objects.push_back(std::move(data));
+	if (m_ListMode) {
+		EnumAllObjects();
+	}
+	else {
+		auto path = GetDirectoryPath();
+		if (path.IsEmpty())
+			path = L"\\";
+		m_Objects.clear();
+		m_Objects.reserve(128);
+		for (auto& item : ObjectManager::EnumDirectoryObjects(path)) {
+			if (m_ShowDirectories || item.TypeName != L"Directory") {
+				ObjectData data;
+				data.Name = item.Name.c_str();
+				data.Type = item.TypeName.c_str();
+				data.FullName = path.Right(1) == L"\\" ? path + data.Name : path + L"\\" + data.Name;
+				if (data.FullName.Left(2) == L"\\\\")
+					data.FullName.Delete(0);
+				m_Objects.push_back(std::move(data));
+			}
 		}
 	}
+	ApplyFilter();
 	if (newNode) {
 		m_List.SetItemCount(static_cast<int>(m_Objects.size()));
 		ClearSort();
@@ -305,11 +316,35 @@ void CObjectManagerView::EnumDirectory(CTreeItem root, const CString& path) {
 	}
 }
 
+void CObjectManagerView::EnumAllObjects() {
+	m_Objects.clear();
+	m_Objects.reserve(512);
+
+	CString path = L"\\";
+	EnumObjectsInDirectory(path, m_Objects);
+}
+
+void CObjectManagerView::EnumObjectsInDirectory(CString const path, SortedFilteredVector<ObjectData>& objects) {
+	for (auto const& dir : ObjectManager::EnumDirectoryObjects(path)) {
+		ObjectData data;
+		data.FullName = path + L"\\" + dir.Name.c_str();
+		if (data.FullName.Left(2) == L"\\\\")
+			data.FullName.Delete(0);
+		data.Name = dir.Name.c_str();
+		data.Type = dir.TypeName.c_str();
+		objects.push_back(std::move(data));
+		if (dir.TypeName == L"Directory") {
+			EnumObjectsInDirectory(path + (path == L"\\" ? L"" : L"\\") + dir.Name.c_str(), objects);
+		}
+	}
+}
+
 bool CObjectManagerView::CompareItems(const ObjectData& data1, const ObjectData& data2, int col, bool asc) {
 	switch (col) {
 		case 0: return SortHelper::Sort(data1.Name, data2.Name, asc);
 		case 1: return SortHelper::Sort(data1.Type, data2.Type, asc);
 		case 2: return SortHelper::Sort(data1.SymbolicLinkTarget, data2.SymbolicLinkTarget, asc);
+		case 3: return SortHelper::Sort(data1.FullName, data2.FullName, asc);
 	}
 	return false;
 }
@@ -369,11 +404,17 @@ LRESULT CObjectManagerView::OnJumpToTarget(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CObjectManagerView::OnQuickTextChanged(WORD, WORD, HWND, BOOL&) {
-	CString text;
-	m_QuickFind.GetWindowText(text);
-	if (text.IsEmpty())
+	m_QuickFind.GetWindowText(m_FilterText);
+	ApplyFilter();
+	m_List.SetItemCountEx((int)m_Objects.size(), LVSICF_NOSCROLL);
+	return 0;
+}
+
+void CObjectManagerView::ApplyFilter() {
+	if (m_FilterText.IsEmpty())
 		m_Objects.Filter(nullptr);
 	else {
+		CString text(m_FilterText);
 		text.MakeLower();
 		m_Objects.Filter([&](auto& item, auto) {
 			CString search(item.Name);
@@ -387,12 +428,9 @@ LRESULT CObjectManagerView::OnQuickTextChanged(WORD, WORD, HWND, BOOL&) {
 			search = item.SymbolicLinkTarget;
 			search.MakeLower();
 			return search.Find(text) >= 0;
-		});
+			});
 	}
-	m_List.SetItemCountEx((int)m_Objects.size(), LVSICF_NOSCROLL);
-	return 0;
 }
-
 LRESULT CObjectManagerView::OnQuickFind(WORD, WORD, HWND, BOOL&) {
 	m_QuickFind.SetFocus();
 	return 0;
@@ -403,5 +441,13 @@ LRESULT CObjectManagerView::OnShowDirectories(WORD, WORD, HWND, BOOL&) {
 	UI().UISetCheck(ID_OBJECTLIST_SHOWDIRECTORIESINLIST, m_ShowDirectories);
 	UpdateList(false);
 
+	return 0;
+}
+
+LRESULT CObjectManagerView::OnSwitchToListMode(WORD, WORD, HWND, BOOL&) {
+	m_ListMode = !m_ListMode;
+	UI().UISetCheck(ID_OBJECTLIST_LISTMODE, m_ListMode);
+	m_Splitter.SetSinglePaneMode(m_ListMode ? 1 : SPLIT_PANE_NONE);
+	UpdateList(true);
 	return 0;
 }

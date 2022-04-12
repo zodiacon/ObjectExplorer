@@ -305,6 +305,7 @@
     <Image Include="res\generic.ico" />
     <Image Include="res\key.ico" />
     <Image Include="res\link.ico" />
+    <Image Include="res\list.ico" />
     <Image Include="res\memory.ico" />
     <Image Include="res\message.ico" />
     <Image Include="res\mutex.ico" />

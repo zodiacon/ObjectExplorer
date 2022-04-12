@@ -137,8 +137,14 @@ BEGIN
         MENUITEM "Copy Full Object Path",       ID_OBJECTLIST_COPYFULLOBJECTPATH
         MENUITEM "&Jump to Target",             ID_OBJECTLIST_JUMPTOTARGET
         MENUITEM "&Show Directories in List",   ID_OBJECTLIST_SHOWDIRECTORIESINLIST
+        MENUITEM "&List Mode",                  ID_OBJECTLIST_LISTMODE
         MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
+    END
+    POPUP "objectlistnoselect"
+    BEGIN
+        MENUITEM "&Show Directories in List",   ID_OBJECTLIST_SHOWDIRECTORIESINLIST
+        MENUITEM "&List Mode",                  ID_OBJECTLIST_LISTMODE
     END
 END
 
@@ -267,6 +273,8 @@ IDI_PROPERTIES          ICON                    "res\\Properties.ico"
 IDI_TARGET              ICON                    "res\\target.ico"
 
 IDI_SEARCH              ICON                    "res\\view.ico"
+
+IDI_LIST                ICON                    "res\\list.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -595,6 +603,7 @@ BEGIN
     ID_OBJECTLIST_JUMPTOTARGET 
                             "Jump to the target of the symbolic link\nJump to Target"
     ID_TYPESLIST_ALLHANDLES "Show all handles of this object type\nAll Handles"
+    ID_OBJECTLIST_LISTMODE  "\nToggle List Mode"
 END
 
 STRINGTABLE
