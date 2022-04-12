@@ -113,6 +113,35 @@ bool CObjectManagerView::OnRightClickList(HWND, int row, int col, POINT const& p
 
 void CObjectManagerView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
 	UpdateUI();
+	if (m_List.GetSelectedCount() == 1) {
+		m_SelectedObjectFullName = m_Objects[m_List.GetNextItem(-1, LVNI_SELECTED)].FullName;
+	}
+	else {
+		m_SelectedObjectFullName.Empty();
+	}
+}
+
+bool CObjectManagerView::JumpToObject(CString const& fullName) {
+	auto dir = fullName.Mid(1);
+	auto name = dir.Mid(dir.ReverseFind(L'\\') + 1);
+	dir = dir.Left(dir.ReverseFind(L'\\'));
+	auto hItem = FindItem(m_Tree, m_Tree.GetRootItem(), dir);
+	if (hItem) {
+		m_Tree.SelectItem(hItem);
+		m_Tree.EnsureVisible(hItem);
+		UpdateList(true);
+		int n = 0;
+		for (auto const& obj : m_Objects) {
+			if (obj.Name == name)
+				break;
+			n++;
+		}
+		if (n < m_Objects.size()) {
+			m_List.SelectItem(n);
+			return true;
+		}
+	}
+	return false;
 }
 
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
@@ -129,6 +158,7 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_QuickFind.SetLimitText(20);
 	m_QuickFind.SetFont((HFONT)::SendMessage(m_hWndToolBar, WM_GETFONT, 0, 0));
 	m_QuickFind.SetWatermark(L"Type to filter");
+	m_QuickFind.SetWatermarkIcon(AtlLoadIconImage(IDI_SEARCH, 0, 16, 16));
 
 	WCHAR text[] = L"Quick Find:";
 	REBARBANDINFO info = { sizeof(info) };
@@ -379,26 +409,8 @@ LRESULT CObjectManagerView::OnCopyFullObjectPath(WORD, WORD, HWND, BOOL&) {
 LRESULT CObjectManagerView::OnJumpToTarget(WORD, WORD, HWND, BOOL&) {
 	auto& item = m_Objects[m_List.GetNextItem(-1, LVNI_SELECTED)];
 	ATLASSERT(!item.SymbolicLinkTarget.IsEmpty());
-	auto dir = item.SymbolicLinkTarget.Mid(1);
-	auto name = dir.Mid(dir.ReverseFind(L'\\') + 1);
-	dir = dir.Left(dir.ReverseFind(L'\\'));
-	auto hItem = FindItem(m_Tree, m_Tree.GetRootItem(), dir);
-	if (hItem) {
-		m_Tree.SelectItem(hItem);
-		m_Tree.EnsureVisible(hItem);
-		UpdateList(true);
-		int n = 0;
-		for (auto const& obj : m_Objects) {
-			if (obj.Name == name)
-				break;
-			n++;
-		}
-		if (n < m_Objects.size()) {
-			m_List.SelectItem(n);
-			return 0;
-		}
-	}
-	AtlMessageBox(m_hWnd, L"Unable to locate symbolic link target", IDS_TITLE, MB_ICONEXCLAMATION);
+	if(!JumpToObject(item.SymbolicLinkTarget))
+		AtlMessageBox(m_hWnd, L"Unable to locate symbolic link target", IDS_TITLE, MB_ICONEXCLAMATION);
 
 	return 0;
 }
@@ -447,7 +459,26 @@ LRESULT CObjectManagerView::OnShowDirectories(WORD, WORD, HWND, BOOL&) {
 LRESULT CObjectManagerView::OnSwitchToListMode(WORD, WORD, HWND, BOOL&) {
 	m_ListMode = !m_ListMode;
 	UI().UISetCheck(ID_OBJECTLIST_LISTMODE, m_ListMode);
+	CString selected(m_SelectedObjectFullName);
 	m_Splitter.SetSinglePaneMode(m_ListMode ? 1 : SPLIT_PANE_NONE);
 	UpdateList(true);
+	if (!selected.IsEmpty()) {
+		if (m_ListMode) {
+			//
+			// find the item in the list
+			//
+			int n = 0;
+			for (auto& item : m_Objects) {
+				if (item.FullName == selected)
+					break;
+				n++;
+			}
+			if (n < m_Objects.size())
+				m_List.SelectItem(n);
+		}
+		else {
+			JumpToObject(selected);
+		}
+	}
 	return 0;
 }

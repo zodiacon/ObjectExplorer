@@ -27,7 +27,7 @@ public:
 	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
 	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
-
+	bool JumpToObject(CString const& fullName);
 	//
 	// treeview overrides
 	//
@@ -91,6 +91,7 @@ private:
 	CSplitterWindow m_Splitter;
 	ObjectManager m_mgr;
 	CString m_FilterText;
+	CString m_SelectedObjectFullName;
 	bool m_ShowDirectories{ false };
 	bool m_ListMode{ false };
 };
