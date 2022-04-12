@@ -34,14 +34,12 @@ public:
 	void DoTimerUpdate();
 	void OnPageActivated(bool activate);
 
-protected:
 	BEGIN_MSG_MAP(CObjectTypesView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CTimerManager<CObjectTypesView>)
 		CHAIN_MSG_MAP(CCustomDraw<CObjectTypesView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectTypesView>)
 		CHAIN_MSG_MAP(CVirtualListView<CObjectTypesView>)
-	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		CHAIN_MSG_MAP_ALT(CTimerManager<CObjectTypesView>, 1)

@@ -28,6 +28,8 @@ public:
 	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
 	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
 	bool JumpToObject(CString const& fullName);
+	void OnPageActivated(bool active);
+
 	//
 	// treeview overrides
 	//
@@ -80,6 +82,7 @@ private:
 	void EnumAllObjects();
 	void EnumObjectsInDirectory(CString const path, SortedFilteredVector<ObjectData>& objects);
 	void ApplyFilter();
+	void UpdateStatusText();
 
 	static bool CompareItems(const ObjectData& data1, const ObjectData& data2, int col, bool asc);
 

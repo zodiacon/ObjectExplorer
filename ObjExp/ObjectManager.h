@@ -107,11 +107,7 @@ public:
 	static HANDLE DupHandle(ObjectInfo* pObject, ACCESS_MASK access = GENERIC_READ);
 	static HANDLE DupHandle(HANDLE h, DWORD pid, USHORT type, ACCESS_MASK access = GENERIC_READ, DWORD flags = 0);
 	static NTSTATUS OpenObject(PCWSTR path, PCWSTR type, HANDLE& handle, DWORD access = GENERIC_READ);
-	static bool GetStats(ObjectAndHandleStats& stats);
 	static std::pair<HANDLE, DWORD> FindFirstHandle(PCWSTR name, USHORT index, DWORD pid = 0);
-
-	int64_t GetTotalHandles();
-	int64_t GetTotalObjects();
 
 	enum class ChangeType {
 		NoChange,
@@ -136,12 +132,13 @@ public:
 	static std::vector<ObjectNameAndType> EnumDirectoryObjects(PCWSTR path);
 	static CString GetSymbolicLinkTarget(PCWSTR path);
 
+	inline static int64_t TotalHandles, TotalObjects, PeakHandles, PeakObjects;
+
 private:
 	inline static std::vector<ObjectTypePtr> s_types;
 	inline static std::unordered_map<int16_t, ObjectTypePtr> s_typesMap;
 	inline static std::unordered_map<std::wstring, ObjectTypePtr> s_typesNameMap;
 	inline static std::vector<Change> s_changes;
-	inline static int64_t s_totalHandles, s_totalObjects;
 
 	std::vector<std::shared_ptr<ObjectInfo>> m_objects;
 	std::unordered_map<PVOID, std::shared_ptr<ObjectInfo>> m_objectsByAddress;

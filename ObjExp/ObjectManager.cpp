@@ -23,7 +23,7 @@ int ObjectManager::EnumTypes() {
 		ATLASSERT(count == s_types.size());
 	}
 	auto raw = &p->TypeInformation[0];
-	s_totalHandles = s_totalObjects = 0;
+	TotalHandles = TotalObjects = PeakObjects = PeakHandles = 0;
 
 	for (ULONG i = 0; i < count; i++) {
 		if (!::IsWindows8OrGreater()) {
@@ -62,8 +62,10 @@ int ObjectManager::EnumTypes() {
 		type->HighWaterNumberOfHandles = raw->HighWaterNumberOfHandles;
 		type->TotalNamePoolUsage = raw->TotalNamePoolUsage;
 
-		s_totalObjects += raw->TotalNumberOfObjects;
-		s_totalHandles += raw->TotalNumberOfHandles;
+		TotalObjects += raw->TotalNumberOfObjects;
+		TotalHandles += raw->TotalNumberOfHandles;
+		PeakObjects += raw->HighWaterNumberOfObjects;
+		PeakHandles += raw->HighWaterNumberOfHandles;
 
 		if (empty) {
 			s_types.emplace_back(type);
@@ -91,6 +93,10 @@ std::shared_ptr<ObjectTypeInfo> ObjectManager::GetType(PCWSTR name) {
 
 const std::vector<std::shared_ptr<ObjectTypeInfo>>& ObjectManager::GetObjectTypes() {
 	return s_types;
+}
+
+const std::vector<std::shared_ptr<HandleInfo>>& ObjectManager::GetHandles() const {
+	return m_handles;
 }
 
 std::vector<ObjectNameAndType> ObjectManager::EnumDirectoryObjects(PCWSTR path) {

@@ -1,3 +1,6 @@
 [submodule "WTLHelper"]
 	path = WTLHelper
 	url = https://github.com/zodiacon/WTLHelper
+[submodule "WinSys"]
+	path = WinSys
+	url = https://github.com/zodiacon/WinSys

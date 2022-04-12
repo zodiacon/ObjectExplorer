@@ -32,10 +32,7 @@ CString CObjectManagerView::GetColumnText(HWND, int row, int col) {
 	switch (col) {
 		case 0:	return data.Name;
 		case 1:	return data.Type;
-		case 2:
-			if (data.Type == L"SymbolicLink" && data.SymbolicLinkTarget.IsEmpty())
-				data.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(data.FullName);
-			return data.SymbolicLinkTarget;
+		case 2:	return data.SymbolicLinkTarget;
 		case 3:	return data.FullName;
 	}
 	return L"";
@@ -144,10 +141,18 @@ bool CObjectManagerView::JumpToObject(CString const& fullName) {
 	return false;
 }
 
+void CObjectManagerView::OnPageActivated(bool active) {
+	if (active) {
+		UpdateStatusText();
+	}
+}
+
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	ToolBarButtonInfo const buttons[] = {
 		{ ID_OBJECTLIST_LISTMODE, IDI_LIST, BTNS_CHECK, L"List Mode" },
+		{ 0 },
 		{ ID_OBJECTLIST_JUMPTOTARGET, IDI_TARGET, BTNS_BUTTON, L"Jump to Target" },
+		{ 0 },
 		{ ID_OBJECTLIST_SHOWDIRECTORIESINLIST, IDI_DIRECTORY, BTNS_CHECK, L"Show Directories" },
 	};
 	CToolBarCtrl tb = CreateAndInitToolBar(buttons, _countof(buttons), 16);
@@ -288,6 +293,8 @@ void CObjectManagerView::UpdateList(bool newNode) {
 				data.FullName = path.Right(1) == L"\\" ? path + data.Name : path + L"\\" + data.Name;
 				if (data.FullName.Left(2) == L"\\\\")
 					data.FullName.Delete(0);
+				if(data.Type == L"SymbolicLink")
+					data.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(data.FullName);
 				m_Objects.push_back(std::move(data));
 			}
 		}
@@ -303,6 +310,7 @@ void CObjectManagerView::UpdateList(bool newNode) {
 		m_List.SetItemCountEx(static_cast<int>(m_Objects.size()), LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 	}
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetCountPerPage() + m_List.GetTopIndex());
+	UpdateStatusText();
 }
 
 bool CObjectManagerView::ShowProperties(int index) const {
@@ -362,6 +370,8 @@ void CObjectManagerView::EnumObjectsInDirectory(CString const path, SortedFilter
 			data.FullName.Delete(0);
 		data.Name = dir.Name.c_str();
 		data.Type = dir.TypeName.c_str();
+		if (data.Type == L"SymbolicLink")
+			data.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(data.FullName);
 		objects.push_back(std::move(data));
 		if (dir.TypeName == L"Directory") {
 			EnumObjectsInDirectory(path + (path == L"\\" ? L"" : L"\\") + dir.Name.c_str(), objects);
@@ -442,7 +452,14 @@ void CObjectManagerView::ApplyFilter() {
 			return search.Find(text) >= 0;
 			});
 	}
+	UpdateStatusText();
 }
+void CObjectManagerView::UpdateStatusText() {
+	CString text;
+	text.Format(L"Items: %u\n", (ULONG)m_Objects.size());
+	GetFrame()->SetStatusText(7, text);
+}
+
 LRESULT CObjectManagerView::OnQuickFind(WORD, WORD, HWND, BOOL&) {
 	m_QuickFind.SetFocus();
 	return 0;

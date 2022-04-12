@@ -7,6 +7,7 @@
 #include "SecurityHelper.h"
 #include "IconHelper.h"
 #include "ViewFactory.h"
+#include <Psapi.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -69,6 +70,10 @@ bool CMainFrame::AddToolBar(HWND tb) {
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CreateSimpleStatusBar();
+	m_StatusBar.SubclassWindow(m_hWndStatusBar);
+	int parts[] = { 100, 200, 300, 430, 560, 700, 830, 960, 1100 };
+	m_StatusBar.SetParts(_countof(parts), parts);
+	SetTimer(1, 2000);
 
 	ToolBarButtonInfo const buttons[] = {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
@@ -210,4 +215,32 @@ LRESULT CMainFrame::OnPageActivated(int, LPNMHDR hdr, BOOL&) {
 	m_CurrentPage = page;
 
 	return 0;
+}
+
+#define ROUND_MEM(x) ((x + (1 << 17)) >> 18)
+
+LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM id, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (id == 1) {
+		static PERFORMANCE_INFORMATION pi = { sizeof(pi) };
+		CString text;
+		if (::GetPerformanceInfo(&pi, sizeof(pi))) {
+			text.Format(L"Processes: %u", pi.ProcessCount);
+			m_StatusBar.SetText(1, text);
+			text.Format(L"Threads: %u", pi.ThreadCount);
+			m_StatusBar.SetText(2, text);
+			text.Format(L"Commit: %u / %u GB", ROUND_MEM(pi.CommitTotal), ROUND_MEM(pi.CommitLimit));
+			m_StatusBar.SetText(3, text);
+			text.Format(L"RAM Avail: %u / %u GB", ROUND_MEM(pi.PhysicalAvailable), ROUND_MEM(pi.PhysicalTotal));
+			m_StatusBar.SetText(4, text);
+		}
+		text.Format(L"Handles: %lld", ObjectManager::TotalHandles);
+		m_StatusBar.SetText(5, text);
+		text.Format(L"Objects: %lld", ObjectManager::TotalObjects);
+		m_StatusBar.SetText(6, text);
+	}
+	return 0;
+}
+
+void CMainFrame::SetStatusText(int index, PCWSTR text) {
+	m_StatusBar.SetText(index, text);
 }

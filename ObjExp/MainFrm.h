@@ -22,6 +22,7 @@ public:
 
 protected:
 	BEGIN_MSG_MAP(CMainFrame)
+		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		NOTIFY_CODE_HANDLER(TBVN_PAGEACTIVATED, OnPageActivated)
 		if (uMsg == WM_COMMAND && m_view.GetPageCount() > 0) {
 			auto view = (IView*)m_view.GetPageData(m_view.GetActivePage());
@@ -52,6 +53,7 @@ private:
 	BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y) override;
 	CUpdateUIBase& GetUI() override;
 	bool AddToolBar(HWND tb) override;
+	void SetStatusText(int index, PCWSTR text) override;
 
 	void InitMenu();
 
@@ -61,6 +63,7 @@ private:
 	//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnObjectTypes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -74,6 +77,6 @@ private:
 	LRESULT OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 	CTabView m_view;
-
+	CMultiPaneStatusBarCtrl m_StatusBar;
 	int m_CurrentPage{ -1 };
 };

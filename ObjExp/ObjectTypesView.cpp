@@ -104,6 +104,11 @@ void CObjectTypesView::DoTimerUpdate() {
 void CObjectTypesView::OnPageActivated(bool activate) {
 	UI().UIEnable(ID_RUN, true);
 	ActivateTimer(activate);
+	if (activate) {
+		CString text;
+		text.Format(L"Object Types: %d\n", (int)m_Items.size());
+		GetFrame()->SetStatusText(7, text);
+	}
 }
 
 
