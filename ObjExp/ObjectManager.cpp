@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "ObjectManager.h"
-#include "NtDll.h"
 #include "DriverHelper.h"
 
 int ObjectManager::EnumTypes() {
@@ -150,6 +149,17 @@ CString ObjectManager::GetSymbolicLinkTarget(PCWSTR path) {
 	return target;
 }
 
+HANDLE ObjectManager::DupHandle(HANDLE h, DWORD pid, ACCESS_MASK access, DWORD flags) {
+	HANDLE hDup{ nullptr };
+	wil::unique_handle hProcess(::OpenProcess(PROCESS_DUP_HANDLE, FALSE, pid));
+	if (hProcess)
+		::DuplicateHandle(hProcess.get(), h, ::GetCurrentProcess(), &hDup, access, FALSE, flags);
+	if (hDup)
+		return hDup;
+
+	return DriverHelper::DupHandle(h, pid, access, flags);
+}
+
 NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject, DWORD access) {
 	hObject = nullptr;
 	CString type(typeName);
@@ -282,7 +292,7 @@ bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 		hi->ObjectTypeIndex = handle.ObjectTypeIndex;
 		hi->Name = name;
 
-		m_handles.emplace_back(hi);
+		m_handles.emplace_back(std::move(hi));
 	}
 
 	return true;

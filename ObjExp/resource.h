@@ -67,8 +67,11 @@
 #define IDI_PROPERTIES                  266
 #define IDI_TARGET                      267
 #define IDI_SEARCH                      269
-#define IDI_ICON1                       271
 #define IDI_LIST                        271
+#define IDI_MAGNET                      272
+#define IDI_PROCESS_KILL                273
+#define IDI_ICON2                       274
+#define IDI_PROCESS_ZOMBIE              274
 #define IDC_TYPE                        1000
 #define IDC_NAME                        1001
 #define IDC_HANDLES                     1002
@@ -126,13 +129,17 @@
 #define ID_VIEW_QUICKFIND               32807
 #define ID_OBJECTLIST_SHOWDIRECTORIESINLIST 32811
 #define ID_OBJECTLIST_LISTMODE          32812
+#define ID_SYSTEM_ZOMBIEPROCESSES       32813
+#define ID_SYSTEM_PROCESSES             32814
+#define ID_SYSTEM_THREADS               32815
+#define ID_SYSTEM_SYSTEMINFORMATION     32816
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        272
-#define _APS_NEXT_COMMAND_VALUE         32813
+#define _APS_NEXT_RESOURCE_VALUE        275
+#define _APS_NEXT_COMMAND_VALUE         32817
 #define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

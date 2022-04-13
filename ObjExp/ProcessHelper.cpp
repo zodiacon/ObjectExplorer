@@ -21,7 +21,7 @@ void ProcessHelper::EnumProcesses(bool force) {
     if (!force && !s_names.empty())
         return;
 
-    wil::unique_handle hSnaphost(::CreateToolhelp32Snapshot(0, TH32CS_SNAPPROCESS));
+    wil::unique_handle hSnaphost(::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
     if (!hSnaphost)
         return;
 
@@ -31,7 +31,7 @@ void ProcessHelper::EnumProcesses(bool force) {
 
     while (::Process32Next(hSnaphost.get(), &pe)) {
         wil::unique_handle hProcess(::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pe.th32ProcessID));
-        if (hProcess)
+        if (hProcess && wcsrchr(pe.szExeFile, L'.'))
             continue;
 
         s_names.insert({ pe.th32ProcessID, pe.szExeFile });

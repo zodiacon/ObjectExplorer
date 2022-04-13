@@ -71,7 +71,7 @@ bool CMainFrame::AddToolBar(HWND tb) {
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CreateSimpleStatusBar();
 	m_StatusBar.SubclassWindow(m_hWndStatusBar);
-	int parts[] = { 100, 200, 300, 430, 560, 700, 830, 960, 1100 };
+	int parts[] = { 100, 200, 300, 430, 560, 750, 990, 1100, 1200 };
 	m_StatusBar.SetParts(_countof(parts), parts);
 	SetTimer(1, 2000);
 
@@ -233,9 +233,9 @@ LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM id, LPARAM /*lParam*/, BOOL& /
 			text.Format(L"RAM Avail: %u / %u GB", ROUND_MEM(pi.PhysicalAvailable), ROUND_MEM(pi.PhysicalTotal));
 			m_StatusBar.SetText(4, text);
 		}
-		text.Format(L"Handles: %lld", ObjectManager::TotalHandles);
+		text.Format(L"Handles: %lld / %lld", ObjectManager::TotalHandles, ObjectManager::PeakHandles);
 		m_StatusBar.SetText(5, text);
-		text.Format(L"Objects: %lld", ObjectManager::TotalObjects);
+		text.Format(L"Objects: %lld / %lld", ObjectManager::TotalObjects, ObjectManager::PeakObjects);
 		m_StatusBar.SetText(6, text);
 	}
 	return 0;
@@ -244,3 +244,9 @@ LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM id, LPARAM /*lParam*/, BOOL& /
 void CMainFrame::SetStatusText(int index, PCWSTR text) {
 	m_StatusBar.SetText(index, text);
 }
+
+LRESULT CMainFrame::OnAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ViewFactory::CreateView(this, m_view, ViewType::AllHandles);
+	return 0;
+}
+

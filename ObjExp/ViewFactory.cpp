@@ -1,12 +1,13 @@
 #include "pch.h"
+#include "resource.h"
 #include "ViewFactory.h"
 #include "ObjectTypesView.h"
 #include "ObjectManagerView.h"
-#include "resource.h"
+#include "HandlesView.h"
 
 void ViewFactory::InitIcons(CTabView& tabs) {
     UINT icons[] = {
-        IDI_TYPES, IDI_PACKAGE,
+        IDI_TYPES, IDI_PACKAGE, IDI_MAGNET,
     };
     CImageList images;
     images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
@@ -33,6 +34,15 @@ IView* ViewFactory::CreateView(IMainFrame* frame, CTabView& tabs, ViewType type,
             auto p = new CObjectManagerView(frame);
             p->Create(tabs, CWindow::rcDefault, nullptr, style, 0);
             image = 1;
+            view = p;
+            break;
+        }
+
+        case ViewType::AllHandles:
+        {
+            auto p = new CHandlesView(frame);
+            p->Create(tabs, CWindow::rcDefault, nullptr, style, 0);
+            image = 2;
             view = p;
             break;
         }

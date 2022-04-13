@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ObjectManager.h"
+#include "NtDll.h"
+#include <unordered_set>
+#include <assert.h>
 
 struct HandleKey {
 	ULONG HandleValue;
@@ -19,24 +22,66 @@ struct std::hash<HandleKey> {
 	}
 };
 
+template<typename TInfo = HandleInfo>
+	requires std::is_base_of_v<HandleInfo, TInfo>
 class ProcessHandlesTracker {
 public:
-	ProcessHandlesTracker(DWORD pid);
+	ProcessHandlesTracker(DWORD pid) : m_pid(pid) {}
 
-	bool IsValid() const;
-	operator bool() const {
-		return IsValid();
+	ULONG EnumHandles(bool clearHistory = false) {
+		if (clearHistory)
+			m_handles.clear();
+
+		m_newHandles.clear();
+		m_closedHandles.clear();
+		if (m_handles.empty()) {
+			m_newHandles.reserve(512);
+			m_closedHandles.reserve(32);
+		}
+
+		auto handles = ObjectManager::EnumHandles2<TInfo>(nullptr, m_pid, false, true);
+		if (m_handles.empty()) {
+			m_handles.reserve(handles.size());
+			m_newHandles = std::move(handles);
+			for (auto& entry : m_newHandles) {
+				HandleKey key = { entry->HandleValue, entry->ProcessId, (uint16_t)entry->ObjectTypeIndex };
+				m_handles.insert({ key, entry });
+			}
+		}
+		else {
+			auto oldHandles = m_handles;
+			for (auto& entry : handles) {
+				HandleKey key = { entry->HandleValue, entry->ProcessId, (uint16_t)entry->ObjectTypeIndex };
+				if (m_handles.find(key) == m_handles.end()) {
+					// new handle
+					m_newHandles.push_back(entry);
+					m_handles.insert({ key, entry });
+				}
+				else {
+					// existing handle
+					oldHandles.erase(key);
+				}
+			}
+			for (auto const& [key, entry] : oldHandles) {
+				m_closedHandles.push_back(entry);
+				m_handles.erase(key);
+			}
+		}
+
+		return static_cast<uint32_t>(m_handles.size());
 	}
-
-	ULONG EnumHandles(bool clearHistory = false);
-	const std::vector<std::shared_ptr<HandleInfo>>& GetNewHandles() const;
-	const std::vector<std::shared_ptr<HandleInfo>>& GetClosedHandles() const;
+	const std::vector<std::shared_ptr<TInfo>>& GetNewHandles() const {
+		return m_newHandles;
+	}
+	const std::vector<std::shared_ptr<TInfo>>& GetClosedHandles() const {
+		return m_closedHandles;
+	}
 
 private:
 	ObjectManager m_mgr;
 	DWORD m_pid;
 	wil::unique_handle m_hProcess;
-	std::vector<std::shared_ptr<HandleInfo>> m_closedHandles, m_newHandles;
-	std::unordered_map<HandleKey, std::shared_ptr<HandleInfo>> m_handles;
+	std::vector<std::shared_ptr<TInfo>> m_closedHandles, m_newHandles;
+	std::unordered_map<HandleKey, std::shared_ptr<TInfo>> m_handles;
 };
 

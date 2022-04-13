@@ -267,13 +267,13 @@ typedef struct _TEB {
 } TEB, * PTEB;
 
 typedef struct _PROCESS_BASIC_INFORMATION {
-	PVOID Reserved1;
+	NTSTATUS ExitStatus;
 	PPEB PebBaseAddress;
-	PVOID Reserved2[2];
-	ULONG_PTR UniqueProcessId;
-	PVOID Reserved3;
-} PROCESS_BASIC_INFORMATION;
-typedef PROCESS_BASIC_INFORMATION* PPROCESS_BASIC_INFORMATION;
+	ULONG_PTR AffinityMask;
+	KPRIORITY BasePriority;
+	HANDLE UniqueProcessId;
+	HANDLE InheritedFromUniqueProcessId;
+} PROCESS_BASIC_INFORMATION, * PPROCESS_BASIC_INFORMATION;
 
 #define OBJ_INHERIT                         0x00000002L
 #define OBJ_PERMANENT                       0x00000010L

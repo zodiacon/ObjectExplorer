@@ -2,6 +2,7 @@
 
 #include "ObjectTypesView.h"
 #include "Interfaces.h"
+#include <type_traits>
 
 enum class ViewType {
 	ObjectTypes,
@@ -14,7 +15,7 @@ enum class ViewType {
 
 struct ViewFactory abstract final {
 	static void InitIcons(CTabView& tabs);
-	static IView* CreateView(IMainFrame* frame, CTabView& tabs, ViewType type, 
+	static IView* CreateView(IMainFrame* frame, CTabView& tabs, ViewType type,
 		DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 };
 

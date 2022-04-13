@@ -1,5 +1,7 @@
 #pragma once
 
+#include "NtDll.h"
+
 struct ObjectTypeInfo;
 
 enum class PoolType {
@@ -19,7 +21,7 @@ struct HandleInfo {
 	ULONG GrantedAccess;
 	ULONG HandleAttributes;
 	USHORT ObjectTypeIndex;
-	CString Name;
+	std::wstring Name;
 	ObjectInfo* ObjectInfo;
 };
 
@@ -87,13 +89,6 @@ struct GdiObject {
 	USHORT Index;
 };
 
-struct ObjectAndHandleStats {
-	int64_t TotalHandles;
-	int64_t TotalObjects;
-	int64_t PeakHandles;
-	int64_t PeakObjects;
-};
-
 class ObjectManager {
 public:
 	using ObjectTypePtr = std::shared_ptr<ObjectTypeInfo>;
@@ -102,10 +97,62 @@ public:
 	bool EnumHandles(PCWSTR type = nullptr, DWORD pid = 0, bool namedObjectsOnly = false);
 	static int EnumTypes();
 
+	template<typename T = HandleInfo> requires std::is_base_of_v<HandleInfo, T>
+	static std::vector<std::shared_ptr<T>> EnumHandles2(PCWSTR type = nullptr, DWORD pid = 0, bool namedObjectsOnly = false, bool skipNames = false) {
+		EnumTypes();
+
+		ULONG len = 1 << 25;
+		wil::unique_virtualalloc_ptr<> buffer;
+		do {
+			buffer.reset(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+			auto status = NT::NtQuerySystemInformation(NT::SystemExtendedHandleInformation, buffer.get(), len, &len);
+			if (status == STATUS_INFO_LENGTH_MISMATCH) {
+				len <<= 1;
+				continue;
+			}
+			if (status == 0)
+				break;
+			return {};
+		} while (true);
+
+		auto filteredTypeIndex = type == nullptr || ::wcslen(type) == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
+
+		auto p = (NT::SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
+		auto count = p->NumberOfHandles;
+		std::vector<std::shared_ptr<T>> handles;
+		handles.reserve(pid == 0 ? count : count / 16);
+		for (decltype(count) i = 0; i < count; i++) {
+			auto& handle = p->Handles[i];
+			if (pid && handle.UniqueProcessId != pid)
+				continue;
+
+			if (filteredTypeIndex >= 0 && handle.ObjectTypeIndex != filteredTypeIndex)
+				continue;
+
+			CString name;
+			if (!skipNames) {
+				name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex);
+				if (namedObjectsOnly && name.IsEmpty())
+					continue;
+			}
+			auto hi = std::make_shared<T>();
+			hi->HandleValue = (ULONG)handle.HandleValue;
+			hi->GrantedAccess = handle.GrantedAccess;
+			hi->Object = handle.Object;
+			hi->HandleAttributes = handle.HandleAttributes;
+			hi->ProcessId = (ULONG)handle.UniqueProcessId;
+			hi->ObjectTypeIndex = handle.ObjectTypeIndex;
+			hi->Name = name;
+
+			handles.emplace_back(std::move(hi));
+		}
+		return handles;
+	}
+
 	const std::vector<std::shared_ptr<ObjectInfo>>& GetObjects() const;
 
 	static HANDLE DupHandle(ObjectInfo* pObject, ACCESS_MASK access = GENERIC_READ);
-	static HANDLE DupHandle(HANDLE h, DWORD pid, USHORT type, ACCESS_MASK access = GENERIC_READ, DWORD flags = 0);
+	static HANDLE DupHandle(HANDLE h, DWORD pid, ACCESS_MASK access = GENERIC_READ, DWORD flags = 0);
 	static NTSTATUS OpenObject(PCWSTR path, PCWSTR type, HANDLE& handle, DWORD access = GENERIC_READ);
 	static std::pair<HANDLE, DWORD> FindFirstHandle(PCWSTR name, USHORT index, DWORD pid = 0);
 

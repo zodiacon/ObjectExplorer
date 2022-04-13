@@ -308,6 +308,7 @@
     <Image Include="res\key.ico" />
     <Image Include="res\link.ico" />
     <Image Include="res\list.ico" />
+    <Image Include="res\magnet.ico" />
     <Image Include="res\memory.ico" />
     <Image Include="res\message.ico" />
     <Image Include="res\mutex.ico" />
@@ -319,6 +320,8 @@
     <Image Include="res\play.ico" />
     <Image Include="res\plug.ico" />
     <Image Include="res\process.ico" />
+    <Image Include="res\process_kill.ico" />
+    <Image Include="res\process_zombie.ico" />
     <Image Include="res\profile.ico" />
     <Image Include="res\Properties.ico" />
     <Image Include="res\refresh.ico" />

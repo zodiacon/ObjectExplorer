@@ -5,6 +5,7 @@
 #include "VirtualListView.h"
 #include "TimerManager.h"
 #include "ProcessHandleTracker.h"
+#include "SortedFilteredVector.h"
 
 class CHandlesView :
 	public CViewBase<CHandlesView>,
@@ -18,15 +19,19 @@ public:
 
 	void OnFinalMessage(HWND /*hWnd*/) override;
 	CString GetTitle() const override;
+	void Refresh();
+	void DoSort(SortInfo const* si);
+	CString GetColumnText(HWND, int row, int col) const;
+	int GetRowImage(HWND, int row, int col) const;
 
 	BEGIN_MSG_MAP(CHandlesView)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
+		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CTimerManager<CHandlesView>)
 		CHAIN_MSG_MAP(CCustomDraw<CHandlesView>)
 		CHAIN_MSG_MAP(CViewBase<CHandlesView>)
 		CHAIN_MSG_MAP(CVirtualListView<CHandlesView>)
-		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
-		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		CHAIN_MSG_MAP_ALT(CTimerManager<CHandlesView>, 1)
 	END_MSG_MAP()
 
@@ -41,14 +46,21 @@ private:
 	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;
 	LRESULT OnPauseResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	struct HandleInfoEx : HandleInfo {
+		CString ProcessName;
+		CString Type;
+		bool NameChecked{ false };
+	};
+
 	enum class ColumnType {
 		None,
-		Type, Handle, Address, Attributes, Access, DecodedAccess, ProcessName, PID,
+		Type, Handle, Name, Address, Attributes, Access, DecodedAccess, ProcessName, PID,
 	};
 
 	CListViewCtrl m_List;
-	ProcessHandlesTracker m_Tracker;
-	std::vector<std::shared_ptr<ObjectTypeInfo>> m_Items;
+	ProcessHandlesTracker<HandleInfoEx> m_Tracker;
+	SortedFilteredVector<std::shared_ptr<HandleInfoEx>> m_Handles;
 	DWORD m_Pid;
 	CString m_ProcessName;
+	bool m_UpdateProcNames{ false }, m_UpdateObjectNames{ false };
 };

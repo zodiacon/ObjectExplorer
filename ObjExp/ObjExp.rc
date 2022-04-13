@@ -96,6 +96,13 @@ BEGIN
         MENUITEM "&Pipes",                      ID_OBJECTS_PIPES
         MENUITEM "&Mailslots",                  ID_OBJECTS_MAILSLOTS
     END
+    POPUP "&System"
+    BEGIN
+        MENUITEM "&Zombie Processes...",        ID_SYSTEM_ZOMBIEPROCESSES
+        MENUITEM "&Processes",                  ID_SYSTEM_PROCESSES
+        MENUITEM "&Threads",                    ID_SYSTEM_THREADS
+        MENUITEM "&System Information",         ID_SYSTEM_SYSTEMINFORMATION
+    END
     POPUP "&Options"
     BEGIN
         MENUITEM "&Maintain List of Objects Per Type", ID_OPTIONS_MAINTAINLISTOFOBJECTSPERTYPE
@@ -276,6 +283,12 @@ IDI_SEARCH              ICON                    "res\\view.ico"
 
 IDI_LIST                ICON                    "res\\list.ico"
 
+IDI_MAGNET              ICON                    "res\\magnet.ico"
+
+IDI_PROCESS_KILL        ICON                    "res\\process_kill.ico"
+
+IDI_PROCESS_ZOMBIE      ICON                    "res\\process_zombie.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -287,19 +300,19 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Object Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,68,54,50,14
-    CTEXT           "Object Explorer v2.0 Alpha\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,44,7,108,32
+    DEFPUSHBUTTON   "OK",IDOK,71,54,44,14
+    CTEXT           "Object Explorer v2.0 Alpha\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,42,9,108,32
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
-IDD_PROPERTIES DIALOGEX 0, 0, 318, 191
+IDD_PROPERTIES DIALOGEX 0, 0, 341, 191
 STYLE DS_SETFONT | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "Tahoma", 400, 0, 0x0
 BEGIN
     LTEXT           "Type:",IDC_STATIC,8,9,20,8
     EDITTEXT        IDC_TYPE,33,7,92,14,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Name:",IDC_STATIC,7,28,22,8
-    EDITTEXT        IDC_NAME,33,26,277,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_NAME,33,26,293,14,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Handles:",IDC_STATIC,7,50,27,8
     RTEXT           "Static",IDC_HANDLES,38,50,58,10,0,WS_EX_STATICEDGE
     LTEXT           "Refs:",IDC_STATIC,17,69,16,8
@@ -310,17 +323,16 @@ BEGIN
     RTEXT           "Static",IDC_NPAGED,184,68,40,11,0,WS_EX_STATICEDGE
     CONTROL         "Permament",IDC_PERMANENT,"Button",BS_3STATE,235,52,52,10
     CHECKBOX        "Exclusive",IDC_EXCLUSIVE,235,68,45,10,NOT WS_TABSTOP
-    PUSHBUTTON      "Security...",IDC_SECURITY,7,90,60,14
+    PUSHBUTTON      "Security...",IDC_SECURITY,274,7,60,14
     LTEXT           "Address:",IDC_ADDRESSLABEL,141,10,30,8
     EDITTEXT        IDC_ADDRESS,172,7,85,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "All &Handles...",IDC_ALLHANDLES,82,90,72,14
-    GROUPBOX        "Static",IDC_FRAME,7,112,297,63
-    RTEXT           "",IDC_LABEL,13,125,55,8
-    RTEXT           "",IDC_LABEL2,13,141,55,8
-    LTEXT           "",IDC_VALUE,82,124,213,11,NOT WS_GROUP
-    LTEXT           "",IDC_VALUE2,82,141,213,11,NOT WS_GROUP
-    RTEXT           "",IDC_LABEL3,13,152,55,8
-    LTEXT           "",IDC_VALUE3,82,152,214,11,NOT WS_GROUP
+    GROUPBOX        "Static",IDC_FRAME,7,97,312,78
+    RTEXT           "",IDC_LABEL,16,113,55,8
+    RTEXT           "",IDC_LABEL2,16,126,55,8
+    LTEXT           "",IDC_VALUE,85,113,213,11,NOT WS_GROUP
+    LTEXT           "",IDC_VALUE2,85,125,213,11,NOT WS_GROUP
+    RTEXT           "",IDC_LABEL3,16,139,55,8
+    LTEXT           "",IDC_VALUE3,85,137,214,11,NOT WS_GROUP
 END
 
 IDD_OBJECTPROPS DIALOGEX 0, 0, 353, 228
@@ -360,7 +372,7 @@ BEGIN
     IDD_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 311
+        RIGHTMARGIN, 334
         TOPMARGIN, 7
         BOTTOMMARGIN, 184
     END
@@ -467,7 +479,6 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 100, 0,
-    0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
