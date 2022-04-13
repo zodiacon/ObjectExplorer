@@ -1,6 +1,6 @@
 # Object Explorer
 
-Explore Kernel Objects on Windows
+Explore Kernel Objects on Windows (work in progress)
 
 ![](https://github.com/zodiacon/ObjectExplorer/blob/master/objexp1.png)
 
