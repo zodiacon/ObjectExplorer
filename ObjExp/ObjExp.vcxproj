@@ -309,6 +309,7 @@
     <Image Include="res\link.ico" />
     <Image Include="res\list.ico" />
     <Image Include="res\magnet.ico" />
+    <Image Include="res\magnet2.ico" />
     <Image Include="res\memory.ico" />
     <Image Include="res\message.ico" />
     <Image Include="res\mutex.ico" />

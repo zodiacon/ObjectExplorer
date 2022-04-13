@@ -360,6 +360,9 @@
     <Image Include="res\process_zombie.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\magnet2.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

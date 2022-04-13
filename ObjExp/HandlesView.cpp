@@ -4,6 +4,8 @@
 #include "SortHelper.h"
 #include "ProcessHelper.h"
 #include "ObjectHelpers.h"
+#include "ListViewhelper.h"
+#include "ClipboardHelper.h"
 
 CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid, PCWSTR name)
 	: CViewBase(frame), m_Tracker(m_Pid = pid), m_ProcessName(name) {
@@ -32,6 +34,7 @@ void CHandlesView::Refresh() {
 	}
 	DoSort(GetSortInfo(m_List));
 	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL);
+	UpdateStatusText();
 }
 
 void CHandlesView::DoSort(SortInfo const* si) {
@@ -102,6 +105,134 @@ int CHandlesView::GetRowImage(HWND, int row, int col) const {
 	return ResourceManager::Get().GetTypeImage(m_Handles[row]->ObjectTypeIndex);
 }
 
+void CHandlesView::UpdateUI(bool force) {
+	auto& ui = UI();
+	int selected = m_List.GetSelectedCount();
+	ui.UIEnable(ID_VIEW_PROPERTIES, selected == 1);
+	ui.UIEnable(ID_EDIT_COPY, selected > 0);
+}
+
+bool CHandlesView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const {
+	if (row >= 0)
+		ShowObjectProperties(row);
+
+	return true;
+}
+
+bool CHandlesView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
+	if (row >= 0) {
+		CMenu menu;
+		menu.LoadMenu(IDR_CONTEXT);
+		return GetFrame()->TrackPopupMenu(menu.GetSubMenu(4), 0, pt.x, pt.y);
+	}
+	return false;
+}
+
+void CHandlesView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
+	UpdateUI();
+}
+
+void CHandlesView::OnPageActivated(bool active) {
+	if (active) {
+		UpdateUI();
+		UI().UIEnable(ID_RUN, true);
+		UpdateStatusText();
+	}
+}
+
+void CHandlesView::ShowObjectProperties(int row) const {
+	ATLASSERT(row >= 0);
+	auto& hi = m_Handles[row];
+	auto hObject = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId);
+	if (hObject) {
+		ObjectHelpers::ShowObjectProperties(hObject, hi->Type, hi->Name.c_str());
+		::CloseHandle(hObject);
+		return;
+	}
+	AtlMessageBox(m_hWnd, L"Error opening object.", IDS_TITLE, MB_ICONERROR);
+}
+
+void CHandlesView::UpdateStatusText() const {
+	GetFrame()->SetStatusText(7, std::format(L"Handles: {}", m_Handles.size()).c_str());
+}
+
+void CHandlesView::DoTimerWorkAsync() {
+	auto tick = ::GetTickCount64();
+	int count = (int)m_NewHandles.size();
+	for (int i = 0; i < count; i++) {
+		auto& hi = m_NewHandles[i];
+		if (hi->TargetTime < tick) {
+			hi->NewHandle = false;
+			m_NewHandles.erase(m_NewHandles.begin() + i);
+			i--;
+			count--;
+		}
+	}
+
+	m_Tracker.EnumHandles();
+	m_TempHandles.clear();
+	for (auto& hi : m_Tracker.GetNewHandles()) {
+		hi->Type = ObjectManager::GetType(hi->ObjectTypeIndex)->TypeName;
+		if (ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex)) {
+			hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex);
+			hi->NameChecked = true;
+		}
+		if (m_Pid == 0)
+			hi->ProcessName = ProcessHelper::GetProcessName(hi->ProcessId);
+		hi->TargetTime = tick + 2000;
+		hi->NewHandle = true;
+		m_TempHandles.push_back(hi);
+		m_NewHandles.push_back(hi);
+	}
+	for (auto& hi : m_Tracker.GetClosedHandles()) {
+		hi->TargetTime = tick + 2000;
+		hi->ClosedHandle = true;
+	}
+
+	PostMessage(WM_CONTINUEUPDATE);
+	m_UpdateInProgress = false;
+}
+
+void CHandlesView::DoTimerUpdate() {
+	Run(false, false);
+	int start = std::max(0, m_List.GetTopIndex() - 10);
+	int count = std::min(start + m_List.GetCountPerPage() + 10, (int)m_Handles.size());
+	auto tick = ::GetTickCount64();
+	for (int i = start; i < count; i++) {
+		auto& hi = m_Handles[i];
+		if (hi->ClosedHandle && hi->TargetTime < tick) {
+			hi->ClosedHandle = false;
+			m_Handles.Remove(i);		
+			i--;
+			count--;
+		}
+	}
+	m_UpdateInProgress = true;
+	ATLVERIFY(::TrySubmitThreadpoolCallback([](auto, auto param) {
+		return ((CHandlesView*)param)->DoTimerWorkAsync();
+		}, this, nullptr));
+
+}
+
+DWORD CHandlesView::OnPrePaint(int, LPNMCUSTOMDRAW) {
+	return CDRF_NOTIFYITEMDRAW;
+}
+
+DWORD CHandlesView::OnItemPrePaint(int, LPNMCUSTOMDRAW cd) {
+	ATLASSERT(m_List == cd->hdr.hwndFrom);
+
+	auto row = (int)cd->dwItemSpec;
+	auto lv = (NMLVCUSTOMDRAW*)cd;
+
+	auto& hi = m_Handles[row];
+	if (hi->NewHandle) {
+		lv->clrTextBk = RGB(0, 220, 0);
+	}
+	else if (hi->ClosedHandle)
+		lv->clrTextBk = RGB(220, 64, 0);
+	return CDRF_SKIPPOSTPAINT;
+}
+
 LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_List.Create(*this, rcDefault, nullptr, ListViewDefaultStyle);
 	auto cm = GetColumnManager(m_List);
@@ -122,28 +253,55 @@ LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
+
+	m_NewHandles.reserve(m_Pid ? 32 : 1024);
+
 	Refresh();
+	Run(true);
 
 	return 0;
 }
 
 LRESULT CHandlesView::OnEditCopy(WORD, WORD, HWND, BOOL&) const {
-	return LRESULT();
+	auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
+	ClipboardHelper::CopyText(m_hWnd, text);
+	return 0;
 }
 
 LRESULT CHandlesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
 	ATLASSERT(m_List.GetSelectedCount() == 1);
-	auto& hi = m_Handles[m_List.GetNextItem(-1, LVNI_SELECTED)];
-	auto hObject = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId);
-	if (hObject) {
-		ObjectHelpers::ShowObjectProperties(hObject, hi->Type, hi->Name.c_str());
-		::CloseHandle(hObject);
-		return 0;
-	}
-	AtlMessageBox(m_hWnd, L"Error opening object.", IDS_TITLE, MB_ICONERROR);
+	int row = m_List.GetNextItem(-1, LVNI_SELECTED);
+	ShowObjectProperties(row);
 	return 0;
 }
 
 LRESULT CHandlesView::OnPauseResume(WORD, WORD, HWND, BOOL&) {
 	return LRESULT();
 }
+
+LRESULT CHandlesView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
+	Refresh();
+	return 0;
+}
+
+LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
+	for (auto& hi : m_TempHandles)
+		m_Handles.push_back(hi);
+	DoSort(GetSortInfo(m_List));
+	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+	Run(true, false);
+	UpdateStatusText();
+
+	return 0;
+}
+
+LRESULT CHandlesView::OnDestroy(UINT, WPARAM, LPARAM, BOOL& handled) {
+	Run(false, false);
+	while (m_UpdateInProgress) {
+		::Sleep(100);
+	}
+	handled = FALSE;
+	return 0;
+}
+

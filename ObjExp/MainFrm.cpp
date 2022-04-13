@@ -42,6 +42,8 @@ void CMainFrame::InitMenu() {
 		{ ID_VIEW_QUICKFIND, IDI_SEARCH },
 		{ ID_OBJECTLIST_SHOWDIRECTORIESINLIST, IDI_DIRECTORY },
 		{ ID_OBJECTLIST_LISTMODE, IDI_LIST },
+		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET },
+		{ ID_SYSTEM_ZOMBIEPROCESSES, IDI_PROCESS_ZOMBIE },
 	};
 
 	for (auto& cmd : commands) {
@@ -86,6 +88,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ 0 },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
+		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET },
 	};
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	auto tb = ToolbarHelper::CreateAndInitToolBar(m_hWnd, buttons, _countof(buttons));
@@ -119,7 +122,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-	const int WindowMenuPosition = 5;
+	const int WindowMenuPosition = 6;
 
 	CMenuHandle menuMain = GetMenu();
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WindowMenuPosition));

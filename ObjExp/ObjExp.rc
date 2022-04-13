@@ -153,6 +153,12 @@ BEGIN
         MENUITEM "&Show Directories in List",   ID_OBJECTLIST_SHOWDIRECTORIESINLIST
         MENUITEM "&List Mode",                  ID_OBJECTLIST_LISTMODE
     END
+    POPUP "handlelist"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
+    END
 END
 
 
@@ -288,6 +294,8 @@ IDI_MAGNET              ICON                    "res\\magnet.ico"
 IDI_PROCESS_KILL        ICON                    "res\\process_kill.ico"
 
 IDI_PROCESS_ZOMBIE      ICON                    "res\\process_zombie.ico"
+
+IDI_MAGNET2             ICON                    "res\\magnet2.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

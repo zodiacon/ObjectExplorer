@@ -70,8 +70,9 @@
 #define IDI_LIST                        271
 #define IDI_MAGNET                      272
 #define IDI_PROCESS_KILL                273
-#define IDI_ICON2                       274
 #define IDI_PROCESS_ZOMBIE              274
+#define IDI_ICON1                       275
+#define IDI_MAGNET2                     275
 #define IDC_TYPE                        1000
 #define IDC_NAME                        1001
 #define IDC_HANDLES                     1002
@@ -138,7 +139,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        275
+#define _APS_NEXT_RESOURCE_VALUE        276
 #define _APS_NEXT_COMMAND_VALUE         32817
 #define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101

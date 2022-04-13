@@ -11,6 +11,7 @@
 #define _WIN32_IE	0x0700
 #define _RICHEDIT_VER	0x0500
 #define _HAS_EXCEPTIONS 0
+#define NOMINMAX
 
 #include <atlbase.h>
 #include <atlapp.h>

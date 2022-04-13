@@ -80,7 +80,7 @@ struct CTimerManager {
 	// overridables
 
 	void DoTimerUpdate() {}
-	void Run(bool run) {
+	void Run(bool run, bool updateUI = true) {
 		auto p = static_cast<T*>(this);
 		m_Running = run;
 		if (run) {
@@ -89,7 +89,8 @@ struct CTimerManager {
 		else {
 			p->KillTimer(1);
 		}
-		UpdateIntervalUI();
+		if(updateUI)
+			UpdateIntervalUI();
 	}
 
 protected:
