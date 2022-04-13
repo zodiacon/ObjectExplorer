@@ -71,8 +71,8 @@
 #define IDI_MAGNET                      272
 #define IDI_PROCESS_KILL                273
 #define IDI_PROCESS_ZOMBIE              274
-#define IDI_ICON1                       275
 #define IDI_MAGNET2                     275
+#define IDD_PROCESSCHOOSER              276
 #define IDC_TYPE                        1000
 #define IDC_NAME                        1001
 #define IDC_HANDLES                     1002
@@ -94,6 +94,9 @@
 #define IDC_VALUE3                      1019
 #define IDC_FRAME                       1022
 #define IDC_TEXT                        1023
+#define IDC_LIST                        1024
+#define IDC_REFRESH                     1025
+#define IDC_EDIT1                       1026
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -139,9 +142,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        276
+#define _APS_NEXT_RESOURCE_VALUE        278
 #define _APS_NEXT_COMMAND_VALUE         32817
-#define _APS_NEXT_CONTROL_VALUE         1024
+#define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

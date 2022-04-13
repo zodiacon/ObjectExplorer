@@ -8,6 +8,7 @@
 #include "IconHelper.h"
 #include "ViewFactory.h"
 #include <Psapi.h>
+#include "ProcessSelectorDlg.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -44,6 +45,7 @@ void CMainFrame::InitMenu() {
 		{ ID_OBJECTLIST_LISTMODE, IDI_LIST },
 		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET },
 		{ ID_SYSTEM_ZOMBIEPROCESSES, IDI_PROCESS_ZOMBIE },
+		{ ID_OBJECTS_HANDLESINPROCESS, IDI_MAGNET2 },
 	};
 
 	for (auto& cmd : commands) {
@@ -88,7 +90,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ 0 },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
-		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET },
+		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET, BTNS_BUTTON, L"All Handles" },
+		{ ID_OBJECTS_HANDLESINPROCESS, IDI_MAGNET2, BTNS_BUTTON, L"Process Handles" },
 	};
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	auto tb = ToolbarHelper::CreateAndInitToolBar(m_hWnd, buttons, _countof(buttons));
@@ -250,6 +253,14 @@ void CMainFrame::SetStatusText(int index, PCWSTR text) {
 
 LRESULT CMainFrame::OnAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ViewFactory::CreateView(this, m_view, ViewType::AllHandles);
+	return 0;
+}
+
+LRESULT CMainFrame::OnHandlesInProcess(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CProcessSelectorDlg dlg;
+	if (dlg.DoModal() == IDOK) {
+		ViewFactory::CreateView(this, m_view, ViewType::ProcessHandles, dlg.GetSelectedProcess());
+	}
 	return 0;
 }
 

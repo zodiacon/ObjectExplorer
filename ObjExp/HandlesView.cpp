@@ -6,9 +6,12 @@
 #include "ObjectHelpers.h"
 #include "ListViewhelper.h"
 #include "ClipboardHelper.h"
+#include "StringHelper.h"
 
-CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid, PCWSTR name)
-	: CViewBase(frame), m_Tracker(m_Pid = pid), m_ProcessName(name) {
+CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid)
+	: CViewBase(frame), m_Tracker(m_Pid = pid) {
+	if (pid)
+		m_hProcess.reset(::OpenProcess(SYNCHRONIZE, FALSE, pid));
 }
 
 void CHandlesView::OnFinalMessage(HWND) {
@@ -20,7 +23,7 @@ CString CHandlesView::GetTitle() const {
 		return L"All Handles";
 
 	CString title;
-	title.Format(L"%s (PID: %u)", (PCWSTR)m_ProcessName, m_Pid);
+	title.Format(L"%s (PID: %u)", (PCWSTR)ProcessHelper::GetProcessName(m_Pid), m_Pid);
 	return title;
 }
 
@@ -97,6 +100,7 @@ CString CHandlesView::GetColumnText(HWND h, int row, int col) const {
 			}
 			return hi->Name.c_str();
 		case ColumnType::PID: return std::to_wstring(hi->ProcessId).c_str();
+		case ColumnType::Attributes: return StringHelper::HandleAttributesToString(hi->HandleAttributes);
 	}
 	return CString();
 }
@@ -123,7 +127,13 @@ bool CHandlesView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
 	if (row >= 0) {
 		CMenu menu;
 		menu.LoadMenu(IDR_CONTEXT);
-		return GetFrame()->TrackPopupMenu(menu.GetSubMenu(4), 0, pt.x, pt.y);
+		auto running = IsRunning();
+		if (running)
+			Run(false, false);
+		GetFrame()->TrackPopupMenu(menu.GetSubMenu(4), 0, pt.x, pt.y);
+		if (running)
+			Run(true, false);
+		return true;
 	}
 	return false;
 }
@@ -138,6 +148,7 @@ void CHandlesView::OnPageActivated(bool active) {
 		UI().UIEnable(ID_RUN, true);
 		UpdateStatusText();
 	}
+	ActivateTimer(active);
 }
 
 void CHandlesView::ShowObjectProperties(int row) const {
@@ -194,9 +205,18 @@ void CHandlesView::DoTimerWorkAsync() {
 }
 
 void CHandlesView::DoTimerUpdate() {
+	if (m_hProcess && ::WaitForSingleObject(m_hProcess.get(), 0) == WAIT_OBJECT_0) {
+		//
+		// process dead
+		//
+		Run(false);
+		UI().UIEnable(ID_RUN, false);
+		m_Handles.clear();
+		return;
+	}
 	Run(false, false);
 	int start = std::max(0, m_List.GetTopIndex() - 10);
-	int count = std::min(start + m_List.GetCountPerPage() + 10, (int)m_Handles.size());
+	int count = std::min(start + m_List.GetCountPerPage() + 100, (int)m_Handles.size());
 	auto tick = ::GetTickCount64();
 	for (int i = start; i < count; i++) {
 		auto& hi = m_Handles[i];
@@ -226,23 +246,23 @@ DWORD CHandlesView::OnItemPrePaint(int, LPNMCUSTOMDRAW cd) {
 
 	auto& hi = m_Handles[row];
 	if (hi->NewHandle) {
-		lv->clrTextBk = RGB(0, 220, 0);
+		lv->clrTextBk = RGB(0, 220, 64);
 	}
 	else if (hi->ClosedHandle)
-		lv->clrTextBk = RGB(220, 64, 0);
+		lv->clrTextBk = RGB(220, 80, 32);
 	return CDRF_SKIPPOSTPAINT;
 }
 
 LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
-	m_hWndClient = m_List.Create(*this, rcDefault, nullptr, ListViewDefaultStyle);
+	m_hWndClient = m_List.Create(m_hWnd, rcDefault, nullptr, ListViewDefaultStyle);
 	auto cm = GetColumnManager(m_List);
 
-	cm->AddColumn(L"Type", LVCFMT_LEFT, 120, ColumnType::Type);
-	cm->AddColumn(L"Handle", LVCFMT_RIGHT, 100, ColumnType::Handle, ColumnFlags::Visible | ColumnFlags::Numeric);
+	cm->AddColumn(L"Type", LVCFMT_LEFT, 160, ColumnType::Type);
+	cm->AddColumn(L"Handle", LVCFMT_RIGHT, 90, ColumnType::Handle, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Name", LVCFMT_LEFT, 300, ColumnType::Name);
 	cm->AddColumn(L"Address", LVCFMT_RIGHT, 130, ColumnType::Address, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Access", LVCFMT_RIGHT, 100, ColumnType::Access, ColumnFlags::Visible | ColumnFlags::Numeric);
-	cm->AddColumn(L"Attributes", LVCFMT_RIGHT, 100, ColumnType::Attributes);
+	cm->AddColumn(L"Attributes", LVCFMT_RIGHT, 120, ColumnType::Attributes);
 	if (m_Pid == 0) {
 		cm->AddColumn(L"Process Name", LVCFMT_LEFT, 150, ColumnType::ProcessName);
 		cm->AddColumn(L"PID", LVCFMT_RIGHT, 80, ColumnType::PID);
@@ -251,7 +271,7 @@ LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	cm->UpdateColumns();
 
-	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
+	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
 
 	m_NewHandles.reserve(m_Pid ? 32 : 1024);
@@ -276,7 +296,8 @@ LRESULT CHandlesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
 }
 
 LRESULT CHandlesView::OnPauseResume(WORD, WORD, HWND, BOOL&) {
-	return LRESULT();
+	Run(!IsRunning());
+	return 0;
 }
 
 LRESULT CHandlesView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
@@ -290,8 +311,10 @@ LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
 	DoSort(GetSortInfo(m_List));
 	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
-	Run(true, false);
-	UpdateStatusText();
+	if (IsRunning()) {
+		Run(true, false);
+		UpdateStatusText();
+	}
 
 	return 0;
 }

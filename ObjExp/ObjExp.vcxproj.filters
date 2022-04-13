@@ -87,6 +87,9 @@
     <ClCompile Include="HandlesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ProcessSelectorDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -160,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="HandlesView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessSelectorDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

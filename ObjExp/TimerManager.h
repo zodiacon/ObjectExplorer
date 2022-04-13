@@ -13,7 +13,7 @@ struct CTimerManager {
 
 	void ActivateTimer(bool active) {
 		auto p = static_cast<T*>(this);
-		if (active)
+		if (active && p->IsRunning())
 			p->SetTimer(1, m_Interval);
 		else
 			p->KillTimer(1);
@@ -37,7 +37,6 @@ struct CTimerManager {
 
 	LRESULT OnRun(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		Run(!m_Running);
-		UpdateIntervalUI();
 		return 0;
 	}
 

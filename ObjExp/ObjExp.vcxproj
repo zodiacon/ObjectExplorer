@@ -238,6 +238,7 @@
     </ClCompile>
     <ClCompile Include="ProcessHandleTracker.cpp" />
     <ClCompile Include="ProcessHelper.cpp" />
+    <ClCompile Include="ProcessSelectorDlg.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SecurityHelper.cpp" />
     <ClCompile Include="ObjectTypesView.cpp" />
@@ -260,6 +261,7 @@
     <ClInclude Include="ObjectPropertiesDlg.h" />
     <ClInclude Include="ProcessHandleTracker.h" />
     <ClInclude Include="ProcessHelper.h" />
+    <ClInclude Include="ProcessSelectorDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ResourceManager.h" />

@@ -15,7 +15,7 @@ class CHandlesView :
 public:
 	using CViewBase::CViewBase;
 
-	explicit CHandlesView(IMainFrame* frame, DWORD pid = 0, PCWSTR processName = nullptr);
+	explicit CHandlesView(IMainFrame* frame, DWORD pid = 0);
 
 	void OnFinalMessage(HWND /*hWnd*/) override;
 	CString GetTitle() const override;
@@ -86,7 +86,7 @@ private:
 	SortedFilteredVector<std::shared_ptr<HandleInfoEx>> m_Handles;
 	std::vector<std::shared_ptr<HandleInfoEx>> m_NewHandles, m_TempHandles;
 	DWORD m_Pid;
-	CString m_ProcessName;
+	wil::unique_handle m_hProcess;
 	std::atomic<bool> m_UpdateInProgress{ false };
 	bool m_UpdateProcNames{ false }, m_UpdateObjectNames{ false };
 };

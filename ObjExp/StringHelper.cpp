@@ -41,3 +41,16 @@ CString StringHelper::SectionAttributesToString(DWORD value) {
 		text = text.Left(text.GetLength() - 2);
 	return text;
 }
+
+CString StringHelper::HandleAttributesToString(DWORD attributes) {
+	if (attributes == 0)
+		return L"None (0)";
+	CString text;
+	if (attributes & OBJ_INHERIT)
+		text += L"Inherit, ";
+	if (attributes & 1)
+		text += L"Protect, ";
+	if (attributes & 4)
+		text += L"Audit, ";
+	return text.Left(text.GetLength() - 2) + L" (" + std::to_wstring(attributes).c_str() + L")";
+}

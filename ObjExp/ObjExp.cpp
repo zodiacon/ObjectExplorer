@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "resource.h"
 #include "MainFrm.h"
+#include "SecurityHelper.h"
 
 CAppModule _Module;
 
@@ -27,6 +28,8 @@ int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
+	SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true);
+
 	HRESULT hRes = ::CoInitialize(nullptr);
 	ATLASSERT(SUCCEEDED(hRes));
 
