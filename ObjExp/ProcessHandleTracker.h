@@ -26,7 +26,8 @@ template<typename TInfo = HandleInfo>
 	requires std::is_base_of_v<HandleInfo, TInfo>
 class ProcessHandlesTracker {
 public:
-	ProcessHandlesTracker(DWORD pid) : m_pid(pid) {}
+	explicit ProcessHandlesTracker(DWORD pid) : m_pid(pid) {}
+	explicit ProcessHandlesTracker(PCWSTR typeName, DWORD pid = 0) : m_type(typeName), m_pid(pid) {}
 
 	ULONG EnumHandles(bool clearHistory = false) {
 		if (clearHistory)
@@ -39,7 +40,7 @@ public:
 			m_closedHandles.reserve(32);
 		}
 
-		auto handles = ObjectManager::EnumHandles2<TInfo>(nullptr, m_pid, false, true);
+		auto handles = ObjectManager::EnumHandles2<TInfo>(m_type.c_str(), m_pid, false, true);
 		if (m_handles.empty()) {
 			m_handles.reserve(handles.size());
 			m_newHandles = std::move(handles);
@@ -80,6 +81,7 @@ public:
 private:
 	ObjectManager m_mgr;
 	DWORD m_pid;
+	std::wstring m_type;
 	wil::unique_handle m_hProcess;
 	std::vector<std::shared_ptr<TInfo>> m_closedHandles, m_newHandles;
 	std::unordered_map<HandleKey, std::shared_ptr<TInfo>> m_handles;

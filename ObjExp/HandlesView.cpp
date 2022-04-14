@@ -9,8 +9,8 @@
 #include "StringHelper.h"
 #include "AccessMaskDecoder.h"
 
-CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid)
-	: CViewBase(frame), m_Tracker(m_Pid = pid) {
+CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid, PCWSTR type)
+	: CViewBase(frame), m_Tracker(type, m_Pid = pid), m_TypeName(type) {
 	if (pid)
 		m_hProcess.reset(::OpenProcess(SYNCHRONIZE, FALSE, pid));
 }
@@ -20,11 +20,16 @@ void CHandlesView::OnFinalMessage(HWND) {
 }
 
 CString CHandlesView::GetTitle() const {
-	if (m_Pid == 0)
+	if (m_Pid == 0 && m_TypeName.IsEmpty())
 		return L"All Handles";
+
+	if (m_Pid == 0)
+		return L"Handles (" + m_TypeName + L")";
 
 	CString title;
 	title.Format(L"%s (PID: %u)", (PCWSTR)ProcessHelper::GetProcessName(m_Pid), m_Pid);
+	if (!m_TypeName.IsEmpty())
+		title += L" (" + m_TypeName + L")";
 	return title;
 }
 

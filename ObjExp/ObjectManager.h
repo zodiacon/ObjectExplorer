@@ -115,7 +115,7 @@ public:
 			return {};
 		} while (true);
 
-		auto filteredTypeIndex = type == nullptr || ::wcslen(type) == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
+		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
 
 		auto p = (NT::SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
 		auto count = p->NumberOfHandles;

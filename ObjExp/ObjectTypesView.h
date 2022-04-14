@@ -35,13 +35,14 @@ public:
 	void OnPageActivated(bool activate);
 
 	BEGIN_MSG_MAP(CObjectTypesView)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
+		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
+		COMMAND_ID_HANDLER(ID_TYPESLIST_ALLHANDLES, OnShowAllHandles)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP(CTimerManager<CObjectTypesView>)
 		CHAIN_MSG_MAP(CCustomDraw<CObjectTypesView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectTypesView>)
 		CHAIN_MSG_MAP(CVirtualListView<CObjectTypesView>)
-		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
-		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		CHAIN_MSG_MAP_ALT(CTimerManager<CObjectTypesView>, 1)
 	END_MSG_MAP()
 
@@ -64,6 +65,7 @@ private:
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;
 	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;
 	LRESULT OnPauseResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnShowAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	ObjectManager m_mgr;

@@ -10,6 +10,7 @@
 #include "ListViewhelper.h"
 #include "ClipboardHelper.h"
 #include "ObjectHelpers.h"
+#include "ViewFactory.h"
 
 BOOL CObjectTypesView::PreTranslateMessage(MSG* pMsg) {
 	pMsg;
@@ -119,8 +120,17 @@ LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) const {
 }
 
 LRESULT CObjectTypesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
-	auto& item = m_Items[m_List.GetSelectionMark()];
+	ATLASSERT(m_List.GetSelectedCount() == 1);
+	auto& item = m_Items[m_List.GetNextItem(-1, LVNI_SELECTED)];
 	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
+	return 0;
+}
+
+LRESULT CObjectTypesView::OnShowAllHandles(WORD, WORD, HWND, BOOL&) {
+	ATLASSERT(m_List.GetSelectedCount() == 1);
+	auto& item = m_Items[m_List.GetNextItem(-1, LVNI_SELECTED)];
+	ViewFactory::Get().CreateView(ViewType::HandlesOfType, 0, item->TypeName);
+
 	return 0;
 }
 
@@ -204,6 +214,7 @@ void CObjectTypesView::UpdateUI(bool force) {
 	ui.UIEnable(ID_EDIT_COPY, m_List.GetSelectedCount() > 0);
 	ui.UIEnable(ID_EDIT_PASTE, false);
 	ui.UIEnable(ID_EDIT_CUT, false);
+	ui.UIEnable(ID_TYPESLIST_ALLHANDLES, m_List.GetSelectedCount() == 1);
 	CTimerManager::UpdateIntervalUI();
 }
 
