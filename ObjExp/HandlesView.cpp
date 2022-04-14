@@ -7,6 +7,7 @@
 #include "ListViewhelper.h"
 #include "ClipboardHelper.h"
 #include "StringHelper.h"
+#include "AccessMaskDecoder.h"
 
 CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid)
 	: CViewBase(frame), m_Tracker(m_Pid = pid) {
@@ -74,7 +75,9 @@ void CHandlesView::DoSort(SortInfo const* si) {
 			case ColumnType::Handle: return SortHelper::Sort(h1->HandleValue, h2->HandleValue, asc);
 			case ColumnType::Attributes: return SortHelper::Sort(h1->HandleAttributes, h2->HandleAttributes, asc);
 			case ColumnType::PID: return SortHelper::Sort(h1->ProcessId, h2->ProcessId, asc);
-			case ColumnType::Access: return SortHelper::Sort(h1->GrantedAccess, h2->GrantedAccess, asc);
+			case ColumnType::Access: 
+			case ColumnType::DecodedAccess:
+				return SortHelper::Sort(h1->GrantedAccess, h2->GrantedAccess, asc);
 		}
 		return false;
 	};
@@ -101,6 +104,8 @@ CString CHandlesView::GetColumnText(HWND h, int row, int col) const {
 			return hi->Name.c_str();
 		case ColumnType::PID: return std::to_wstring(hi->ProcessId).c_str();
 		case ColumnType::Attributes: return StringHelper::HandleAttributesToString(hi->HandleAttributes);
+		case ColumnType::DecodedAccess: return AccessMaskDecoder::DecodeAccessMask(hi->Type, hi->GrantedAccess);
+
 	}
 	return CString();
 }
@@ -217,6 +222,7 @@ void CHandlesView::DoTimerUpdate() {
 	Run(false, false);
 	int start = std::max(0, m_List.GetTopIndex() - 10);
 	int count = std::min(start + m_List.GetCountPerPage() + 100, (int)m_Handles.size());
+	int orgCount = count;
 	auto tick = ::GetTickCount64();
 	for (int i = start; i < count; i++) {
 		auto& hi = m_Handles[i];
@@ -226,6 +232,10 @@ void CHandlesView::DoTimerUpdate() {
 			i--;
 			count--;
 		}
+	}
+	if (orgCount != count) {
+		m_List.SetItemCountEx(count, LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+		m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	}
 	m_UpdateInProgress = true;
 	ATLVERIFY(::TrySubmitThreadpoolCallback([](auto, auto param) {
@@ -267,7 +277,7 @@ LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		cm->AddColumn(L"Process Name", LVCFMT_LEFT, 150, ColumnType::ProcessName);
 		cm->AddColumn(L"PID", LVCFMT_RIGHT, 80, ColumnType::PID);
 	}
-	cm->AddColumn(L"Decoded Access", LVCFMT_LEFT, 230, ColumnType::DecodedAccess);
+	cm->AddColumn(L"Decoded Access", LVCFMT_LEFT, 350, ColumnType::DecodedAccess);
 
 	cm->UpdateColumns();
 
