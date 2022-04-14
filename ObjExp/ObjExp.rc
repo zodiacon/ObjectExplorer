@@ -156,6 +156,7 @@ BEGIN
     POPUP "handlelist"
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "Close...\tDel",               ID_HANDLELIST_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END

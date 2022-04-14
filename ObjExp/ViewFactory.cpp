@@ -21,6 +21,15 @@ bool ViewFactory::Init(IMainFrame* frame, CTabView& tabs) {
     for (auto icon : icons)
         images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
     tabs.SetImageList(images);
+
+    ViewIconType iconTypes[] = {
+        ViewIconType::ZombieProcess,
+    };
+    for (auto icon : iconTypes) {
+        int n = images.AddIcon(AtlLoadIconImage((UINT)icon, 0, 16, 16));
+        m_tabIcons.insert({ icon, n });
+    }
+
     return true;
 }
 
@@ -62,4 +71,16 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
         m_tabs->AddPage(view->GetHwnd(), view->GetTitle(), image, view);
 
     return view;
+}
+
+void ViewFactory::SetTabIcon(IView* view, ViewIconType iconType) {
+    int count = m_tabs->GetPageCount();
+    int i;
+    for (i = 0; i < count; i++) {
+        if (m_tabs->GetPageData(i) == view) {
+            m_tabs->SetPageImage(i, m_tabIcons[iconType]);
+            break;
+        }
+    }
+    ATLASSERT(i < count);
 }

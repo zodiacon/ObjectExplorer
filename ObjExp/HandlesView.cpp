@@ -8,6 +8,7 @@
 #include "ClipboardHelper.h"
 #include "StringHelper.h"
 #include "AccessMaskDecoder.h"
+#include "ViewFactory.h"
 
 CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid, PCWSTR type)
 	: CViewBase(frame), m_Tracker(type, m_Pid = pid), m_TypeName(type) {
@@ -63,7 +64,7 @@ void CHandlesView::DoSort(SortInfo const* si) {
 		CWaitCursor wait;
 		for (auto& hi : m_Handles) {
 			if (!hi->NameChecked) {
-				if(ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex))
+				if (ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex))
 					hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex);
 				hi->NameChecked = true;
 			}
@@ -80,7 +81,7 @@ void CHandlesView::DoSort(SortInfo const* si) {
 			case ColumnType::Handle: return SortHelper::Sort(h1->HandleValue, h2->HandleValue, asc);
 			case ColumnType::Attributes: return SortHelper::Sort(h1->HandleAttributes, h2->HandleAttributes, asc);
 			case ColumnType::PID: return SortHelper::Sort(h1->ProcessId, h2->ProcessId, asc);
-			case ColumnType::Access: 
+			case ColumnType::Access:
 			case ColumnType::DecodedAccess:
 				return SortHelper::Sort(h1->GrantedAccess, h2->GrantedAccess, asc);
 		}
@@ -101,7 +102,7 @@ CString CHandlesView::GetColumnText(HWND h, int row, int col) const {
 				hi->ProcessName = ProcessHelper::GetProcessName(hi->ProcessId);
 			return hi->ProcessName;
 		case ColumnType::Access: return std::format("0x{:08X}", hi->GrantedAccess).c_str();
-		case ColumnType::Name: 
+		case ColumnType::Name:
 			if (!hi->NameChecked) {
 				hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex);
 				hi->NameChecked = true;
@@ -215,25 +216,24 @@ void CHandlesView::DoTimerWorkAsync() {
 }
 
 void CHandlesView::DoTimerUpdate() {
-	if (m_hProcess && ::WaitForSingleObject(m_hProcess.get(), 0) == WAIT_OBJECT_0) {
-		//
-		// process dead
-		//
-		Run(false);
-		UI().UIEnable(ID_RUN, false);
-		m_Handles.clear();
-		return;
-	}
 	ActivateTimer(false);
-	int start = std::max(0, m_List.GetTopIndex() - 10);
-	int count = std::min(start + m_List.GetCountPerPage() + 100, (int)m_Handles.size());
+	bool dead = m_hProcess && ::WaitForSingleObject(m_hProcess.get(), 0) == WAIT_OBJECT_0;
+	if (dead) {
+		ViewFactory::Get().SetTabIcon(this, ViewIconType::ZombieProcess);
+		if (m_Handles.empty()) {
+			UI().UIEnable(ID_RUN, false);
+			return;
+		}
+	}
+	int start = dead ? 0 : std::max(0, m_List.GetTopIndex() - 10);
+	int count = dead ? (int)m_Handles.size() : std::min(start + m_List.GetCountPerPage() + 100, (int)m_Handles.size());
 	int orgCount = count;
 	auto tick = ::GetTickCount64();
 	for (int i = start; i < count; i++) {
 		auto& hi = m_Handles[i];
 		if (hi->ClosedHandle && hi->TargetTime < tick) {
 			hi->ClosedHandle = false;
-			m_Handles.Remove(i);		
+			m_Handles.Remove(i);
 			i--;
 			count--;
 		}
@@ -242,11 +242,11 @@ void CHandlesView::DoTimerUpdate() {
 		m_List.SetItemCountEx(count, LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
 		m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	}
+
 	m_UpdateInProgress = true;
 	ATLVERIFY(::TrySubmitThreadpoolCallback([](auto, auto param) {
 		return ((CHandlesView*)param)->DoTimerWorkAsync();
 		}, this, nullptr));
-
 }
 
 DWORD CHandlesView::OnPrePaint(int, LPNMCUSTOMDRAW) {
@@ -277,7 +277,7 @@ LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Name", LVCFMT_LEFT, 300, ColumnType::Name);
 	cm->AddColumn(L"Address", LVCFMT_RIGHT, 130, ColumnType::Address, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Access", LVCFMT_RIGHT, 100, ColumnType::Access, ColumnFlags::Visible | ColumnFlags::Numeric);
-	cm->AddColumn(L"Attributes", LVCFMT_RIGHT, 120, ColumnType::Attributes);
+	cm->AddColumn(L"Attributes", LVCFMT_LEFT, 120, ColumnType::Attributes);
 	if (m_Pid == 0) {
 		cm->AddColumn(L"Process Name", LVCFMT_LEFT, 150, ColumnType::ProcessName);
 		cm->AddColumn(L"PID", LVCFMT_RIGHT, 80, ColumnType::PID);
@@ -342,4 +342,36 @@ LRESULT CHandlesView::OnDestroy(UINT, WPARAM, LPARAM, BOOL& handled) {
 	handled = FALSE;
 	return 0;
 }
+
+LRESULT CHandlesView::OnCloseHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int count = m_List.GetSelectedCount();
+	ATLASSERT(count > 0);
+	std::wstring text;
+	if (count == 1) {
+		auto& hi = m_Handles[m_List.GetNextItem(-1, LVNI_SELECTED)];
+		text = std::format(L"Close handle 0x{:X} ({}) {}", hi->HandleValue, hi->Type, hi->Name.empty() ? L"" : (L"(" + hi->Name + L")"));
+	}
+	else {
+		text = std::format(L"Close {} handles?", count);
+	}
+	if (AtlMessageBox(m_hWnd, text.c_str(), IDS_TITLE, MB_OKCANCEL | MB_DEFBUTTON2 | MB_ICONWARNING) == IDCANCEL)
+		return 0;
+
+	int closed = 0;
+	for (auto n : SelectedItemsView(m_List)) {
+		auto& hi = m_Handles[n];
+		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, DUPLICATE_CLOSE_SOURCE);
+		if (hDup) {
+			::CloseHandle(hDup);
+			closed++;
+		}
+	}
+
+	if (closed == count)
+		AtlMessageBox(m_hWnd, L"Closed successfully.", IDS_TITLE, MB_ICONINFORMATION);
+	else
+		AtlMessageBox(m_hWnd, count == 1 ? L"Failed to close handle" : std::format(L"Closed {} out of {} handles", closed, count).c_str(), IDS_TITLE, MB_ICONERROR);
+	return 0;
+}
+
 

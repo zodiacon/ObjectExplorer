@@ -69,6 +69,14 @@ void CProcessSelectorDlg::OnStateChanged(HWND, int from, int to, UINT oldState, 
     GetDlgItem(IDOK).EnableWindow(m_List.GetSelectedIndex() >= 0);
 }
 
+bool CProcessSelectorDlg::OnDoubleClickList(HWND, int row, int col, CPoint const&) {
+    if (row >= 0) {
+        m_SelectedPid = m_Processes[row].Id;
+        EndDialog(IDOK);
+    }
+    return true;
+}
+
 LRESULT CProcessSelectorDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     InitDynamicLayout();
     SetDialogIcon(IDI_PROCESS);
@@ -109,6 +117,28 @@ LRESULT CProcessSelectorDlg::OnHotKey(UINT, WPARAM, LPARAM, BOOL&) {
 LRESULT CProcessSelectorDlg::OnFilterChanged(WORD, WORD id, HWND, BOOL&) {
     CString text;
     m_QuickFind.GetWindowText(text);
+    ApplyFilter(text);
+    m_List.SetItemCountEx((int)m_Processes.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+    m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+
+    return 0;
+}
+
+LRESULT CProcessSelectorDlg::OnRefresh(WORD, WORD id, HWND, BOOL&) {
+    InitProcesses();
+    CString text;
+    m_QuickFind.GetWindowText(text);
+    if (!text.IsEmpty())
+        ApplyFilter(text);
+    Sort(GetSortInfo(m_List));
+    m_List.SetItemCountEx((int)m_Processes.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+    m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+
+    return 0;
+}
+
+void CProcessSelectorDlg::ApplyFilter(PCWSTR filter) {
+    CString text(filter);
     if (text.IsEmpty())
         m_Processes.Filter(nullptr);
     else {
@@ -119,10 +149,6 @@ LRESULT CProcessSelectorDlg::OnFilterChanged(WORD, WORD id, HWND, BOOL&) {
             return name.Find(text) >= 0;
             });
     }
-    m_List.SetItemCountEx((int)m_Processes.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
-    m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
-
-    return 0;
 }
 
 void CProcessSelectorDlg::InitProcesses() {

@@ -19,11 +19,13 @@ public:
 	int GetRowImage(HWND, int row, int col) const;
 	void DoSort(SortInfo const* si);
 	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
+	bool OnDoubleClickList(HWND, int row, int col, CPoint const&);
 
 	BEGIN_MSG_MAP(CProcessSelectorDlg)
 		MESSAGE_HANDLER(WM_HOTKEY, OnHotKey)
 		COMMAND_CODE_HANDLER(EN_DELAYCHANGE, OnFilterChanged)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_REFRESH, OnRefresh)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		CHAIN_MSG_MAP(CVirtualListView<CProcessSelectorDlg>)
@@ -39,8 +41,11 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnHotKey(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnFilterChanged(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
+	void ApplyFilter(PCWSTR text);
+
 	struct ProcessInfo {
 		DWORD Id;
 		std::wstring Name;

@@ -39,6 +39,7 @@ public:
 		MESSAGE_HANDLER(WM_CONTINUEUPDATE, OnContinueUpdate)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
+		COMMAND_ID_HANDLER(ID_HANDLELIST_CLOSE, OnCloseHandles)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
@@ -66,6 +67,7 @@ private:
 	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;
 	LRESULT OnPauseResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCloseHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	struct HandleInfoEx : HandleInfo {
 		CString ProcessName;
