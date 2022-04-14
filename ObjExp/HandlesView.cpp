@@ -224,7 +224,7 @@ void CHandlesView::DoTimerUpdate() {
 		m_Handles.clear();
 		return;
 	}
-	Run(false, false);
+	ActivateTimer(false);
 	int start = std::max(0, m_List.GetTopIndex() - 10);
 	int count = std::min(start + m_List.GetCountPerPage() + 100, (int)m_Handles.size());
 	int orgCount = count;
@@ -327,7 +327,7 @@ LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	if (IsRunning()) {
-		Run(true, false);
+		ActivateTimer(true);
 		UpdateStatusText();
 	}
 

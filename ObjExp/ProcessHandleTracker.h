@@ -27,7 +27,7 @@ template<typename TInfo = HandleInfo>
 class ProcessHandlesTracker {
 public:
 	explicit ProcessHandlesTracker(DWORD pid) : m_pid(pid) {}
-	explicit ProcessHandlesTracker(PCWSTR typeName, DWORD pid = 0) : m_type(typeName), m_pid(pid) {}
+	explicit ProcessHandlesTracker(PCWSTR typeName, DWORD pid = 0) : m_type(typeName ? typeName : L""), m_pid(pid) {}
 
 	ULONG EnumHandles(bool clearHistory = false) {
 		if (clearHistory)
