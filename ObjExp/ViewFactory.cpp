@@ -4,6 +4,7 @@
 #include "ObjectTypesView.h"
 #include "ObjectManagerView.h"
 #include "HandlesView.h"
+#include "ObjectsView.h"
 
 ViewFactory& ViewFactory::Get() {
     static ViewFactory factory;
@@ -14,7 +15,7 @@ bool ViewFactory::Init(IMainFrame* frame, CTabView& tabs) {
     m_pFrame = frame;
     m_tabs = &tabs;
     UINT icons[] = {
-        IDI_TYPES, IDI_PACKAGE, IDI_MAGNET, IDI_MAGNET2,
+        IDI_TYPES, IDI_PACKAGE, IDI_MAGNET, IDI_MAGNET2, IDI_OBJECTS,
     };
     CImageList images;
     images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
@@ -63,6 +64,14 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
             auto p = new CHandlesView(m_pFrame, pid, sparam);
             p->Create(*m_tabs, CWindow::rcDefault, nullptr, style);
             image = type == ViewType::AllHandles ? 2 : 3;
+            view = p;
+            break;
+        }
+        case ViewType::Objects:
+        {
+            auto p = new CObjectsView(m_pFrame, sparam);
+            p->Create(*m_tabs, CWindow::rcDefault, nullptr, style);
+            image = 4;
             view = p;
             break;
         }

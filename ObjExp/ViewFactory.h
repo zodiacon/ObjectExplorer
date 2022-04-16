@@ -11,6 +11,7 @@ enum class ViewType {
 	AllHandles,
 	HandlesOfType,
 	ProcessHandles,
+	Objects,
 	Search,
 };
 

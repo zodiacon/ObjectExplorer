@@ -24,7 +24,7 @@ struct std::hash<HandleKey> {
 
 template<typename TInfo = HandleInfo>
 	requires std::is_base_of_v<HandleInfo, TInfo>
-class ProcessHandlesTracker {
+class ProcessHandlesTracker final {
 public:
 	explicit ProcessHandlesTracker(DWORD pid) : m_pid(pid) {}
 	explicit ProcessHandlesTracker(PCWSTR typeName, DWORD pid = 0) : m_type(typeName ? typeName : L""), m_pid(pid) {}
@@ -82,7 +82,6 @@ private:
 	ObjectManager m_mgr;
 	DWORD m_pid;
 	std::wstring m_type;
-	wil::unique_handle m_hProcess;
 	std::vector<std::shared_ptr<TInfo>> m_closedHandles, m_newHandles;
 	std::unordered_map<HandleKey, std::shared_ptr<TInfo>> m_handles;
 };

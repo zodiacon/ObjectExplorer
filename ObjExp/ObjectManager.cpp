@@ -149,6 +149,24 @@ CString ObjectManager::GetSymbolicLinkTarget(PCWSTR path) {
 	return target;
 }
 
+wil::unique_virtualalloc_ptr<NT::SYSTEM_HANDLE_INFORMATION_EX> ObjectManager::EnumHandlesBuffer() {
+	ULONG len = 1 << 25;
+	wil::unique_virtualalloc_ptr<NT::SYSTEM_HANDLE_INFORMATION_EX> buffer;
+	do {
+		buffer.reset((NT::SYSTEM_HANDLE_INFORMATION_EX*)::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		auto status = NT::NtQuerySystemInformation(NT::SystemExtendedHandleInformation, buffer.get(), len, &len);
+		if (status == STATUS_INFO_LENGTH_MISMATCH) {
+			len <<= 1;
+			continue;
+		}
+		if (status == STATUS_SUCCESS)
+			break;
+		return {};
+	} while (true);
+
+	return buffer;
+}
+
 HANDLE ObjectManager::DupHandle(HANDLE h, DWORD pid, ACCESS_MASK access, DWORD flags) {
 	HANDLE hDup{ nullptr };
 	wil::unique_handle hProcess(::OpenProcess(PROCESS_DUP_HANDLE, FALSE, pid));

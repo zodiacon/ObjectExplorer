@@ -90,6 +90,9 @@
     <ClCompile Include="ProcessSelectorDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectsView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -166,6 +169,12 @@
     </ClInclude>
     <ClInclude Include="ProcessSelectorDlg.h">
       <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectsView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessObjectTracker.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

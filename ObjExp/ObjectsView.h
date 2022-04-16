@@ -4,16 +4,16 @@
 #include "ViewBase.h"
 #include "VirtualListView.h"
 #include "TimerManager.h"
-#include "ProcessHandleTracker.h"
 #include "SortedFilteredVector.h"
+#include "ProcessObjectTracker.h"
 
-class CHandlesView :
-	public CViewBase<CHandlesView>,
-	public CCustomDraw<CHandlesView>,
-	public CTimerManager<CHandlesView>,
-	public CVirtualListView<CHandlesView> {
+class CObjectsView :
+	public CViewBase<CObjectsView>,
+//	public CCustomDraw<CObjectsView>,
+//	public CTimerManager<CObjectsView>,
+	public CVirtualListView<CObjectsView> {
 public:
-	explicit CHandlesView(IMainFrame* frame, DWORD pid = 0, PCWSTR type = nullptr);
+	explicit CObjectsView(IMainFrame* frame, PCWSTR type = nullptr);
 
 	void OnFinalMessage(HWND /*hWnd*/) override;
 	CString GetTitle() const override;
@@ -21,31 +21,30 @@ public:
 	void DoSort(SortInfo const* si);
 	CString GetColumnText(HWND, int row, int col) const;
 	int GetRowImage(HWND, int row, int col) const;
-	void UpdateUI(bool force = false);
+	//void UpdateUI(bool force = false);
 	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
-	bool OnRightClickList(HWND, int row, int col, POINT const& pt);
-	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
+	//bool OnRightClickList(HWND, int row, int col, POINT const& pt);
+	//void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
 	void OnPageActivated(bool active);
-	void DoTimerUpdate();
+	//void DoTimerUpdate();
 
-	DWORD OnPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
-	DWORD OnItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
+	//DWORD OnPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
+	//DWORD OnItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
 
 	const UINT WM_CONTINUEUPDATE = WM_APP + 111;
 
-	BEGIN_MSG_MAP(CHandlesView)
-		MESSAGE_HANDLER(WM_CONTINUEUPDATE, OnContinueUpdate)
+	BEGIN_MSG_MAP(CObjectsView)
+//		MESSAGE_HANDLER(WM_CONTINUEUPDATE, OnContinueUpdate)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
-		COMMAND_ID_HANDLER(ID_HANDLELIST_CLOSE, OnCloseHandles)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnViewRefresh)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-		CHAIN_MSG_MAP(CTimerManager<CHandlesView>)
-		CHAIN_MSG_MAP(CCustomDraw<CHandlesView>)
-		CHAIN_MSG_MAP(CViewBase<CHandlesView>)
-		CHAIN_MSG_MAP(CVirtualListView<CHandlesView>)
-		CHAIN_MSG_MAP_ALT(CTimerManager<CHandlesView>, 1)
+//		CHAIN_MSG_MAP(CTimerManager<CObjectsView>)
+//		CHAIN_MSG_MAP(CCustomDraw<CObjectsView>)
+		CHAIN_MSG_MAP(CViewBase<CObjectsView>)
+		CHAIN_MSG_MAP(CVirtualListView<CObjectsView>)
+//		CHAIN_MSG_MAP_ALT(CTimerManager<CObjectsView>, 1)
 	END_MSG_MAP()
 
 private:
@@ -65,26 +64,24 @@ private:
 	LRESULT OnViewProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;
 	LRESULT OnPauseResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnCloseHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	struct HandleInfoEx : HandleInfo {
-		CString ProcessName;
+	struct ObjectInfoEx : ObjectInfo {
 		CString Type;
 		DWORD64 TargetTime;
-		bool NameChecked : 1{ false };
-		bool NewHandle : 1{false };
-		bool ClosedHandle : 1 { false};
+		bool NameChecked : 1 { false };
+		bool NewObject : 1 {false };
+		bool DeletedObject : 1 { false};
 	};
 
 	enum class ColumnType {
 		None,
-		Type, Handle, Name, Address, Attributes, Access, DecodedAccess, ProcessName, PID,
+		Type, Handles, RefCount, Name, Address,
 	};
 
 	CListViewCtrl m_List;
-	ProcessHandlesTracker<HandleInfoEx> m_Tracker;
-	SortedFilteredVector<std::shared_ptr<HandleInfoEx>> m_Handles;
-	std::vector<std::shared_ptr<HandleInfoEx>> m_NewHandles, m_TempHandles;
+	SortedFilteredVector<std::shared_ptr<ObjectInfoEx>> m_Objects;
+	ProcessObjectsTracker<ObjectInfoEx> m_Tracker;
+	std::vector<std::shared_ptr<ObjectInfoEx>> m_NewObjects, m_TempObjects;
 	DWORD m_Pid;
 	CString m_TypeName;
 	wil::unique_handle m_hProcess;

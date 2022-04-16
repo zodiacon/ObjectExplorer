@@ -44,9 +44,11 @@ void CMainFrame::InitMenu() {
 		{ ID_OBJECTLIST_SHOWDIRECTORIESINLIST, IDI_DIRECTORY },
 		{ ID_OBJECTLIST_LISTMODE, IDI_LIST },
 		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET },
+		{ ID_OBJECTS_ALLOBJECTS, IDI_OBJECTS },
 		{ ID_SYSTEM_ZOMBIEPROCESSES, IDI_PROCESS_ZOMBIE },
 		{ ID_OBJECTS_HANDLESINPROCESS, IDI_MAGNET2 },
 		{ ID_TYPESLIST_ALLHANDLES, IDI_MAGNET2 },
+		{ ID_TYPESLIST_ALLOBJECTS, IDI_OBJECTS },
 		{ ID_HANDLELIST_CLOSE, IDI_DELETE },
 	};
 
@@ -93,6 +95,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
 		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET, BTNS_BUTTON, L"All Handles" },
+		{ ID_OBJECTS_ALLOBJECTS, IDI_OBJECTS, BTNS_BUTTON, L"All Objects" },
 		{ ID_OBJECTS_HANDLESINPROCESS, IDI_MAGNET2, BTNS_BUTTON, L"Process Handles" },
 	};
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
@@ -255,6 +258,11 @@ void CMainFrame::SetStatusText(int index, PCWSTR text) {
 
 LRESULT CMainFrame::OnAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ViewFactory::Get().CreateView(ViewType::AllHandles);
+	return 0;
+}
+
+LRESULT CMainFrame::OnAllObjects(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ViewFactory::Get().CreateView(ViewType::Objects);
 	return 0;
 }
 

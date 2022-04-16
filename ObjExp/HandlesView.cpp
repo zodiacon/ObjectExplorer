@@ -95,13 +95,13 @@ CString CHandlesView::GetColumnText(HWND h, int row, int col) const {
 	auto& hi = m_Handles[row];
 	switch (GetColumnManager(h)->GetColumnTag<ColumnType>(col)) {
 		case ColumnType::Type: return hi->Type;
-		case ColumnType::Handle: return std::format("0x{:X}", hi->HandleValue).c_str();
-		case ColumnType::Address: return std::format("0x{:X}", (ULONGLONG)hi->Object).c_str();
+		case ColumnType::Handle: return std::format(L"0x{:X}", hi->HandleValue).c_str();
+		case ColumnType::Address: return std::format(L"0x{:X}", (ULONGLONG)hi->Object).c_str();
 		case ColumnType::ProcessName:
 			if (hi->ProcessName.IsEmpty())
 				hi->ProcessName = ProcessHelper::GetProcessName(hi->ProcessId);
 			return hi->ProcessName;
-		case ColumnType::Access: return std::format("0x{:08X}", hi->GrantedAccess).c_str();
+		case ColumnType::Access: return std::format(L"0x{:08X}", hi->GrantedAccess).c_str();
 		case ColumnType::Name:
 			if (!hi->NameChecked) {
 				hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex);
@@ -113,6 +113,7 @@ CString CHandlesView::GetColumnText(HWND h, int row, int col) const {
 		case ColumnType::DecodedAccess: return AccessMaskDecoder::DecodeAccessMask(hi->Type, hi->GrantedAccess);
 
 	}
+	ATLASSERT(false);
 	return CString();
 }
 

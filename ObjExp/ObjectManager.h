@@ -22,18 +22,16 @@ struct HandleInfo {
 	ULONG HandleAttributes;
 	USHORT ObjectTypeIndex;
 	std::wstring Name;
-	ObjectInfo* ObjectInfo;
 };
 
 struct ObjectInfo {
 	PVOID Object;
-	int HandleCount;
-	int PointerCount;
-	CString Name;
+	ULONG HandleCount;
+	ULONG PointerCount;
+	std::wstring Name;
 	USHORT TypeIndex;
-	std::vector<std::shared_ptr<HandleInfo>> Handles;
-	wil::unique_handle LocalHandle;
-	PCWSTR TypeName;
+	HandleInfo FirstHandle;
+	ULONG ManualHandleCount;
 };
 
 struct ObjectTypeInfo {
@@ -59,7 +57,6 @@ struct ObjectTypeInfo {
 	uint8_t TypeIndex;
 	bool SecurityRequired;
 	bool MaintainHandleCount;
-	std::vector<std::shared_ptr<ObjectInfo>> Objects;
 };
 
 struct ObjectNameAndType {
@@ -93,31 +90,75 @@ class ObjectManager {
 public:
 	using ObjectTypePtr = std::shared_ptr<ObjectTypeInfo>;
 
-	bool EnumHandlesAndObjects(PCWSTR type = nullptr, DWORD pid = 0, PCWSTR prefix = nullptr, bool namedOnly = false);
+	template<typename T = ObjectInfo> requires std::is_base_of_v<ObjectInfo, T>
+	static std::vector<std::shared_ptr<T>> EnumObjects(PCWSTR type = nullptr, bool namedOnly = false, bool skipNames = false) {
+		if (s_types.empty())
+			EnumTypes();
+
+		auto p = EnumHandlesBuffer();
+		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
+		auto count = p->NumberOfHandles;
+		std::vector<std::shared_ptr<T>> objects;
+		objects.reserve(filteredTypeIndex < 0 ? TotalObjects + 100 : 1024);
+		std::unordered_map<PVOID, std::shared_ptr<T>> objectMap;
+
+		for (decltype(count) i = 0; i < count; i++) {
+			auto& handle = p->Handles[i];
+			if (filteredTypeIndex >= 0 && handle.ObjectTypeIndex != filteredTypeIndex)
+				continue;
+
+			std::shared_ptr<T> object;
+			if (auto it = objectMap.find(handle.Object); it != objectMap.end())
+				object = it->second;
+			else {
+				object = std::make_shared<T>();
+				object->ManualHandleCount = 0;
+				if (!skipNames) {
+					auto name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex);
+					if (namedOnly && name.IsEmpty())
+						continue;
+					object->Name = name;
+				}
+				object->TypeIndex = handle.ObjectTypeIndex;
+				object->Object = handle.Object;
+				objects.push_back(object);
+				auto hDup = DupHandle((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId);
+				if (hDup) {
+					NT::OBJECT_BASIC_INFORMATION info;
+					if (NT_SUCCESS(NT::NtQueryObject(hDup, NT::ObjectBasicInformation, &info, sizeof(info)))) {
+						object->HandleCount = info.HandleCount - 1;	// subtract our own handle
+						object->PointerCount = info.PointerCount;
+					}
+					::CloseHandle(hDup);
+				}
+				objectMap.insert({ handle.Object, object });
+			}
+			if (object->ManualHandleCount == 0) {
+				HandleInfo hi;
+				hi.HandleValue = (ULONG)handle.HandleValue;
+				hi.GrantedAccess = handle.GrantedAccess;
+				hi.HandleAttributes = handle.HandleAttributes;
+				hi.ProcessId = (ULONG)handle.UniqueProcessId;
+				object->FirstHandle = std::move(hi);
+			}
+			object->ManualHandleCount++;
+		}
+		return objects;
+	}
+
+	std::vector<HandleInfo> FindHandlesForObject(std::string_view name);
+	std::vector<HandleInfo> FindHandlesForObject(PVOID address);
+
 	bool EnumHandles(PCWSTR type = nullptr, DWORD pid = 0, bool namedObjectsOnly = false);
 	static int EnumTypes();
 
 	template<typename T = HandleInfo> requires std::is_base_of_v<HandleInfo, T>
 	static std::vector<std::shared_ptr<T>> EnumHandles2(PCWSTR type = nullptr, DWORD pid = 0, bool namedObjectsOnly = false, bool skipNames = false) {
-		EnumTypes();
+		if(s_types.empty())
+			EnumTypes();
 
-		ULONG len = 1 << 25;
-		wil::unique_virtualalloc_ptr<> buffer;
-		do {
-			buffer.reset(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-			auto status = NT::NtQuerySystemInformation(NT::SystemExtendedHandleInformation, buffer.get(), len, &len);
-			if (status == STATUS_INFO_LENGTH_MISMATCH) {
-				len <<= 1;
-				continue;
-			}
-			if (status == 0)
-				break;
-			return {};
-		} while (true);
-
+		auto p = EnumHandlesBuffer();
 		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
-
-		auto p = (NT::SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
 		auto count = p->NumberOfHandles;
 		std::vector<std::shared_ptr<T>> handles;
 		handles.reserve(pid == 0 ? count : count / 16);
@@ -151,7 +192,6 @@ public:
 
 	const std::vector<std::shared_ptr<ObjectInfo>>& GetObjects() const;
 
-	static HANDLE DupHandle(ObjectInfo* pObject, ACCESS_MASK access = GENERIC_READ);
 	static HANDLE DupHandle(HANDLE h, DWORD pid, ACCESS_MASK access = GENERIC_READ, DWORD flags = 0);
 	static NTSTATUS OpenObject(PCWSTR path, PCWSTR type, HANDLE& handle, DWORD access = GENERIC_READ);
 	static std::pair<HANDLE, DWORD> FindFirstHandle(PCWSTR name, USHORT index, DWORD pid = 0);
@@ -167,7 +207,6 @@ public:
 	using Change = std::tuple<std::shared_ptr<ObjectTypeInfo>, ChangeType, int32_t>;
 	static const std::vector<Change>& GetChanges();
 
-	bool GetObjectInfo(ObjectInfo* p, HANDLE hObject, ULONG pid, USHORT type) const;
 	static CString GetObjectName(HANDLE hObject, ULONG pid, USHORT type);
 	static CString GetObjectName(HANDLE hDup, USHORT type);
 
@@ -180,6 +219,9 @@ public:
 	static CString GetSymbolicLinkTarget(PCWSTR path);
 
 	inline static int64_t TotalHandles, TotalObjects, PeakHandles, PeakObjects;
+
+private:
+	static wil::unique_virtualalloc_ptr<NT::SYSTEM_HANDLE_INFORMATION_EX> EnumHandlesBuffer();
 
 private:
 	inline static std::vector<ObjectTypePtr> s_types;

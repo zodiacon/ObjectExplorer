@@ -134,6 +134,14 @@ LRESULT CObjectTypesView::OnShowAllHandles(WORD, WORD, HWND, BOOL&) {
 	return 0;
 }
 
+LRESULT CObjectTypesView::OnShowAllObjects(WORD, WORD, HWND, BOOL&) {
+	ATLASSERT(m_List.GetSelectedCount() == 1);
+	auto& item = m_Items[m_List.GetNextItem(-1, LVNI_SELECTED)];
+	ViewFactory::Get().CreateView(ViewType::Objects, 0, item->TypeName);
+
+	return 0;
+}
+
 void CObjectTypesView::DoSort(SortInfo const* si) {
 	if (si == nullptr)
 		return;
