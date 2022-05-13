@@ -15,7 +15,6 @@ class CHandlesView :
 public:
 	explicit CHandlesView(IMainFrame* frame, DWORD pid = 0, PCWSTR type = nullptr);
 
-	void OnFinalMessage(HWND /*hWnd*/) override;
 	CString GetTitle() const override;
 	void Refresh();
 	void DoSort(SortInfo const* si);

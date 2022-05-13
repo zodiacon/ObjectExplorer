@@ -10,10 +10,6 @@
 CObjectsView::CObjectsView(IMainFrame* frame, PCWSTR type) : CViewBase(frame), m_TypeName(type), m_Tracker(type) {
 }
 
-void CObjectsView::OnFinalMessage(HWND) {
-	delete this;
-}
-
 CString CObjectsView::GetTitle() const {
 	if (m_TypeName.IsEmpty())
 		return L"All Objects";

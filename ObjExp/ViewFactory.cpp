@@ -5,17 +5,19 @@
 #include "ObjectManagerView.h"
 #include "HandlesView.h"
 #include "ObjectsView.h"
+#include "ZombieProcessesView.h"
 
 ViewFactory& ViewFactory::Get() {
     static ViewFactory factory;
     return factory;
 }
 
-bool ViewFactory::Init(IMainFrame* frame, CTabView& tabs) {
+bool ViewFactory::Init(IMainFrame* frame, CCustomTabView& tabs) {
     m_pFrame = frame;
     m_tabs = &tabs;
     UINT icons[] = {
         IDI_TYPES, IDI_PACKAGE, IDI_MAGNET, IDI_MAGNET2, IDI_OBJECTS,
+        IDI_PROCESS_ZOMBIE
     };
     CImageList images;
     images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
@@ -53,6 +55,15 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
             auto p = new CObjectManagerView(m_pFrame);
             p->Create(*m_tabs, CWindow::rcDefault, nullptr, style, 0);
             image = 1;
+            view = p;
+            break;
+        }
+
+        case ViewType::ZombieProcesses:
+        {
+            auto p = new CZombieProcessesView(m_pFrame);
+            p->Create(*m_tabs, CWindow::rcDefault, nullptr, style, 0);
+            image = 5;
             view = p;
             break;
         }

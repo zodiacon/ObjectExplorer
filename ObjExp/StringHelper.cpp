@@ -54,3 +54,7 @@ CString StringHelper::HandleAttributesToString(DWORD attributes) {
 		text += L"Audit, ";
 	return text.Left(text.GetLength() - 2) + L" (" + std::to_wstring(attributes).c_str() + L")";
 }
+
+CString StringHelper::TimeSpanToString(DWORD64 ts) {
+	return CTimeSpan(ts / 10000000).Format(L"%H:%M:%S") + std::format(L".{:03}", ts / 10000 % 1000).c_str();
+}

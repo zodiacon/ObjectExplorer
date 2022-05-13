@@ -16,7 +16,6 @@ public:
 
 	BOOL PreTranslateMessage(MSG* pMsg);
 
-	void OnFinalMessage(HWND /*hWnd*/) override;
 	CString GetTitle() const override;
 
 	CString GetColumnText(HWND, int row, int col) const;

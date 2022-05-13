@@ -27,6 +27,7 @@ extern CAppModule _Module;
 #include <atlctrlw.h>
 #include <atlsplit.h>
 #include <atltypes.h>
+#include <atltime.h>
 #include <commoncontrols.h>
 #include <aclui.h>
 

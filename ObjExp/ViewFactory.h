@@ -3,6 +3,7 @@
 #include "ObjectTypesView.h"
 #include "Interfaces.h"
 #include <type_traits>
+#include <CustomTabView.h>
 
 enum class ViewType {
 	ObjectTypes,
@@ -13,6 +14,7 @@ enum class ViewType {
 	ProcessHandles,
 	Objects,
 	Search,
+	ZombieProcesses,
 };
 
 enum class ViewIconType {
@@ -22,7 +24,7 @@ enum class ViewIconType {
 struct ViewFactory final {
 	static ViewFactory& Get();
 	
-	bool Init(IMainFrame* frame, CTabView& tabs);
+	bool Init(IMainFrame* frame, CCustomTabView& tabs);
 	IView* CreateView(ViewType type, DWORD pid = 0, PCWSTR sparam = nullptr);
 	void SetTabIcon(IView* view, ViewIconType iconType);
 
@@ -30,7 +32,7 @@ private:
 	ViewFactory() = default;
 
 	IMainFrame* m_pFrame{ nullptr };
-	CTabView* m_tabs;
+	CCustomTabView* m_tabs;
 	std::unordered_map<ViewIconType, int> m_tabIcons;
 };
 

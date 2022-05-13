@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "MainFrm.h"
 #include "SecurityHelper.h"
+#include <ThemeHelper.h>
 
 CAppModule _Module;
 
@@ -33,11 +34,12 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	HRESULT hRes = ::CoInitialize(nullptr);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	AtlInitCommonControls(ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES);
+	AtlInitCommonControls(ICC_BAR_CLASSES | ICC_COOL_CLASSES | ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES);
 
 	hRes = _Module.Init(nullptr, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
+	ThemeHelper::Init();
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 
 	_Module.Term();

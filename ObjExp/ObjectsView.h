@@ -15,7 +15,6 @@ class CObjectsView :
 public:
 	explicit CObjectsView(IMainFrame* frame, PCWSTR type = nullptr);
 
-	void OnFinalMessage(HWND /*hWnd*/) override;
 	CString GetTitle() const override;
 	void Refresh();
 	void DoSort(SortInfo const* si);

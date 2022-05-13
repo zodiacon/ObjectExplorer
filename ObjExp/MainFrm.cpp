@@ -1,7 +1,7 @@
 
 #include "pch.h"
 #include "resource.h"
-#include "aboutdlg.h"
+#include "AboutDlg.h"
 #include "ViewBase.h"
 #include "MainFrm.h"
 #include "SecurityHelper.h"
@@ -9,6 +9,7 @@
 #include "ViewFactory.h"
 #include <Psapi.h>
 #include "ProcessSelectorDlg.h"
+#include <ThemeHelper.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -23,7 +24,7 @@ BOOL CMainFrame::OnIdle() {
 }
 
 void CMainFrame::InitMenu() {
-	struct {
+	const struct {
 		int id;
 		UINT icon;
 		HICON hIcon{ nullptr };
@@ -77,9 +78,11 @@ bool CMainFrame::AddToolBar(HWND tb) {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ThemeHelper::SetCurrentTheme(m_DefaultTheme);
+
 	CreateSimpleStatusBar();
 	m_StatusBar.SubclassWindow(m_hWndStatusBar);
-	int parts[] = { 100, 200, 300, 430, 560, 750, 990, 1100, 1200 };
+	int parts[] = { 100, 200, 300, 430, 560, 750, 990, 1200, 1400 };
 	m_StatusBar.SetParts(_countof(parts), parts);
 	SetTimer(1, 2000);
 
@@ -201,6 +204,7 @@ LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int nPage = wID - ID_WINDOW_TABFIRST;
 	m_view.SetActivePage(nPage);
+	ActivatePage(nPage);
 
 	return 0;
 }
@@ -215,6 +219,12 @@ LRESULT CMainFrame::OnRunAsAdmin(WORD, WORD, HWND, BOOL&) {
 
 LRESULT CMainFrame::OnPageActivated(int, LPNMHDR hdr, BOOL&) {
 	auto page = static_cast<int>(hdr->idFrom);
+	ActivatePage(page);
+
+	return 0;
+}
+
+void CMainFrame::ActivatePage(int page) {
 	if (m_CurrentPage >= 0 && m_CurrentPage < m_view.GetPageCount()) {
 		((IView*)m_view.GetPageData(m_CurrentPage))->PageActivated(false);
 	}
@@ -224,9 +234,8 @@ LRESULT CMainFrame::OnPageActivated(int, LPNMHDR hdr, BOOL&) {
 		view->PageActivated(true);
 	}
 	m_CurrentPage = page;
-
-	return 0;
 }
+
 
 #define ROUND_MEM(x) ((x + (1 << 17)) >> 18)
 
@@ -271,6 +280,11 @@ LRESULT CMainFrame::OnHandlesInProcess(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	if (dlg.DoModal() == IDOK) {
 		ViewFactory::Get().CreateView(ViewType::ProcessHandles, dlg.GetSelectedProcess());
 	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnZombieProcesses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ViewFactory::Get().CreateView(ViewType::ZombieProcesses);
 	return 0;
 }
 

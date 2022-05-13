@@ -17,10 +17,6 @@ BOOL CObjectTypesView::PreTranslateMessage(MSG* pMsg) {
 	return FALSE;
 }
 
-void CObjectTypesView::OnFinalMessage(HWND /*hWnd*/) {
-	delete this;
-}
-
 CString CObjectTypesView::GetTitle() const {
 	return L"Object Types";
 }
@@ -37,7 +33,7 @@ CString CObjectTypesView::GetColumnText(HWND, int row, int col) const {
 		case ColumnType::PeakHandles: return std::to_wstring(item->HighWaterNumberOfHandles).c_str();
 		case ColumnType::DefaultPaged: return std::to_wstring(item->DefaultPagedPoolCharge).c_str();
 		case ColumnType::DefaultNonPaged: return std::to_wstring(item->DefaultNonPagedPoolCharge).c_str();
-		case ColumnType::ValidAccess: text.Format(L"0x%08X", item->ValidAccessMask); break;
+		case ColumnType::ValidAccess: return std::format(L"0x{:08X}", item->ValidAccessMask).c_str();
 		case ColumnType::Pool: return StringHelper::PoolTypeToString(item->PoolType);
 		case ColumnType::GenericRead:
 			text.Format(L"0x%08X", item->GenericMapping.GenericRead);

@@ -17,7 +17,6 @@ public:
 	using CViewBase::CViewBase;
 
 	CString GetDirectoryPath() const;
-	void OnFinalMessage(HWND) override;
 	void DoSort(const SortInfo* si);
 	CString GetColumnText(HWND, int row, int col);
 	int GetRowImage(HWND, int row, int col) const;

@@ -12,6 +12,10 @@ protected:
 		CHAIN_MSG_MAP(TBase)
 	END_MSG_MAP()
 
+	void OnFinalMessage(HWND /*hWnd*/) override {
+		delete this;
+	}
+
 	bool ProcessCommand(UINT cmd) {
 		LRESULT result;
 		return ProcessWindowMessage(static_cast<T*>(this)->m_hWnd, WM_COMMAND, LOWORD(cmd), 0, result, 0);

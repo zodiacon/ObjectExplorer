@@ -89,7 +89,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,7 +123,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,7 +157,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -193,7 +193,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -224,6 +224,7 @@
     <ClCompile Include="HandlesView.cpp" />
     <ClCompile Include="DriverHelper.cpp" />
     <ClCompile Include="GenericObjectProperties.cpp" />
+    <ClCompile Include="ImageIconCache.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="ObjectHelpers.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
@@ -246,6 +247,7 @@
     <ClCompile Include="SecurityInfo.cpp" />
     <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="ViewFactory.cpp" />
+    <ClCompile Include="ZombieProcessesView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
@@ -253,6 +255,7 @@
     <ClInclude Include="DriverHelper.h" />
     <ClInclude Include="GenericObjectProperties.h" />
     <ClInclude Include="HandlesView.h" />
+    <ClInclude Include="ImageIconCache.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="NtDll.h" />
@@ -275,6 +278,7 @@
     <ClInclude Include="TimerManager.h" />
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="ViewFactory.h" />
+    <ClInclude Include="ZombieProcessesView.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ObjExp.rc" />
@@ -350,7 +354,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WTLHelper\WTLHelper\WTLHelper.vcxproj">
+    <ProjectReference Include="..\WTLHelper\WTLHelper.vcxproj">
       <Project>{ae53419f-a769-4548-8e15-e311904df7df}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -358,6 +362,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\wtl.10.0.10320\build\native\wtl.targets" Condition="Exists('..\packages\wtl.10.0.10320\build\native\wtl.targets')" />
     <Import Project="..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="..\packages\Detours.4.0.1\build\native\Detours.targets" Condition="Exists('..\packages\Detours.4.0.1\build\native\Detours.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -365,5 +370,6 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\wtl.10.0.10320\build\native\wtl.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\wtl.10.0.10320\build\native\wtl.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.ImplementationLibrary.1.0.220201.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+    <Error Condition="!Exists('..\packages\Detours.4.0.1\build\native\Detours.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Detours.4.0.1\build\native\Detours.targets'))" />
   </Target>
 </Project>

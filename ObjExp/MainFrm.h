@@ -6,6 +6,8 @@
 
 #include "OwnerDrawnMenu.h"
 #include "Interfaces.h"
+#include "CustomTabView.h"
+#include <Theme.h>
 
 class CMainFrame :
 	public CFrameWindowImpl<CMainFrame>,
@@ -32,6 +34,7 @@ protected:
 		}
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_OBJECTS_OBJECTTYPES, OnObjectTypes)
+		COMMAND_ID_HANDLER(ID_SYSTEM_ZOMBIEPROCESSES, OnZombieProcesses)
 		COMMAND_ID_HANDLER(ID_OBJECTS_OBJECTMANAGERNAMESPACE, OnObjectManager)
 		COMMAND_ID_HANDLER(ID_OBJECTS_ALLHANDLES, OnAllHandles)
 		COMMAND_ID_HANDLER(ID_OBJECTS_ALLOBJECTS, OnAllObjects)
@@ -57,7 +60,7 @@ private:
 	CUpdateUIBase& GetUI() override;
 	bool AddToolBar(HWND tb) override;
 	void SetStatusText(int index, PCWSTR text) override;
-
+	void ActivatePage(int page);
 	void InitMenu();
 
 	// Handler prototypes (uncomment arguments if needed):
@@ -81,8 +84,10 @@ private:
 	LRESULT OnAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnAllObjects(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnHandlesInProcess(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnZombieProcesses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	CTabView m_view;
+	CCustomTabView m_view;
 	CMultiPaneStatusBarCtrl m_StatusBar;
 	int m_CurrentPage{ -1 };
+	Theme m_DefaultTheme{ true }, m_DarkTheme;
 };

@@ -14,10 +14,6 @@ CString CObjectManagerView::GetDirectoryPath() const {
 	return GetFullItemPath(m_Tree, m_Tree.GetSelectedItem()).Mid(1);
 }
 
-void CObjectManagerView::OnFinalMessage(HWND) {
-	delete this;
-}
-
 void CObjectManagerView::DoSort(const SortInfo* si) {
 	if (si == nullptr)
 		return;

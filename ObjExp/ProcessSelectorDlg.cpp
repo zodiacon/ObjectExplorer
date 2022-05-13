@@ -15,7 +15,7 @@ CString CProcessSelectorDlg::GetColumnText(HWND, int row, int col) const {
     switch (col) {
         case 0: return item.Name.c_str();
         case 1: return std::to_wstring(item.Id).c_str();
-        case 2: return std::to_wstring(item.Session).c_str();
+        case 2: return item.Session == -1 ? L"<access denoied>" : std::to_wstring(item.Session).c_str();
         case 3: return item.UserName.c_str();
     }
     return CString();
@@ -167,7 +167,8 @@ void CProcessSelectorDlg::InitProcesses() {
         ProcessInfo pi;
         pi.Name = pe.szExeFile;
         pi.Id = pe.th32ProcessID;
-        ::ProcessIdToSessionId(pi.Id, &pi.Session);
+        if (!::ProcessIdToSessionId(pi.Id, &pi.Session))
+            pi.Session = -1;
         if (pi.Name.rfind(L'.') == std::wstring::npos) {
             pi.UserName = L"NT AUTHORITY\\System";
             pi.Image = 0;
