@@ -2,7 +2,6 @@
 #include "ZombieProcessesView.h"
 #include "ObjectManager.h"
 #include "ProcessHelper.h"
-#include <Psapi.h>
 #include "StringHelper.h"
 #include <SortHelper.h>
 #include "ProcessHelper.h"
@@ -41,17 +40,34 @@ CString CZombieProcessesView::GetColumnText(HWND, int row, int col) const {
 		case ColumnType::Pid: return std::format(L"{}", item.Pid).c_str();
 		case ColumnType::Handles: return std::format("{}", item.Handles.size()).c_str();
 		case ColumnType::ExitCode: return std::format("0x{:X}", item.ExitCode).c_str();
-		case ColumnType::CreateTime: return CTime(*(FILETIME*)&item.CreateTime).Format(L"%c");
-		case ColumnType::ExitTime: return CTime(*(FILETIME*)&item.ExitTime).Format(L"%c");
+		case ColumnType::CreateTime: return CTime(*(FILETIME*)&item.CreateTime).Format(L"%x %X");
+		case ColumnType::ExitTime: return CTime(*(FILETIME*)&item.ExitTime).Format(L"%x %X");
 		case ColumnType::KernelTime: return StringHelper::TimeSpanToString(item.KernelTime);
 		case ColumnType::UserTime: return StringHelper::TimeSpanToString(item.UserTime);
 		case ColumnType::CPUTime: return StringHelper::TimeSpanToString(item.UserTime + item.KernelTime);
+		case ColumnType::Details:
+			CString text;
+			// list the first 5 handles
+			auto count = std::min((int)item.Handles.size(), 5);
+			for (auto i = 0; i < count; i++) {
+				auto& hi = item.Handles[i];
+				text += std::format(L"H: 0x{:X} PID: {} ({}) ", hi.Handle, hi.Pid, ProcessHelper::GetProcessName2(hi.Pid)).c_str();
+			}
+			return text;
 	}
 	return CString();
 }
 
 int CZombieProcessesView::GetRowImage(HWND, int row, int col) const {
 	return ImageIconCache::Get().GetIcon(m_Items[row].FullPath);
+}
+
+int CZombieProcessesView::GetSaveColumnRange(int& start) const {
+	return 2;
+}
+
+bool CZombieProcessesView::IsSortable(HWND, int col) const {
+	return GetColumnManager(m_List)->GetColumnTag<ColumnType>(col) != ColumnType::Details;
 }
 
 void CZombieProcessesView::Refresh() {
@@ -104,11 +120,12 @@ LRESULT CZombieProcessesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"PID", LVCFMT_RIGHT, 90, ColumnType::Pid, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Handles", LVCFMT_RIGHT, 80, ColumnType::Handles, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Exit Code", LVCFMT_RIGHT, 80, ColumnType::ExitCode, ColumnFlags::Visible | ColumnFlags::Numeric);
-	cm->AddColumn(L"Start Time", LVCFMT_RIGHT, 160, ColumnType::CreateTime, ColumnFlags::Visible | ColumnFlags::Numeric);
-	cm->AddColumn(L"Exit Time", LVCFMT_RIGHT, 160, ColumnType::ExitTime, ColumnFlags::Visible | ColumnFlags::Numeric);
+	cm->AddColumn(L"Start Time", LVCFMT_RIGHT, 140, ColumnType::CreateTime, ColumnFlags::Visible | ColumnFlags::Numeric);
+	cm->AddColumn(L"Exit Time", LVCFMT_RIGHT, 140, ColumnType::ExitTime, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"CPU Time", LVCFMT_RIGHT, 110, ColumnType::CPUTime, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"User Time", LVCFMT_RIGHT, 110, ColumnType::UserTime, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Kernel Time", LVCFMT_RIGHT, 110, ColumnType::KernelTime, ColumnFlags::Visible | ColumnFlags::Numeric);
+	cm->AddColumn(L"Details", LVCFMT_LEFT, 500, ColumnType::Details);
 	cm->UpdateColumns();
 
 	Refresh();

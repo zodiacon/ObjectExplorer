@@ -246,6 +246,10 @@ void CHandlesView::DoTimerUpdate() {
 		}, this, nullptr));
 }
 
+int CHandlesView::GetSaveColumnRange(int& start) const {
+	return 3;
+}
+
 DWORD CHandlesView::OnPrePaint(int, LPNMCUSTOMDRAW) {
 	return CDRF_NOTIFYITEMDRAW;
 }

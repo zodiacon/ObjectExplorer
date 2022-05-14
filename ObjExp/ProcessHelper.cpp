@@ -17,6 +17,20 @@ CString ProcessHelper::GetProcessName(DWORD pid) {
 	return L"<Unknown>";
 }
 
+CString ProcessHelper::GetProcessName2(DWORD pid) {
+	wil::unique_handle hProcess(::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid));
+	if (hProcess) {
+		WCHAR name[MAX_PATH];
+		if (::GetProcessImageFileName(hProcess.get(), name, _countof(name))) {
+			return wcsrchr(name, L'\\') + 1;
+		}
+	}
+	EnumProcesses();
+	if (auto it = s_names.find(pid); it != s_names.end())
+		return it->second;
+	return L"<Unknown>";
+}
+
 std::wstring ProcessHelper::GetUserName(DWORD pid) {
 	if (pid <= 4)
 		return L"NT AUTHORITY\\System";

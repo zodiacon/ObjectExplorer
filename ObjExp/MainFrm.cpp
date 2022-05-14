@@ -84,7 +84,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_StatusBar.SubclassWindow(m_hWndStatusBar);
 	int parts[] = { 100, 200, 300, 430, 560, 750, 990, 1200, 1400 };
 	m_StatusBar.SetParts(_countof(parts), parts);
-	SetTimer(1, 2000);
+	SetTimer(100, 2000);
 
 	ToolBarButtonInfo const buttons[] = {
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
@@ -240,7 +240,7 @@ void CMainFrame::ActivatePage(int page) {
 #define ROUND_MEM(x) ((x + (1 << 17)) >> 18)
 
 LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM id, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if (id == 1) {
+	if (id == 100) {
 		static PERFORMANCE_INFORMATION pi = { sizeof(pi) };
 		CString text;
 		if (::GetPerformanceInfo(&pi, sizeof(pi))) {
@@ -253,6 +253,7 @@ LRESULT CMainFrame::OnTimer(UINT /*uMsg*/, WPARAM id, LPARAM /*lParam*/, BOOL& /
 			text.Format(L"RAM Avail: %u / %u GB", ROUND_MEM(pi.PhysicalAvailable), ROUND_MEM(pi.PhysicalTotal));
 			m_StatusBar.SetText(4, text);
 		}
+		ObjectManager::EnumTypes();
 		text.Format(L"Handles: %lld / %lld", ObjectManager::TotalHandles, ObjectManager::PeakHandles);
 		m_StatusBar.SetText(5, text);
 		text.Format(L"Objects: %lld / %lld", ObjectManager::TotalObjects, ObjectManager::PeakObjects);

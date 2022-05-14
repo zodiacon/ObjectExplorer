@@ -13,6 +13,8 @@ public:
 	void DoSort(SortInfo const* si);
 	CString GetColumnText(HWND, int row, int col) const;
 	int GetRowImage(HWND, int row, int col) const;
+	int GetSaveColumnRange(int& start) const;
+	bool IsSortable(HWND, int col) const;
 
 	BEGIN_MSG_MAP(CZombieProcessesView)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnRefresh)
@@ -23,12 +25,12 @@ public:
 
 private:
 	enum class ColumnType {
-		Pid, Name, Handles, CreateTime, ExitTime, KernelTime, UserTime, CPUTime, ExitCode,
+		Pid, Name, Handles, CreateTime, ExitTime, KernelTime, UserTime, CPUTime, ExitCode, Details,
 	};
 
 	struct HandleEntry {
-		DWORD Pid;
 		ULONG Handle;
+		DWORD Pid;
 	};
 	struct ZombieProcess {
 		DWORD Pid;

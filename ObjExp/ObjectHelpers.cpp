@@ -96,7 +96,7 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 		}
 	}
 	else if (::_wcsicmp(type, L"Process") == 0) {
-		auto name = ProcessHelper::GetProcessName(::GetProcessId(hObject));
+		auto name = ProcessHelper::GetProcessName2(::GetProcessId(hObject));
 		if (!name.IsEmpty())
 			props.push_back({ L"Image Name: ", name });
 		FILETIME create, exit, kernel, user;

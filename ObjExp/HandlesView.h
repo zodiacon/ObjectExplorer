@@ -26,6 +26,7 @@ public:
 	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
 	void OnPageActivated(bool active);
 	void DoTimerUpdate();
+	int GetSaveColumnRange(int& start) const;
 
 	DWORD OnPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);
 	DWORD OnItemPrePaint(int /*idCtrl*/, LPNMCUSTOMDRAW /*lpNMCustomDraw*/);

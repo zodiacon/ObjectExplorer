@@ -2,6 +2,7 @@
 
 struct ProcessHelper abstract final {
 	static CString GetProcessName(DWORD pid);
+	static CString GetProcessName2(DWORD pid);
 	static std::wstring GetUserName(DWORD pid);
 	static std::wstring GetDosNameFromNtName(PCWSTR name);
 
