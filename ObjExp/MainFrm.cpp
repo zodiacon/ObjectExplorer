@@ -47,6 +47,7 @@ void CMainFrame::InitMenu() {
 		{ ID_OBJECTS_ALLHANDLES, IDI_MAGNET },
 		{ ID_OBJECTS_ALLOBJECTS, IDI_OBJECTS },
 		{ ID_SYSTEM_ZOMBIEPROCESSES, IDI_PROCESS_ZOMBIE },
+		{ ID_SYSTEM_ZOMBIETHREADS, IDI_THREAD_ZOMBIE },
 		{ ID_OBJECTS_HANDLESINPROCESS, IDI_MAGNET2 },
 		{ ID_TYPESLIST_ALLHANDLES, IDI_MAGNET2 },
 		{ ID_TYPESLIST_ALLOBJECTS, IDI_OBJECTS },
@@ -289,3 +290,7 @@ LRESULT CMainFrame::OnZombieProcesses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	return 0;
 }
 
+LRESULT CMainFrame::OnZombieThreads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ViewFactory::Get().CreateView(ViewType::ZombieThreads);
+	return 0;
+}

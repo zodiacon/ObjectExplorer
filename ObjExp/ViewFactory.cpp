@@ -17,7 +17,7 @@ bool ViewFactory::Init(IMainFrame* frame, CCustomTabView& tabs) {
     m_tabs = &tabs;
     UINT icons[] = {
         IDI_TYPES, IDI_PACKAGE, IDI_MAGNET, IDI_MAGNET2, IDI_OBJECTS,
-        IDI_PROCESS_ZOMBIE
+        IDI_PROCESS_ZOMBIE, IDI_THREAD_ZOMBIE,
     };
     CImageList images;
     images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
@@ -60,10 +60,11 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
         }
 
         case ViewType::ZombieProcesses:
+        case ViewType::ZombieThreads:
         {
-            auto p = new CZombieProcessesView(m_pFrame);
+            auto p = new CZombieProcessesView(m_pFrame, type ==  ViewType::ZombieProcesses);
             p->Create(*m_tabs, CWindow::rcDefault, nullptr, style, 0);
-            image = 5;
+            image = type == ViewType::ZombieProcesses ? 5 : 6;
             view = p;
             break;
         }

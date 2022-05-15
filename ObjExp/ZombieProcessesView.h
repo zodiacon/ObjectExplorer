@@ -7,7 +7,8 @@ class CZombieProcessesView :
 	public CViewBase<CZombieProcessesView>,
 	public CVirtualListView<CZombieProcessesView> {
 public:
-	using CViewBase::CViewBase;
+	CZombieProcessesView(IMainFrame* frame, bool processes) : CViewBase(frame), m_Processes(processes) {}
+
 
 	CString GetTitle() const override;
 	void DoSort(SortInfo const* si);
@@ -25,21 +26,24 @@ public:
 
 private:
 	enum class ColumnType {
-		Pid, Name, Handles, CreateTime, ExitTime, KernelTime, UserTime, CPUTime, ExitCode, Details,
+		Id, Name, Handles, CreateTime, ExitTime, KernelTime, UserTime, CPUTime, ExitCode, Details,
+		Pid,
 	};
 
 	struct HandleEntry {
 		ULONG Handle;
 		DWORD Pid;
 	};
-	struct ZombieProcess {
-		DWORD Pid;
+	struct ZombieProcessOrThread {
+		DWORD Id, Pid;	// PID valid for thread objects
 		DWORD ExitCode{ 0 };
 		std::wstring Name, FullPath;
 		std::vector<HandleEntry> Handles;
 		DWORD64 CreateTime, ExitTime, KernelTime, UserTime;
 	};
 
+	void RefreshProcesses();
+	void RefreshThreads();
 	void Refresh();
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -48,6 +52,7 @@ private:
 	LRESULT OnRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
-	std::vector<ZombieProcess> m_Items;
+	std::vector<ZombieProcessOrThread> m_Items;
+	bool m_Processes;
 };
 

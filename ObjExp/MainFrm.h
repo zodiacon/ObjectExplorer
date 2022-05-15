@@ -35,6 +35,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_OBJECTS_OBJECTTYPES, OnObjectTypes)
 		COMMAND_ID_HANDLER(ID_SYSTEM_ZOMBIEPROCESSES, OnZombieProcesses)
+		COMMAND_ID_HANDLER(ID_SYSTEM_ZOMBIETHREADS, OnZombieThreads)
 		COMMAND_ID_HANDLER(ID_OBJECTS_OBJECTMANAGERNAMESPACE, OnObjectManager)
 		COMMAND_ID_HANDLER(ID_OBJECTS_ALLHANDLES, OnAllHandles)
 		COMMAND_ID_HANDLER(ID_OBJECTS_ALLOBJECTS, OnAllObjects)
@@ -85,6 +86,7 @@ private:
 	LRESULT OnAllObjects(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnHandlesInProcess(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnZombieProcesses(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnZombieThreads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_view;
 	CMultiPaneStatusBarCtrl m_StatusBar;

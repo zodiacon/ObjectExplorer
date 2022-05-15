@@ -17,7 +17,7 @@ PCWSTR StringHelper::PoolTypeToString(PoolType type) {
 
 CString StringHelper::SectionAttributesToString(DWORD value) {
 	CString text;
-	struct {
+	const struct {
 		DWORD attribute;
 		PCWSTR text;
 	} attributes[] = {
@@ -32,7 +32,7 @@ CString StringHelper::SectionAttributesToString(DWORD value) {
 		{ SEC_IMAGE_NO_EXECUTE, L"No Execute" },
 	};
 
-	for (auto& item : attributes)
+	for (auto const& item : attributes)
 		if (value & item.attribute)
 			(text += item.text) += L", ";
 	if (text.GetLength() == 0)

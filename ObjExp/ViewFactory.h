@@ -15,6 +15,7 @@ enum class ViewType {
 	Objects,
 	Search,
 	ZombieProcesses,
+	ZombieThreads,
 };
 
 enum class ViewIconType {

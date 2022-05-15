@@ -33,6 +33,7 @@ ImageIconCache::Map::const_iterator ImageIconCache::end() const {
 
 ImageIconCache::ImageIconCache() {
 	m_images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 32, 32);
+	m_images.AddIcon(AtlLoadSysIcon(IDI_APPLICATION));
 }
 
 HIMAGELIST ImageIconCache::GetImageList() const {

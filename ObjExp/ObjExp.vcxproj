@@ -342,6 +342,7 @@
     <Image Include="res\silo.ico" />
     <Image Include="res\target.ico" />
     <Image Include="res\thread.ico" />
+    <Image Include="res\threads-zombie.ico" />
     <Image Include="res\timer.ico" />
     <Image Include="res\token.ico" />
     <Image Include="res\type.ico" />

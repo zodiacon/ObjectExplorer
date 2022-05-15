@@ -109,7 +109,7 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 				//
 				// process dead
 				//
-				props.push_back({ L"Started: ", CTime(exit).Format(L"%c") });
+				props.push_back({ L"Exited: ", CTime(exit).Format(L"%c") });
 			}
 		}
 	}
@@ -119,7 +119,7 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 
 bool ObjectHelpers::IsNamedObjectType(USHORT index) {
 	auto type = ObjectManager::GetType(index)->TypeName;
-	static CString nonNamed[] = {
+	static const CString nonNamed[] = {
 		L"Process", L"Thread", L"Token", L"EtwRegistration", L"IoCompletion",
 		L"WaitCompletionPacket", L"TpWorkerFactory",
 	};

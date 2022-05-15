@@ -4,8 +4,9 @@
 #include "ToolbarHelper.h"
 
 template<typename T, typename TBase = CFrameWindowImpl<T, CWindow, CControlWinTraits>>
-struct CViewBase : IView, TBase {
-	CViewBase(IMainFrame* frame) : m_pFrame(frame) {}
+class CViewBase : public IView, public TBase {
+public:
+	explicit CViewBase(IMainFrame* frame) : m_pFrame(frame) {}
 
 protected:
 	BEGIN_MSG_MAP(CViewBase)

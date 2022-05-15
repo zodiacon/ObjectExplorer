@@ -98,10 +98,12 @@ BEGIN
     END
     POPUP "&System"
     BEGIN
-        MENUITEM "&Zombie Processes...",        ID_SYSTEM_ZOMBIEPROCESSES
         MENUITEM "&Processes",                  ID_SYSTEM_PROCESSES
         MENUITEM "&Threads",                    ID_SYSTEM_THREADS
         MENUITEM "&System Information",         ID_SYSTEM_SYSTEMINFORMATION
+        MENUITEM SEPARATOR
+        MENUITEM "&Zombie Processes",           ID_SYSTEM_ZOMBIEPROCESSES
+        MENUITEM "Zombie Threads",              ID_SYSTEM_ZOMBIETHREADS
     END
     POPUP "&Options"
     BEGIN
@@ -297,6 +299,8 @@ IDI_PROCESS_KILL        ICON                    "res\\process_kill.ico"
 IDI_PROCESS_ZOMBIE      ICON                    "res\\process_zombie.ico"
 
 IDI_MAGNET2             ICON                    "res\\magnet2.ico"
+
+IDI_THREAD_ZOMBIE       ICON                    "res\\threads-zombie.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
