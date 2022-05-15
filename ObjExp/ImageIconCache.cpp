@@ -2,6 +2,9 @@
 #include "ImageIconCache.h"
 
 int ImageIconCache::GetIcon(std::wstring const& path, HICON* phIcon) const {
+	if (path.empty())
+		return 0;
+
 	auto it = m_icons.find(path);
 	if (it != m_icons.end()) {
 		int index = it->second;
@@ -33,7 +36,7 @@ ImageIconCache::Map::const_iterator ImageIconCache::end() const {
 
 ImageIconCache::ImageIconCache() {
 	m_images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 32, 32);
-	m_images.AddIcon(AtlLoadSysIcon(IDI_APPLICATION));
+	m_images.AddIcon(AtlLoadSysIconImage(IDI_APPLICATION, 0, 16, 16));
 }
 
 HIMAGELIST ImageIconCache::GetImageList() const {

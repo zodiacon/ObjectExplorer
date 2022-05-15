@@ -73,7 +73,6 @@ bool CZombieProcessesView::IsSortable(HWND, int col) const {
 }
 
 void CZombieProcessesView::RefreshProcesses() {
-	CWaitCursor wait;
 	m_Items.clear();
 	m_Items.reserve(128);
 	std::unordered_map<DWORD, size_t> processes;
@@ -112,15 +111,14 @@ void CZombieProcessesView::RefreshProcesses() {
 }
 
 void CZombieProcessesView::RefreshThreads() {
-	CWaitCursor wait;
 	m_Items.clear();
-	m_Items.reserve(128);
+	m_Items.reserve(512);
 	std::unordered_map<DWORD, size_t> threads;
 	for (auto const& h : ObjectManager::EnumHandles2(L"Thread")) {
 		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)h->HandleValue, h->ProcessId, SYNCHRONIZE | THREAD_QUERY_LIMITED_INFORMATION);
 		if (hDup && WAIT_OBJECT_0 == ::WaitForSingleObject(hDup, 0)) {
 			//
-			// zombie process
+			// zombie thread
 			//
 			auto tid = ::GetThreadId(hDup);
 			if (tid) {
@@ -157,6 +155,7 @@ void CZombieProcessesView::RefreshThreads() {
 }
 
 void CZombieProcessesView::Refresh() {
+	CWaitCursor wait;
 	m_Processes ? RefreshProcesses() : RefreshThreads();
 }
 
