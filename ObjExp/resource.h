@@ -73,7 +73,6 @@
 #define IDI_PROCESS_ZOMBIE              274
 #define IDI_MAGNET2                     275
 #define IDD_PROCESSCHOOSER              276
-#define IDI_ICON1                       278
 #define IDI_THREAD_ZOMBIE               278
 #define IDC_TYPE                        1000
 #define IDC_NAME                        1001
@@ -91,9 +90,11 @@
 #define IDC_LABEL                       1012
 #define IDC_LABEL2                      1013
 #define IDC_LABEL3                      1014
+#define IDC_LABEL4                      1015
 #define IDC_VALUE                       1017
 #define IDC_VALUE2                      1018
 #define IDC_VALUE3                      1019
+#define IDC_VALUE4                      1020
 #define IDC_FRAME                       1022
 #define IDC_TEXT                        1023
 #define IDC_LIST                        1024

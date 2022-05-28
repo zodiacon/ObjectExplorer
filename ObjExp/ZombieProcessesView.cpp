@@ -6,6 +6,8 @@
 #include <SortHelper.h>
 #include "ProcessHelper.h"
 #include "ImageIconCache.h"
+#include "ClipboardHelper.h"
+#include "ObjectHelpers.h"
 
 CString CZombieProcessesView::GetTitle() const {
 	return m_Processes ? L"Zombie Processes" : L"Zombie Threads";
@@ -70,6 +72,18 @@ int CZombieProcessesView::GetSaveColumnRange(int& start) const {
 
 bool CZombieProcessesView::IsSortable(HWND, int col) const {
 	return GetColumnManager(m_List)->GetColumnTag<ColumnType>(col) != ColumnType::Details;
+}
+
+void CZombieProcessesView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState) {
+	UpdateUI();
+}
+
+bool CZombieProcessesView::OnDoubleClickList(HWND, int row, int col, CPoint const&) {
+	if (row < 0)
+		return false;
+
+	SendMessage(WM_COMMAND, ID_VIEW_PROPERTIES);
+	return true;
 }
 
 void CZombieProcessesView::RefreshProcesses() {
@@ -159,6 +173,14 @@ void CZombieProcessesView::Refresh() {
 	m_Processes ? RefreshProcesses() : RefreshThreads();
 }
 
+void CZombieProcessesView::UpdateUI(bool active) {
+	if (active) {
+		int selected = m_List.GetSelectedCount();
+		UI().UIEnable(ID_EDIT_COPY, selected > 0);
+		UI().UIEnable(ID_VIEW_PROPERTIES, selected == 1);
+	}
+}
+
 LRESULT CZombieProcessesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_List.Create(*this, rcDefault, nullptr, ListViewDefaultStyle | LVS_SHAREIMAGELISTS);
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
@@ -183,6 +205,31 @@ LRESULT CZombieProcessesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	Refresh();
 
+	return 0;
+}
+
+LRESULT CZombieProcessesView::OnEditCopy(WORD, WORD, HWND, BOOL&) const {
+	auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
+	ClipboardHelper::CopyText(m_hWnd, text);
+	return 0;
+}
+
+LRESULT CZombieProcessesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
+	ATLASSERT(m_List.GetSelectedCount() == 1);
+	int row = m_List.GetSelectionMark();
+	auto& item = m_Items[row];
+	HANDLE hObject = ObjectManager::DupHandle(ULongToHandle(item.Handles[0].Handle), item.Handles[0].Pid,
+		(m_Processes ? PROCESS_QUERY_INFORMATION : THREAD_QUERY_INFORMATION) | SYNCHRONIZE);
+	if(!hObject)
+		hObject = ObjectManager::DupHandle(ULongToHandle(item.Handles[0].Handle), item.Handles[0].Pid,
+			(m_Processes ? PROCESS_QUERY_LIMITED_INFORMATION : THREAD_QUERY_LIMITED_INFORMATION) | SYNCHRONIZE);
+
+	if (!hObject) {
+		AtlMessageBox(m_hWnd, PCWSTR(CString(L"Failed to open ") + (m_Processes ? L"process" : L"thread")), IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+	ObjectHelpers::ShowObjectProperties(hObject, m_Processes ? L"Process" : L"Thread");
+	::CloseHandle(hObject);
 	return 0;
 }
 

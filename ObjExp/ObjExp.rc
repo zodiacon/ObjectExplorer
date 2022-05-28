@@ -340,12 +340,14 @@ BEGIN
     LTEXT           "Address:",IDC_ADDRESSLABEL,141,10,30,8
     EDITTEXT        IDC_ADDRESS,172,7,85,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY
     GROUPBOX        "Static",IDC_FRAME,7,97,312,78
-    RTEXT           "",IDC_LABEL,16,113,55,8
-    RTEXT           "",IDC_LABEL2,16,126,55,8
-    LTEXT           "",IDC_VALUE,85,113,213,11,NOT WS_GROUP
-    LTEXT           "",IDC_VALUE2,85,125,213,11,NOT WS_GROUP
-    RTEXT           "",IDC_LABEL3,16,139,55,8
-    LTEXT           "",IDC_VALUE3,85,137,214,11,NOT WS_GROUP
+    RTEXT           "",IDC_LABEL,16,113,72,8
+    RTEXT           "",IDC_LABEL2,16,126,72,8
+    LTEXT           "",IDC_VALUE,95,113,213,11,NOT WS_GROUP
+    LTEXT           "",IDC_VALUE2,95,125,213,11,NOT WS_GROUP
+    RTEXT           "",IDC_LABEL3,16,139,72,8
+    LTEXT           "",IDC_VALUE3,95,137,214,11,NOT WS_GROUP
+    RTEXT           "",IDC_LABEL4,16,150,72,8
+    LTEXT           "",IDC_VALUE4,95,150,214,11,NOT WS_GROUP
 END
 
 IDD_OBJECTPROPS DIALOGEX 0, 0, 353, 228
@@ -513,6 +515,8 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 100, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,

@@ -113,6 +113,24 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 			}
 		}
 	}
+	else if (::_wcsicmp(type, L"Thread") == 0) {
+		auto name = ProcessHelper::GetProcessName2(::GetProcessIdOfThread(hObject));
+		if (!name.IsEmpty())
+			props.push_back({ L"Process Image Name: ", name });
+		FILETIME create, exit, kernel, user;
+		if (::GetThreadTimes(hObject, &create, &exit, &kernel, &user)) {
+			props.push_back({ L"Started: ", CTime(create).Format(L"%c") });
+			auto total = 10000 * (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user);	// msec
+			auto seconds = CTimeSpan(total * 1000).Format(L"%H:%M:%S");
+			props.push_back({ L"CPU Time: ", std::format(L"{}.{}", (PCWSTR)seconds, total % 1000).c_str() });
+			if (::WaitForSingleObject(hObject, 0) == WAIT_OBJECT_0) {
+				//
+				// thread dead
+				//
+				props.push_back({ L"Exited: ", CTime(exit).Format(L"%c") });
+			}
+		}
+	}
 
 	return props;
 }
