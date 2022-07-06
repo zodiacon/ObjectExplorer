@@ -8,6 +8,7 @@
 #include "TreeViewHelper.h"
 #include "QuickFindEdit.h"
 #include "SortedFilteredVector.h"
+#include <CustomSplitterWindow.h>
 
 class CObjectManagerView :
 	public CViewBase<CObjectManagerView>,
@@ -90,7 +91,7 @@ private:
 	CListViewCtrl m_List;
 	CQuickFindEdit m_QuickFind;
 	SortedFilteredVector<ObjectData> m_Objects;
-	CSplitterWindow m_Splitter;
+	CCustomSplitterWindow m_Splitter;
 	ObjectManager m_mgr;
 	CString m_FilterText;
 	CString m_SelectedObjectFullName;

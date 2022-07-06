@@ -164,19 +164,21 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	WCHAR text[] = L"Quick Find:";
 	REBARBANDINFO info = { sizeof(info) };
 	info.hwndChild = m_QuickFind;
-	info.fMask = RBBIM_IDEALSIZE | RBBIM_STYLE | RBBIM_TEXT | RBBIM_CHILD | RBBIM_SIZE | RBBIM_CHILDSIZE;
+	info.fMask = RBBIM_IDEALSIZE | RBBIM_STYLE | RBBIM_TEXT | RBBIM_CHILD | RBBIM_SIZE | RBBIM_CHILDSIZE | RBBIM_COLORS;
 	info.fStyle = RBBS_CHILDEDGE;
+	info.clrBack = ::GetSysColor(COLOR_WINDOW);
+	info.clrFore = ::GetSysColor(COLOR_WINDOWTEXT);
 	info.lpText = text;
 	info.cxIdeal = info.cx = info.cxMinChild = 200;
 	rb.InsertBand(-1, &info);
 	rb.MaximizeBand(1);
 	rb.LockBands(true);
 
-	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	m_hWndClient = m_Splitter.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_CLIENTEDGE);
 	m_List.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
-		WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
+		WS_CLIPSIBLINGS | LVS_REPORT | LVS_OWNERDATA | LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS);
 	m_Tree.Create(m_Splitter, rcDefault, nullptr, WS_CHILD | WS_VISIBLE |
-		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE);
+		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
 
 	CImageList images;

@@ -91,7 +91,8 @@ void CZombieProcessesView::RefreshProcesses() {
 	m_Items.reserve(128);
 	std::unordered_map<DWORD, size_t> processes;
 	for (auto const& h : ObjectManager::EnumHandles2(L"Process")) {
-		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)h->HandleValue , h->ProcessId, SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION);
+		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)h->HandleValue , h->ProcessId, 
+			SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION);
 		if (hDup && WAIT_OBJECT_0 == ::WaitForSingleObject(hDup, 0)) {
 			//
 			// zombie process
@@ -121,7 +122,6 @@ void CZombieProcessesView::RefreshProcesses() {
 	}
 	Sort(m_List);
 	m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
-	GetFrame()->SetStatusText(7, std::format(L"Zombie Processes: {}", m_Items.size()).c_str());
 }
 
 void CZombieProcessesView::RefreshThreads() {
@@ -129,7 +129,8 @@ void CZombieProcessesView::RefreshThreads() {
 	m_Items.reserve(512);
 	std::unordered_map<DWORD, size_t> threads;
 	for (auto const& h : ObjectManager::EnumHandles2(L"Thread")) {
-		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)h->HandleValue, h->ProcessId, SYNCHRONIZE | THREAD_QUERY_LIMITED_INFORMATION);
+		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)h->HandleValue, h->ProcessId, 
+			SYNCHRONIZE | THREAD_QUERY_LIMITED_INFORMATION);
 		if (hDup && WAIT_OBJECT_0 == ::WaitForSingleObject(hDup, 0)) {
 			//
 			// zombie thread
@@ -171,10 +172,12 @@ void CZombieProcessesView::RefreshThreads() {
 void CZombieProcessesView::Refresh() {
 	CWaitCursor wait;
 	m_Processes ? RefreshProcesses() : RefreshThreads();
+	UpdateUI();
 }
 
 void CZombieProcessesView::UpdateUI(bool active) {
 	if (active) {
+		GetFrame()->SetStatusText(7, std::format(L"Zombie Processes: {}", m_Items.size()).c_str());
 		int selected = m_List.GetSelectedCount();
 		UI().UIEnable(ID_EDIT_COPY, selected > 0);
 		UI().UIEnable(ID_VIEW_PROPERTIES, selected == 1);

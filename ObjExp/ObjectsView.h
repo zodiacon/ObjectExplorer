@@ -20,6 +20,8 @@ public:
 	void DoSort(SortInfo const* si);
 	CString GetColumnText(HWND, int row, int col) const;
 	int GetRowImage(HWND, int row, int col) const;
+	int GetSaveColumnRange(int& start) const;
+
 	//void UpdateUI(bool force = false);
 	bool OnDoubleClickList(HWND, int row, int col, POINT const& pt) const;
 	//bool OnRightClickList(HWND, int row, int col, POINT const& pt);

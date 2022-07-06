@@ -67,6 +67,11 @@ int CObjectsView::GetRowImage(HWND, int row, int col) const {
 	return ResourceManager::Get().GetTypeImage(m_Objects[row]->TypeIndex);
 }
 
+int CObjectsView::GetSaveColumnRange(int& start) const {
+	start = 2;
+	return 1;
+}
+
 void CObjectsView::UpdateStatusText() const {
 	GetFrame()->SetStatusText(7, std::format(L"Objects: {}", m_Objects.size()).c_str());
 }
@@ -103,7 +108,7 @@ LRESULT CObjectsView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
-	
+
 	Refresh();
 
 	return 0;
