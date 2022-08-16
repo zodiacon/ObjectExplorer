@@ -18,4 +18,5 @@ struct IView {
 	}
 	virtual HWND GetHwnd() const = 0;
 	virtual CString GetTitle() const = 0;
+	virtual void Refresh() {}
 };

@@ -224,6 +224,26 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 		},
 	},
 
+	{ L"Type", {
+		{ STANDARD_RIGHTS_REQUIRED | 1, L"OBJECT_TYPE_ALL_ACCESS", true },
+		{ 1,							L"CREATE" },
+		},
+	},
+
+	{ L"UserApcReserve", {
+		{ STANDARD_RIGHTS_REQUIRED | 3, L"MEMORY_RESERVE_ALL_ACCESS", true },
+		{ 1,							L"QUERY", },
+		{ 2,							L"CHANGE" },
+		},
+	},
+
+	{ L"IoCompletionReserve", {
+		{ STANDARD_RIGHTS_REQUIRED | 3, L"MEMORY_RESERVE_ALL_ACCESS", true },
+		{ 1,							L"QUERY", },
+		{ 2,							L"CHANGE" },
+		},
+	},
+
 	{ L"Section", {
 		{ SECTION_MAP_EXECUTE_EXPLICIT, L"MAP_EXECUTE_EXPLICIT" },
 		{ SECTION_ALL_ACCESS,			L"SECTION_ALL_ACCESS", true },
@@ -301,7 +321,11 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 
 	{ L"EtwRegistration", {
 		{ TRACELOG_REGISTER_GUIDS,		L"TRACELOG_REGISTER_GUIDS" },
-		{ WMIGUID_NOTIFICATION,			L"WMIGUID_NOTIFICATION" },
+		{ WMIGUID_NOTIFICATION,			L"NOTIFICATION" },
+		{ WMIGUID_QUERY,				L"QUERY" },
+		{ WMIGUID_SET,					L"SET" },
+		{ WMIGUID_READ_DESCRIPTION,		L"READ_DESCRIPTION" },
+		{ WMIGUID_EXECUTE,				L"EXECUTE" },
 		},
 	},
 
@@ -327,6 +351,20 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 		{ MEMORY_PARTITION_ALL_ACCESS,			L"MEMORY_PARTITION_ALL_ACCESS", true },
 		{ MEMORY_PARTITION_MODIFY_ACCESS,		L"MODIFY_ACCESS" },
 		{ MEMORY_PARTITION_QUERY_ACCESS,		L"QUERY_ACCESS" },
+		},
+	},
+
+	{ L"KeyedEvent", {
+		{ STANDARD_RIGHTS_REQUIRED | 3,			L"KEYEDEVENT_ALL_ACCESS", true },
+		{ 1,									L"WAIT" },
+		{ 2,									L"WAKE" },
+		},
+	},
+
+	{ L"PcwObject", {
+		{ STANDARD_RIGHTS_REQUIRED | 3,			L"PCW_OBJECT_ALL_ACCESS", true },
+		{ 1,									L"READ" },
+		{ 2,									L"WRITE" },
 		},
 	},
 
@@ -372,6 +410,13 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 		{ ENLISTMENT_SUPERIOR_RIGHTS,		L"SUPERIOR_RIGHT" },
 		},
 	},
+
+	{ L"Callback", {
+		{ STANDARD_RIGHTS_REQUIRED | 1, L"CALLBACK_ALL_ACCESS", true },
+		{ 1,							L"MODIFY_STATE" },
+		},
+	},
+
 };
 
 CString AccessMaskDecoder::DecodeAccessMask(PCWSTR typeName, ACCESS_MASK access) {

@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include "ObjectManager.h"
 #include "NtDll.h"
 #include <unordered_set>

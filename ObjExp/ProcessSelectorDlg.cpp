@@ -15,7 +15,7 @@ CString CProcessSelectorDlg::GetColumnText(HWND, int row, int col) const {
     switch (col) {
         case 0: return item.Name.c_str();
         case 1: return std::to_wstring(item.Id).c_str();
-        case 2: return item.Session == -1 ? L"<access denoied>" : std::to_wstring(item.Session).c_str();
+        case 2: return item.Session == -1 ? L"<access denied>" : std::to_wstring(item.Session).c_str();
         case 3: return item.UserName.c_str();
     }
     return CString();
