@@ -58,3 +58,29 @@ CString StringHelper::HandleAttributesToString(DWORD attributes) {
 CString StringHelper::TimeSpanToString(DWORD64 ts) {
 	return CTimeSpan(ts / 10000000).Format(L"%H:%M:%S") + std::format(L".{:03}", ts / 10000 % 1000).c_str();
 }
+
+CString StringHelper::ObjectAttributesToString(DWORD attr) {
+	CString text;
+	const struct {
+		DWORD attribute;
+		PCWSTR text;
+	} attributes[] = {
+		{ OBJ_KERNEL_HANDLE, L"KERNEL_HANDLE" },
+		{ OBJ_OPENLINK, L"OPEN_LINK" },
+		{ OBJ_OPENIF, L"OPEN_IF" },
+		{ OBJ_PERMANENT, L"PERMANENT" },
+		{ OBJ_EXCLUSIVE, L"EXCLUSIVE" },
+		{ OBJ_INHERIT, L"INHERIT" },
+		{ OBJ_CASE_INSENSITIVE, L"CASE_INSENSITIVE" },
+		{ OBJ_FORCE_ACCESS_CHECK, L"FORCE_ACCESS_CHECK" },
+		{ OBJ_IGNORE_IMPERSONATED_DEVICEMAP, L"IGNORE_IMPERSONATED_DEVICEMAP" },
+		{ OBJ_DONT_REPARSE, L"DONT_REPARSE" },
+	};
+
+	for (auto const& item : attributes)
+		if (attr & item.attribute)
+			(text += item.text) += L", ";
+	if(!text.IsEmpty())
+		text = text.Left(text.GetLength() - 2);
+	return text;
+}

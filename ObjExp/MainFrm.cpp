@@ -141,7 +141,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_view.SetTitleBarWindow(m_hWnd);
 
 	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTTYPES);
-	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTMANAGERNAMESPACE);
+	//PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTMANAGERNAMESPACE);
 
 	return 0;
 }

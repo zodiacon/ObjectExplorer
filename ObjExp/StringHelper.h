@@ -7,5 +7,6 @@ struct StringHelper abstract final {
 	static CString SectionAttributesToString(DWORD value);
 	static CString HandleAttributesToString(DWORD attributes);
 	static CString TimeSpanToString(DWORD64 ts);
+	static CString ObjectAttributesToString(DWORD attr);
 };
 
