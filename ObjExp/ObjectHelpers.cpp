@@ -1,20 +1,26 @@
 #include "pch.h"
 #include "ObjectHelpers.h"
-#include "GenericObjectProperties.h"
+#include "GenericPage.h"
 #include "ObjectPropertiesDlg.h"
 #include "NtDll.h"
 #include "ProcessHelper.h"
 #include <atltime.h>
 #include "StringHelper.h"
+#include "HandlesPage.h"
+#include "ObjectManager.h"
 
 UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target) {
 	CString title = typeName;
 	if (name && name[0])
 		title += L" (" + CString(name) + L")";
 	CObjectPropertiesDlg dlg((PCWSTR)title, typeName);
-	CGenericPropertiesPage page1(hObject, typeName, name, target);
+	CGenericPage page1(hObject, typeName, name, target);
 	page1.Create(::GetActiveWindow());
-	dlg.AddPage(L"General", page1);
+	dlg.AddPage(L"General", page1);	
+	CHandlesPage page2(hObject, typeName);
+	CWaitCursor wait;	// handle count may be large
+	page2.Create(::GetActiveWindow());
+	dlg.AddPage(L"Handles", page2);
 	dlg.DoModal();
 
 	return 0;

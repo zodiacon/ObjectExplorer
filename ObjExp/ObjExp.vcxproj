@@ -221,9 +221,10 @@
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AccessMaskDecoder.cpp" />
+    <ClCompile Include="HandlesPage.cpp" />
     <ClCompile Include="HandlesView.cpp" />
     <ClCompile Include="DriverHelper.cpp" />
-    <ClCompile Include="GenericObjectProperties.cpp" />
+    <ClCompile Include="GenericPage.cpp" />
     <ClCompile Include="ImageIconCache.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="ObjectHelpers.cpp" />
@@ -253,7 +254,8 @@
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AccessMaskDecoder.h" />
     <ClInclude Include="DriverHelper.h" />
-    <ClInclude Include="GenericObjectProperties.h" />
+    <ClInclude Include="GenericPage.h" />
+    <ClInclude Include="HandlesPage.h" />
     <ClInclude Include="HandlesView.h" />
     <ClInclude Include="ImageIconCache.h" />
     <ClInclude Include="Interfaces.h" />

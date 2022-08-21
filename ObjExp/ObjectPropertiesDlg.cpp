@@ -23,12 +23,11 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     SetDialogIcon(ResourceManager::Get().GetTypeIcon(m_Type));
     SetWindowText(m_Title);
     m_Tabs.Attach(GetDlgItem(IDC_TABS));
-    m_Tabs.ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
     for(int i = 0; i < m_Pages.size(); i++) {
         auto& page = m_Pages[i];
         m_Tabs.AddItem(page.Title);
-        page.win.SetParent(m_hWnd);
+        ::SetParent(page.win.m_hWnd, m_hWnd);
     }
     m_Pages[0].win.ShowWindow(SW_SHOW);
     m_Tabs.SetCurSel(m_SelectedPage = 0);
@@ -44,7 +43,8 @@ LRESULT CObjectPropertiesDlg::OnTabChanged(int, LPNMHDR, BOOL&) {
     }
     auto& win = m_Pages[m_SelectedPage = newPage].win;
     win.ShowWindow(SW_SHOW);
-    win.RedrawWindow();
+    ::SetParent(win.m_hWnd, m_hWnd);
+    win.UpdateWindow();
 
     return 0;
 }
@@ -55,7 +55,7 @@ LRESULT CObjectPropertiesDlg::OnOKCancel(WORD, WORD id, HWND, BOOL&) {
 }
 
 LRESULT CObjectPropertiesDlg::OnSize(UINT code, WPARAM wp, LPARAM lp, BOOL& handled) {
-    UpdateDynamicLayout();
+    handled = FALSE;
     UpdateSize();
 
     return 0;
@@ -74,7 +74,7 @@ void CObjectPropertiesDlg::UpdateSize() {
         ScreenToClient(&rc);
         rc.top += tabHeight;
         rc.DeflateRect(2, 0);
-        rc.bottom -= 2;
+        rc.bottom -= 6;
         for (auto& page : m_Pages)
             page.win.MoveWindow(&rc);
     }

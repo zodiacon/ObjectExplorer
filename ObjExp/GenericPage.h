@@ -4,22 +4,20 @@
 #include "DialogHelper.h"
 #include "ResourceManager.h"
 
-class CGenericPropertiesPage : 
-	public CDialogImpl<CGenericPropertiesPage>,
-	public CDialogHelper<CGenericPropertiesPage>,
-	public CDynamicDialogLayout<CGenericPropertiesPage> {
+class CGenericPage : 
+	public CDialogImpl<CGenericPage>,
+	public CDialogHelper<CGenericPage>,
+	public CDynamicDialogLayout<CGenericPage> {
 public:
 	enum { IDD = IDD_PROPERTIES };
 
-	CGenericPropertiesPage(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target) : m_hObject(hObject), m_TypeName(typeName), m_Name(name), m_Target(target) {}
+	CGenericPage(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target) : 
+		m_hObject(hObject), m_TypeName(typeName), m_Name(name), m_Target(target) {}
 
-	BEGIN_MSG_MAP(CGenericPropertiesPage)
-		MESSAGE_HANDLER(WM_CTLCOLORDLG, OnDialogColor)
-		MESSAGE_HANDLER(WM_CTLCOLOREDIT, OnDialogColor)
-		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnDialogColor)
+	BEGIN_MSG_MAP(CGenericPage)
 		COMMAND_ID_HANDLER(IDC_SECURITY, OnEditSecurity)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		CHAIN_MSG_MAP(CDynamicDialogLayout<CGenericPropertiesPage>)
+		CHAIN_MSG_MAP(CDynamicDialogLayout<CGenericPage>)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):

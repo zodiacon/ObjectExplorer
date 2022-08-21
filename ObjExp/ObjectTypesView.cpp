@@ -109,6 +109,7 @@ void CObjectTypesView::OnPageActivated(bool activate) {
 	}
 }
 
+
 LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) const {
 	auto text = ListViewHelper::GetSelectedRowsAsString(m_List, L",");
 	ClipboardHelper::CopyText(m_hWnd, text);
