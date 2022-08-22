@@ -4,7 +4,11 @@
 
 #pragma once
 
-class CAboutDlg : public CDialogImpl<CAboutDlg> {
+#include <DialogHelper.h>
+
+class CAboutDlg : 
+	public CDialogImpl<CAboutDlg>,
+	public CDialogHelper<CAboutDlg> {
 public:
 	enum { IDD = IDD_ABOUTBOX };
 

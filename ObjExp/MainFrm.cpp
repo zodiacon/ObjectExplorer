@@ -299,3 +299,11 @@ LRESULT CMainFrame::OnZombieThreads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	ViewFactory::Get().CreateView(ViewType::ZombieThreads);
 	return 0;
 }
+
+LRESULT CMainFrame::OnAboutWindows(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ThemeHelper::Suspend();
+	::ShellAbout(m_hWnd, L"Windows", nullptr, nullptr);
+	ThemeHelper::Resume();
+	return 0;
+}
+

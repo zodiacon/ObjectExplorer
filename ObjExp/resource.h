@@ -102,6 +102,7 @@
 #define IDC_REFRESH                     1025
 #define IDC_SYSLINK                     1028
 #define IDC_VERSION                     1029
+#define IDC_COPYRIGHT                   1030
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -144,14 +145,15 @@
 #define ID_SYSTEM_SYSTEMINFORMATION     32816
 #define ID_HANDLELIST_CLOSE             32817
 #define ID_SYSTEM_ZOMBIETHREADS         32818
+#define ID_HELP_ABOUTWINDOWS            32819
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        280
-#define _APS_NEXT_COMMAND_VALUE         32819
-#define _APS_NEXT_CONTROL_VALUE         1030
+#define _APS_NEXT_COMMAND_VALUE         32820
+#define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

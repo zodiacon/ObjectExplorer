@@ -120,6 +120,8 @@ BEGIN
     POPUP "&Help"
     BEGIN
         MENUITEM "&About Object Explorer...",   ID_APP_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "About &Windows...",           ID_HELP_ABOUTWINDOWS
     END
 END
 
@@ -316,7 +318,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,73,61,44,14
     CTEXT           "Object Explorer v",IDC_VERSION,42,9,108,15
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
-    CTEXT           "©2021-2022 Pavel Yosifovich",IDC_STATIC,52,25,88,8
+    CTEXT           "©2021-2022 Pavel Yosifovich",IDC_COPYRIGHT,52,25,88,8
     CONTROL         "<a>https://github.com/zodiacon/ObjectExplorer</a>",IDC_SYSLINK,
                     "SysLink",WS_TABSTOP,25,39,152,14
 END
