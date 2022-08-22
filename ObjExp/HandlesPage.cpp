@@ -2,6 +2,7 @@
 #include "HandlesPage.h"
 #include "AccessMaskDecoder.h"
 #include "ProcessHelper.h"
+#include <SortHelper.h>
 
 CString CHandlesPage::GetColumnText(HWND, int row, int col) const {
     auto& hi = m_Handles[row];
@@ -14,6 +15,26 @@ CString CHandlesPage::GetColumnText(HWND, int row, int col) const {
         case ColumnType::DecodedAccess: return AccessMaskDecoder::DecodeAccessMask(m_TypeName, hi.GrantedAccess);
     }
     return CString();
+}
+
+void CHandlesPage::DoSort(SortInfo const* si) {
+    auto col = static_cast<ColumnType>(GetColumnManager(si->hWnd)->GetColumnTag(si->SortColumn));
+    auto asc = si->SortAscending;
+
+    auto compare = [&](auto const& h1, auto const& h2) {
+        switch (col) {
+            case ColumnType::ProcessName: return SortHelper::Sort(ProcessHelper::GetProcessName(h1.ProcessId), ProcessHelper::GetProcessName(h2.ProcessId), asc);
+            case ColumnType::Handle: return SortHelper::Sort(h1.HandleValue, h2.HandleValue, asc);
+            case ColumnType::Attributes: return SortHelper::Sort(h1.HandleAttributes, h2.HandleAttributes, asc);
+            case ColumnType::PID: return SortHelper::Sort(h1.ProcessId, h2.ProcessId, asc);
+            case ColumnType::Access:
+            case ColumnType::DecodedAccess:
+                return SortHelper::Sort(h1.GrantedAccess, h2.GrantedAccess, asc);
+        }
+        return false;
+    };
+
+    std::ranges::sort(m_Handles, compare);
 }
 
 LRESULT CHandlesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {

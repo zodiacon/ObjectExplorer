@@ -10,6 +10,7 @@
 #include <Psapi.h>
 #include "ProcessSelectorDlg.h"
 #include <ThemeHelper.h>
+#include <VersionResourceHelper.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -114,12 +115,16 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
 
+	CString text;
+	GetWindowText(text);
+	VersionResourceHelper vh;
+	text += L" " + vh.GetValue(L"ProductVersion");
+	SetWindowText(text);
+
 	CMenuHandle hMenu = GetMenu();
 	if (SecurityHelper::IsRunningElevated()) {
 		hMenu.GetSubMenu(0).DeleteMenu(ID_FILE_RUNASADMINISTRATOR, MF_BYCOMMAND);
 		hMenu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
-		CString text;
-		GetWindowText(text);
 		SetWindowText(text + L" (Administrator)");
 	}
 

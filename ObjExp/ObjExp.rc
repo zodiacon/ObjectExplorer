@@ -308,14 +308,17 @@ IDI_THREAD_ZOMBIE       ICON                    "res\\threads-zombie.ico"
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 187, 75
+IDD_ABOUTBOX DIALOGEX 0, 0, 190, 82
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Object Explorer"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,71,54,44,14
-    CTEXT           "Object Explorer v2.0 Alpha\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,42,9,108,29
+    DEFPUSHBUTTON   "OK",IDOK,73,61,44,14
+    CTEXT           "Object Explorer v",IDC_VERSION,42,9,108,15
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+    CTEXT           "©2021-2022 Pavel Yosifovich",IDC_STATIC,52,25,88,8
+    CONTROL         "<a>https://github.com/zodiacon/ObjectExplorer</a>",IDC_SYSLINK,
+                    "SysLink",WS_TABSTOP,25,39,152,14
 END
 
 IDD_PROPERTIES DIALOGEX 0, 0, 341, 191
@@ -398,9 +401,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 180
+        RIGHTMARGIN, 183
         TOPMARGIN, 7
-        BOTTOMMARGIN, 68
+        BOTTOMMARGIN, 75
     END
 
     IDD_PROPERTIES, DIALOG
@@ -480,8 +483,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,0,0
- PRODUCTVERSION 2,0,0,0
+ FILEVERSION 2,0,1,0
+ PRODUCTVERSION 2,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -497,12 +500,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Object Explorer"
-            VALUE "FileVersion", "2.0.0.0"
+            VALUE "FileVersion", "2.0.1.0"
             VALUE "InternalName", "ObjExp"
             VALUE "LegalCopyright", "©2021-2022 Pavel Yosifovich"
             VALUE "OriginalFilename", "ObjExp.exe"
             VALUE "ProductName", "Object Explorer"
-            VALUE "ProductVersion", "2.0.0.0"
+            VALUE "ProductVersion", "2.0.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -590,7 +593,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Object Explorer v2.0 Alpha"
+    IDR_MAINFRAME           "Object Explorer"
     IDS_TITLE               "Object Explorer"
 END
 

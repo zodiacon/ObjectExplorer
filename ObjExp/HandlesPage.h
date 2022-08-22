@@ -17,6 +17,7 @@ public:
 	CHandlesPage(HANDLE hObject, PCWSTR typeName) : m_hObject(hObject), m_TypeName(typeName) {}
 
 	CString GetColumnText(HWND, int row, int col) const;
+	void DoSort(SortInfo const* si);
 
 	BEGIN_MSG_MAP(CHandlesPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
