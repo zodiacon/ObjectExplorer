@@ -6,8 +6,10 @@
 #include "MainFrm.h"
 #include "SecurityHelper.h"
 #include <ThemeHelper.h>
+#include "AppSettings.h"
 
 CAppModule _Module;
+AppSettings g_Settings;
 
 int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	CMessageLoop theLoop;
@@ -28,7 +30,7 @@ int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 	return nRet;
 }
 
-int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true);
 
 	HRESULT hRes = ::CoInitialize(nullptr);

@@ -221,6 +221,7 @@
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AccessMaskDecoder.cpp" />
+    <ClCompile Include="AppSettings.cpp" />
     <ClCompile Include="HandlesPage.cpp" />
     <ClCompile Include="HandlesView.cpp" />
     <ClCompile Include="DriverHelper.cpp" />
@@ -253,6 +254,7 @@
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AccessMaskDecoder.h" />
+    <ClInclude Include="AppSettings.h" />
     <ClInclude Include="DriverHelper.h" />
     <ClInclude Include="GenericPage.h" />
     <ClInclude Include="HandlesPage.h" />
@@ -316,6 +318,7 @@
     <Image Include="res\folder_closed.ico" />
     <Image Include="res\font.ico" />
     <Image Include="res\generic.ico" />
+    <Image Include="res\Info.ico" />
     <Image Include="res\key.ico" />
     <Image Include="res\link.ico" />
     <Image Include="res\list.ico" />

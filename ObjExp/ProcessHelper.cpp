@@ -31,6 +31,18 @@ CString ProcessHelper::GetProcessName2(DWORD pid) {
 	return L"<Unknown>";
 }
 
+CString ProcessHelper::GetFullProcessImageName(DWORD pid) {
+	wil::unique_handle hProcess(::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid));
+	if (hProcess) {
+		WCHAR name[MAX_PATH];
+		DWORD size = _countof(name);
+		if (::QueryFullProcessImageName(hProcess.get(), 0, name, &size)) {
+			return name;
+		}
+	}
+	return GetProcessName2(pid);
+}
+
 std::wstring ProcessHelper::GetUserName(DWORD pid) {
 	if (pid <= 4)
 		return L"NT AUTHORITY\\System";

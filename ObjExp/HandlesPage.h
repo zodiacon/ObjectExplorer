@@ -18,6 +18,7 @@ public:
 
 	CString GetColumnText(HWND, int row, int col) const;
 	void DoSort(SortInfo const* si);
+	int GetRowImage(HWND, int, int) const;
 
 	BEGIN_MSG_MAP(CHandlesPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)

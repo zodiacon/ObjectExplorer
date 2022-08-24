@@ -5,6 +5,7 @@
 #include "ObjectHelpers.h"
 #include "ObjectManager.h"
 #include "NtDll.h"
+#include <ThemeHelper.h>
 
 LRESULT CGenericPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	ATLASSERT(!m_TypeName.IsEmpty());
@@ -76,6 +77,9 @@ LRESULT CGenericPage::OnDialogColor(UINT, WPARAM, LPARAM, BOOL&) {
 
 LRESULT CGenericPage::OnEditSecurity(WORD, WORD, HWND, BOOL&) {
 	SecurityInfo si(m_hObject, m_Name);
+	ThemeHelper::Suspend();
 	::EditSecurity(m_hWnd, &si);
+	ThemeHelper::Resume();
+
 	return 0;
 }

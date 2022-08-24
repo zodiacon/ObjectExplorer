@@ -39,6 +39,7 @@ public:
 		COMMAND_ID_HANDLER(ID_TYPESLIST_ALLHANDLES, OnShowAllHandles)
 		COMMAND_ID_HANDLER(ID_TYPESLIST_ALLOBJECTS, OnShowAllObjects)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(::RegisterWindowMessage(L"WTLHelperUpdateTheme"), OnUpdateTheme)
 		CHAIN_MSG_MAP(CTimerManager<CObjectTypesView>)
 		CHAIN_MSG_MAP(CCustomDraw<CObjectTypesView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectTypesView>)
@@ -67,8 +68,10 @@ private:
 	LRESULT OnPauseResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowAllObjects(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnUpdateTheme(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	ObjectManager m_mgr;
 	std::vector<std::shared_ptr<ObjectTypeInfo>> m_Items;
+	COLORREF m_Green, m_Red;
 };

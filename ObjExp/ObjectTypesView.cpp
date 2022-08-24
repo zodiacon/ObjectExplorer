@@ -12,6 +12,8 @@
 #include "ObjectHelpers.h"
 #include "ViewFactory.h"
 #include "AccessMaskDecoder.h"
+#include <ThemeHelper.h>
+#include <Theme.h>
 
 BOOL CObjectTypesView::PreTranslateMessage(MSG* pMsg) {
 	pMsg;
@@ -81,6 +83,8 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 	cm->UpdateColumns();
 
+	SendMessage(::RegisterWindowMessage(L"WTLHelperUpdateTheme"));
+
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
 
@@ -135,6 +139,14 @@ LRESULT CObjectTypesView::OnShowAllObjects(WORD, WORD, HWND, BOOL&) {
 	ATLASSERT(m_List.GetSelectedCount() == 1);
 	auto& item = m_Items[m_List.GetNextItem(-1, LVNI_SELECTED)];
 	ViewFactory::Get().CreateView(ViewType::Objects, 0, item->TypeName);
+
+	return 0;
+}
+
+LRESULT CObjectTypesView::OnUpdateTheme(UINT, WPARAM, LPARAM, BOOL&) {
+	auto dark = !ThemeHelper::GetCurrentTheme()->IsDefault();
+	m_Green = dark ? RGB(0, 128, 0) : RGB(0, 255, 0);
+	m_Red = dark ? RGB(128, 0, 0) : RGB(255, 96, 0);
 
 	return 0;
 }
@@ -199,12 +211,13 @@ DWORD CObjectTypesView::OnSubItemPrePaint(int, LPNMCUSTOMDRAW cd) {
 	auto index = (int)cd->dwItemSpec;
 	auto item = m_Items[index];
 	auto& changes = m_mgr.GetChanges();
-	lcd->clrText = CLR_INVALID;
+	auto theme = ThemeHelper::GetCurrentTheme();
+	lcd->clrText = theme->TextColor;
 
 	for (auto& change : changes) {
 		if (std::get<0>(change) == item && MapChangeToColumn(std::get<1>(change)) == col) {
-			lcd->clrTextBk = std::get<2>(change) >= 0 ? RGB(0, 255, 0) : RGB(255, 0, 0);
-			lcd->clrText = std::get<2>(change) >= 0 ? RGB(0, 0, 0) : RGB(255, 255, 255);
+			lcd->clrTextBk = std::get<2>(change) >= 0 ? m_Green : m_Red;
+			//lcd->clrText = std::get<2>(change) >= 0 ? theme->TextColor : RGB(255, 255, 255);
 		}
 	}
 	return CDRF_SKIPPOSTPAINT;

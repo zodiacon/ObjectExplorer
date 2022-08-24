@@ -102,6 +102,9 @@
     <ClCompile Include="HandlesPage.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="AppSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -193,6 +196,9 @@
     </ClInclude>
     <ClInclude Include="HandlesPage.h">
       <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="AppSettings.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +403,9 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\threads-zombie.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\Info.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

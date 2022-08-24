@@ -110,7 +110,7 @@ BEGIN
         MENUITEM "&Maintain List of Objects Per Type", ID_OPTIONS_MAINTAINLISTOFOBJECTSPERTYPE
         MENUITEM "&Always On Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Font...",                    ID_OPTIONS_FONT
-        MENUITEM "&Dark Mode",                  ID_OPTIONS_THEME
+        MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
     END
     POPUP "&Tab"
     BEGIN
@@ -304,6 +304,8 @@ IDI_MAGNET2             ICON                    "res\\magnet2.ico"
 
 IDI_THREAD_ZOMBIE       ICON                    "res\\threads-zombie.ico"
 
+IDI_INFO                ICON                    "res\\Info.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -388,7 +390,7 @@ IDD_HANDLES DIALOGEX 0, 0, 271, 180
 STYLE DS_SETFONT | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "Tahoma", 400, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,7,257,166
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,7,257,166
 END
 
 

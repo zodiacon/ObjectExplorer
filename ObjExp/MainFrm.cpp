@@ -11,6 +11,7 @@
 #include "ProcessSelectorDlg.h"
 #include <ThemeHelper.h>
 #include <VersionResourceHelper.h>
+#include "AppSettings.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -80,7 +81,8 @@ bool CMainFrame::AddToolBar(HWND tb) {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	ThemeHelper::SetCurrentTheme(m_DefaultTheme);
+	InitDarkTheme();
+	AppSettings::Get().LoadFromKey(L"SOFTWARE\\ScorpioSoftware\\ObjectExplorer");
 
 	CreateSimpleStatusBar();
 	m_StatusBar.SubclassWindow(m_hWndStatusBar);
@@ -133,6 +135,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	InitMenu();
 	UIAddMenu(hMenu);
 
+	SetDarkMode(AppSettings::Get().DarkMode());
+
 	// register object for message filtering and idle updates
 	auto pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop);
@@ -145,14 +149,19 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_view.SetWindowMenu(menuMain.GetSubMenu(WindowMenuPosition));
 	m_view.SetTitleBarWindow(m_hWnd);
 
+	SetAlwaysOnTop(AppSettings::Get().AlwaysOnTop());
+
+	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTMANAGERNAMESPACE);
 	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTTYPES);
-	//PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTMANAGERNAMESPACE);
 
 	return 0;
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	// unregister message filtering and idle updates
+	WINDOWPLACEMENT wp{ sizeof(wp) };
+	GetWindowPlacement(&wp);
+	AppSettings::Get().MainWindowPlacement(wp);
+	AppSettings::Get().Save();
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
 	pLoop->RemoveMessageFilter(this);
@@ -160,6 +169,18 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	bHandled = FALSE;
 	return 1;
+}
+
+void CMainFrame::SetAlwaysOnTop(bool alwaysOnTop) {
+	SetWindowPos(alwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	UISetCheck(ID_OPTIONS_ALWAYSONTOP, alwaysOnTop);
+}
+
+LRESULT CMainFrame::OnAlwaysOnTop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto alwaysOnTop = !(GetExStyle() & WS_EX_TOPMOST);
+	SetAlwaysOnTop(alwaysOnTop);
+	AppSettings::Get().AlwaysOnTop(alwaysOnTop);
+	return 0;
 }
 
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -305,5 +326,57 @@ LRESULT CMainFrame::OnAboutWindows(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	::ShellAbout(m_hWnd, L"Windows", nullptr, nullptr);
 	ThemeHelper::Resume();
 	return 0;
+}
+
+LRESULT CMainFrame::OnShowWindow(UINT, WPARAM show, LPARAM, BOOL&) {
+	static bool shown = false;
+	if (show && !shown) {
+		shown = true;
+		auto wp = AppSettings::Get().MainWindowPlacement();
+		if (wp.showCmd != SW_HIDE) {
+			SetWindowPlacement(&wp);
+			UpdateLayout();
+		}
+		if (AppSettings::Get().AlwaysOnTop())
+			SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	}
+	return 0;
+}
+
+void CMainFrame::InitDarkTheme() {
+	m_DarkTheme.BackColor = m_DarkTheme.SysColors[COLOR_WINDOW] = RGB(32, 32, 32);
+	m_DarkTheme.TextColor = m_DarkTheme.SysColors[COLOR_WINDOWTEXT] = RGB(248, 248, 248);
+	m_DarkTheme.SysColors[COLOR_HIGHLIGHT] = RGB(10, 10, 160);
+	m_DarkTheme.SysColors[COLOR_HIGHLIGHTTEXT] = RGB(240, 240, 240);
+	m_DarkTheme.SysColors[COLOR_MENUTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_BTNFACE] = m_DarkTheme.BackColor;
+	m_DarkTheme.SysColors[COLOR_BTNTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_3DLIGHT] = RGB(192, 192, 192);
+	m_DarkTheme.SysColors[COLOR_BTNHIGHLIGHT] = RGB(192, 192, 192);
+	m_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_3DSHADOW] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_SCROLLBAR] = m_DarkTheme.BackColor;
+	m_DarkTheme.Name = L"Dark";
+	m_DarkTheme.Menu.BackColor = m_DarkTheme.BackColor;
+	m_DarkTheme.Menu.TextColor = m_DarkTheme.TextColor;
+	m_DarkTheme.StatusBar.BackColor = m_DarkTheme.BackColor;
+	m_DarkTheme.StatusBar.TextColor = m_DarkTheme.TextColor;
+}
+
+LRESULT CMainFrame::OnDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto dark = !AppSettings::Get().DarkMode();
+	AppSettings::Get().DarkMode(dark);
+	SetDarkMode(dark);
+	return 0;
+}
+
+void CMainFrame::SetDarkMode(bool dark) {
+	ThemeHelper::SetCurrentTheme(dark ? m_DarkTheme : m_DefaultTheme, m_hWnd);
+	ThemeHelper::UpdateMenuColors(*this, dark);
+	UpdateMenu(GetMenu(), true);
+	DrawMenuBar();
+
+	UISetCheck(ID_OPTIONS_DARKMODE, dark);
 }
 

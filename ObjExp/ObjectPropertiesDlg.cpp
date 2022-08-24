@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ObjectPropertiesDlg.h"
 #include "ResourceManager.h"
+#include "AppSettings.h"
 
 bool CObjectPropertiesDlg::AddPage(PCWSTR title, HWND hPage) {
     TabItem item;
@@ -23,14 +24,24 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     SetDialogIcon(ResourceManager::Get().GetTypeIcon(m_Type));
     SetWindowText(m_Title);
     m_Tabs.Attach(GetDlgItem(IDC_TABS));
+    CImageList images;
+    images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 2);
+    UINT icons[] = {
+        IDI_INFO, IDI_MAGNET
+    };
+    for(auto icon : icons)
+        images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
+    m_Tabs.SetImageList(images);
 
     for(int i = 0; i < m_Pages.size(); i++) {
         auto& page = m_Pages[i];
-        m_Tabs.AddItem(page.Title);
-        ::SetParent(page.win.m_hWnd, m_hWnd);
+        m_Tabs.AddItem(TCIF_TEXT | TCIF_IMAGE, page.Title, i, 0);
+        page.win.SetParent(m_hWnd);
     }
     m_Pages[0].win.ShowWindow(SW_SHOW);
     m_Tabs.SetCurSel(m_SelectedPage = 0);
+    AppSettings::Get().LoadWindowPosition(m_hWnd, L"ObjectPropertiesDialog");
+
     UpdateSize();
     return 0;
 }
@@ -50,6 +61,7 @@ LRESULT CObjectPropertiesDlg::OnTabChanged(int, LPNMHDR, BOOL&) {
 }
 
 LRESULT CObjectPropertiesDlg::OnOKCancel(WORD, WORD id, HWND, BOOL&) {
+    AppSettings::Get().SaveWindowPosition(m_hWnd, L"ObjectPropertiesDialog");
     EndDialog(id);
     return 0;
 }

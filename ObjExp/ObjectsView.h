@@ -9,7 +9,6 @@
 
 class CObjectsView :
 	public CViewBase<CObjectsView>,
-//	public CCustomDraw<CObjectsView>,
 //	public CTimerManager<CObjectsView>,
 	public CVirtualListView<CObjectsView> {
 public:
@@ -42,10 +41,8 @@ public:
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 //		CHAIN_MSG_MAP(CTimerManager<CObjectsView>)
-//		CHAIN_MSG_MAP(CCustomDraw<CObjectsView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectsView>)
 		CHAIN_MSG_MAP(CVirtualListView<CObjectsView>)
-//		CHAIN_MSG_MAP_ALT(CTimerManager<CObjectsView>, 1)
 	END_MSG_MAP()
 
 private:

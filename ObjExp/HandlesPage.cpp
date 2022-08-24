@@ -3,6 +3,7 @@
 #include "AccessMaskDecoder.h"
 #include "ProcessHelper.h"
 #include <SortHelper.h>
+#include "ImageIconCache.h"
 
 CString CHandlesPage::GetColumnText(HWND, int row, int col) const {
     auto& hi = m_Handles[row];
@@ -37,6 +38,11 @@ void CHandlesPage::DoSort(SortInfo const* si) {
     std::ranges::sort(m_Handles, compare);
 }
 
+int CHandlesPage::GetRowImage(HWND, int row, int) const {
+    auto& hi = m_Handles[row];
+    return ImageIconCache::Get().GetIcon((PCWSTR)ProcessHelper::GetFullProcessImageName(hi.ProcessId));
+}
+
 LRESULT CHandlesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     InitDynamicLayout(false);
     PVOID address{ nullptr };
@@ -57,6 +63,8 @@ LRESULT CHandlesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
     m_List.Attach(GetDlgItem(IDC_LIST));
     m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_FULLROWSELECT);
+    m_List.SetImageList(ImageIconCache::Get().GetImageList(), LVSIL_SMALL);
+
     auto cm = GetColumnManager(m_List);
     cm->AddColumn(L"Process Name", LVCFMT_LEFT, 140, ColumnType::ProcessName);
     cm->AddColumn(L"PID", LVCFMT_RIGHT, 100, ColumnType::PID);
