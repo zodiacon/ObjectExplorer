@@ -9,18 +9,21 @@
 #include "HandlesPage.h"
 #include "ObjectManager.h"
 
-UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target) {
+UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target, DWORD handleCount) {
 	CString title = typeName;
 	if (name && name[0])
 		title += L" (" + CString(name) + L")";
 	CObjectPropertiesDlg dlg((PCWSTR)title, typeName);
 	CGenericPage page1(hObject, typeName, name, target);
 	page1.Create(::GetActiveWindow());
-	dlg.AddPage(L"General", page1);	
-	CHandlesPage page2(hObject, typeName);
-	CWaitCursor wait;	// handle count may be large
-	page2.Create(::GetActiveWindow());
-	dlg.AddPage(L"Handles", page2);
+	handleCount = page1.GetHandleCount();
+	dlg.AddPage(L"General", page1);
+	CHandlesPage page2(hObject, typeName, handleCount);
+	if (handleCount) {
+		CWaitCursor wait;	// handle count may be large
+		page2.Create(::GetActiveWindow());
+		dlg.AddPage(L"Handles", page2);
+	}
 	dlg.DoModal();
 
 	return 0;
@@ -102,7 +105,9 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 		}
 	}
 	else if (::_wcsicmp(type, L"Process") == 0) {
-		auto name = ProcessHelper::GetProcessName2(::GetProcessId(hObject));
+		auto pid = ::GetProcessId(hObject);
+		auto name = ProcessHelper::GetProcessName2(pid);
+		props.push_back({ L"Process ID: ", std::to_wstring(pid).c_str() });
 		if (!name.IsEmpty())
 			props.push_back({ L"Image Name: ", name });
 		FILETIME create, exit, kernel, user;

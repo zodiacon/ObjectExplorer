@@ -14,6 +14,8 @@ public:
 	CGenericPage(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target) : 
 		m_hObject(hObject), m_TypeName(typeName), m_Name(name), m_Target(target) {}
 
+	DWORD GetHandleCount() const;
+
 	BEGIN_MSG_MAP(CGenericPage)
 		COMMAND_ID_HANDLER(IDC_SECURITY, OnEditSecurity)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -34,6 +36,7 @@ protected:
 	CString m_TypeName;
 	CString m_Name;
 	CString m_Target;
+	DWORD m_HandleCount{ 0 };
 };
 
 

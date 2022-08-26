@@ -7,6 +7,10 @@
 #include "NtDll.h"
 #include <ThemeHelper.h>
 
+DWORD CGenericPage::GetHandleCount() const {
+	return m_HandleCount;
+}
+
 LRESULT CGenericPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	ATLASSERT(!m_TypeName.IsEmpty());
 	InitDynamicLayout(false, false);
@@ -24,7 +28,8 @@ LRESULT CGenericPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 		GetDlgItem(IDC_SECURITY).EnableWindow(FALSE);
 	}
 	else if (m_hObject && STATUS_SUCCESS == NT::NtQueryObject(m_hObject, NT::ObjectBasicInformation, &info, sizeof(info), nullptr)) {
-		SetDlgItemInt(IDC_HANDLES, info.HandleCount - 1);	// subtract our own handle?
+		m_HandleCount = info.HandleCount - 1;	// subtract our own handle?
+		SetDlgItemInt(IDC_HANDLES, m_HandleCount);
 		SetDlgItemInt(IDC_REFS, info.PointerCount);
 		SetDlgItemInt(IDC_PAGED, info.PagedPoolCharge);
 		SetDlgItemInt(IDC_NPAGED, info.NonPagedPoolCharge);

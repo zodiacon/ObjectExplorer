@@ -3,4 +3,4 @@
 	url = https://github.com/zodiacon/WTLHelper
 [submodule "WinSys"]
 	path = WinSys
-	url = https://github.com/zodiacon/WinSys
+	url = https://github.com/zodiacon/WinSys.git

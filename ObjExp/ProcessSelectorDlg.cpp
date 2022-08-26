@@ -18,7 +18,7 @@ CString CProcessSelectorDlg::GetColumnText(HWND, int row, int col) const {
         case 2: return item.Session == -1 ? L"<access denied>" : std::to_wstring(item.Session).c_str();
         case 3: return item.UserName.c_str();
     }
-    return CString();
+    return L"";
 }
 
 int CProcessSelectorDlg::GetRowImage(HWND, int row, int col) const {

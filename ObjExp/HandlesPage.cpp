@@ -45,22 +45,23 @@ int CHandlesPage::GetRowImage(HWND, int row, int) const {
 
 LRESULT CHandlesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     InitDynamicLayout(false);
-    PVOID address{ nullptr };
-    m_Handles.clear();
-    auto handles = ObjectManager::EnumHandles2<>(m_TypeName);
-    for (auto& handle : handles) {
-        if (handle->HandleValue == HandleToULong(m_hObject) && handle->ProcessId == ::GetCurrentProcessId()) {
-            address = handle->Object;
-            break;
+    if (m_HandleCount) {
+        PVOID address{ nullptr };
+        m_Handles.clear();
+        auto handles = ObjectManager::EnumHandles2<>(m_TypeName);
+        for (auto& handle : handles) {
+            if (handle->HandleValue == HandleToULong(m_hObject) && handle->ProcessId == ::GetCurrentProcessId()) {
+                address = handle->Object;
+                break;
+            }
+        }
+
+        for (auto& handle : handles) {
+            if (handle->Object == address && handle->HandleValue != HandleToULong(m_hObject)) {
+                m_Handles.push_back(*handle);
+            }
         }
     }
-
-    for (auto& handle : handles) {
-        if (handle->Object == address && handle->HandleValue != HandleToULong(m_hObject)) {
-            m_Handles.push_back(*handle);
-        }
-    }
-
     m_List.Attach(GetDlgItem(IDC_LIST));
     m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_FULLROWSELECT);
     m_List.SetImageList(ImageIconCache::Get().GetImageList(), LVSIL_SMALL);

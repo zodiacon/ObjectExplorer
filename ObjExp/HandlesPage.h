@@ -14,7 +14,7 @@ class CHandlesPage :
 public:
 	enum { IDD = IDD_HANDLES };
 
-	CHandlesPage(HANDLE hObject, PCWSTR typeName) : m_hObject(hObject), m_TypeName(typeName) {}
+	CHandlesPage(HANDLE hObject, PCWSTR typeName, DWORD handleCount = 0) : m_hObject(hObject), m_TypeName(typeName), m_HandleCount(handleCount) {}
 
 	CString GetColumnText(HWND, int row, int col) const;
 	void DoSort(SortInfo const* si);
@@ -43,6 +43,7 @@ private:
 	std::vector<HandleInfo> m_Handles;
 	HANDLE m_hObject;
 	CString m_TypeName;
+	DWORD m_HandleCount;
 };
 
 
