@@ -24,7 +24,7 @@ CString CHandlesView::GetTitle() const {
 		return L"Handles (" + m_TypeName + L")";
 
 	CString title;
-	title.Format(L"%s (PID: %u)", (PCWSTR)ProcessHelper::GetProcessName(m_Pid), m_Pid);
+	title.Format(L"%s (%u)", (PCWSTR)ProcessHelper::GetProcessName(m_Pid), m_Pid);
 	if (!m_TypeName.IsEmpty())
 		title += L" (" + m_TypeName + L")";
 	return title;

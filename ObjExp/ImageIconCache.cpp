@@ -17,11 +17,13 @@ int ImageIconCache::GetIcon(std::wstring const& path, HICON* phIcon) const {
 	auto hIcon = ::ExtractAssociatedIcon(_Module.GetModuleInstance(), spath.GetBufferSetLength(MAX_PATH), &index);
 
 	if (hIcon) {
-		int index = m_images.AddIcon(hIcon);
-		if (phIcon)
-			*phIcon = hIcon;
-		m_icons.insert({ path, index });
-		return index;
+		int n = m_images.AddIcon(hIcon);
+		if (n >= 0) {
+			if (phIcon)
+				*phIcon = hIcon;
+			m_icons.insert({ path, n });
+			return n;
+		}
 	}
 	return 0;
 }
@@ -35,8 +37,8 @@ ImageIconCache::Map::const_iterator ImageIconCache::end() const {
 }
 
 ImageIconCache::ImageIconCache() {
-	m_images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 32, 32);
-	m_images.AddIcon(AtlLoadSysIconImage(IDI_APPLICATION, 0, 16, 16));
+	m_images.Create(16, 16, ILC_COLOR32, 32, 32);
+	m_images.AddIcon(AtlLoadSysIcon(IDI_APPLICATION));
 }
 
 HIMAGELIST ImageIconCache::GetImageList() const {

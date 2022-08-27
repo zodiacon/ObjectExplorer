@@ -130,10 +130,17 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		SetWindowText(text + L" (Administrator)");
 	}
 
-	AddMenu(hMenu);
 	SetCheckIcon(AtlLoadIconImage(IDI_CHECK, 0, 16, 16), AtlLoadIconImage(IDI_RADIO, 0, 16, 16));
+
+	const int WindowMenuPosition = 6;
+
+	CMenuHandle menuMain = GetMenu();
+	m_view.SetWindowMenu(menuMain.GetSubMenu(WindowMenuPosition));
+	m_view.SetTitleBarWindow(m_hWnd);
+
+	AddMenu(menuMain);
 	InitMenu();
-	UIAddMenu(hMenu);
+	UIAddMenu(menuMain);
 
 	SetDarkMode(AppSettings::Get().DarkMode());
 
@@ -142,12 +149,6 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ATLASSERT(pLoop);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
-
-	const int WindowMenuPosition = 6;
-
-	CMenuHandle menuMain = GetMenu();
-	m_view.SetWindowMenu(menuMain.GetSubMenu(WindowMenuPosition));
-	m_view.SetTitleBarWindow(m_hWnd);
 
 	SetAlwaysOnTop(AppSettings::Get().AlwaysOnTop());
 
