@@ -15,10 +15,10 @@ LRESULT CStructPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     InitDynamicLayout(false);
 
     m_Tree.SubclassWindow(GetDlgItem(IDC_TREE));
-    m_Tree.AddColumn(L"Member", 200);
-    m_Tree.AddColumn(L"Type", 180);
-    m_Tree.AddColumn(L"Value", 150);
-    m_Tree.AddColumn(L"Details", 150);
+    m_Tree.AddColumn(L"Member", 200, HDF_CENTER);
+    m_Tree.AddColumn(L"Type", 180, HDF_CENTER);
+    m_Tree.AddColumn(L"Value", 150, HDF_CENTER);
+    m_Tree.AddColumn(L"Details", 150, HDF_LEFT);
     m_font.CreatePointFont(100, L"Consolas");
     m_Tree.GetTreeControl().SetFont(m_font);
 
@@ -30,7 +30,7 @@ LRESULT CStructPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     m_Tree.GetTreeControl().SetImageList(images);
 
     auto hRoot = m_Tree.GetTreeControl().InsertItem(m_Object.Name().c_str(), 0, 0, TVI_ROOT, TVI_LAST);
-    SymbolToTreeView::FillTreeView(m_Tree, hRoot, m_Object);
+    SymbolToTreeView::FillTreeView(m_Tree, hRoot, m_Object, m_Address);
     m_Tree.GetTreeControl().Expand(hRoot, TVE_EXPAND);
 
     return 0;

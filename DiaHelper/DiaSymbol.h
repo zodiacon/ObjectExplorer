@@ -40,7 +40,7 @@ public:
     std::vector<DiaSymbol> FindChildren(SymbolTag tag = SymbolTag::Null, PCWSTR name = nullptr,
         CompareOptions options = CompareOptions::None) const;
 
-    static std::wstring SimpleTypeToString(SimpleType type);
+    static std::wstring SimpleTypeToString(SimpleType type, DWORD len);
 
 protected:
 	DiaSymbol(IDiaSymbol* sym = nullptr);

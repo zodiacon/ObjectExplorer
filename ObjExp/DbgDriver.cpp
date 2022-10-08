@@ -82,6 +82,10 @@ DbgDriver::~DbgDriver() {
     Close();
 }
 
+DbgDriver::operator bool() const {
+    return m_hDevice != nullptr;
+}
+
 bool DbgDriver::Open() {
     if (m_hDevice)
         return true;

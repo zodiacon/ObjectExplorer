@@ -3,7 +3,9 @@
 class DbgDriver {
 public:
 	static DbgDriver& Get();
+
 	~DbgDriver();
+	operator bool() const;
 	bool Open();
 	void Close();
 	bool Install();
@@ -13,6 +15,9 @@ public:
 
 private:
 	DbgDriver() {}
+	DbgDriver(DbgDriver const&) = delete;
+	DbgDriver& operator=(DbgDriver const&) = delete;
+
 	HANDLE m_hDevice{ nullptr };
 };
 

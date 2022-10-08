@@ -18,13 +18,7 @@
 // not sold for profit without the authors written consent, and 
 // providing that this notice and the authors name is included. 
 //
-// This file is provided "as is" with no expressed or implied warranty.
-// The author accepts no liability if it causes any damage to you or your
-// computer whatsoever. It's free, so don't hassle me about it.
-//
-// Beware of bugs.
-//
-// Pavel Yosifovich: code cleanup, modern compiler fixes, safe string functions
+// Pavel Yosifovich (2022): code cleanup, modern compiler fixes, safe string functions, bug fixes
 
 // The TreeListView item structure
 typedef struct _TLVITEM {
@@ -177,14 +171,15 @@ public:
 		if (mask & TLVIF_PARAM) pItem->lParam = pItemT->lParam;
 		return TRUE;
 	}
-	BOOL SetSubItemText(HTREEITEM hItem, int nSubItem, LPCTSTR pstrString) {
+	BOOL SetSubItemText(HTREEITEM hItem, int nSubItem, LPCTSTR pstrString, DWORD format = TLVIFMT_LEFT) {
 		auto p = static_cast<T*>(this);
 		ATLASSERT(::IsWindow(p->m_hWnd));
 		ATLASSERT(hItem);
 		ATLASSERT(!::IsBadStringPtr(pstrString, (UINT)-1));
 		TLVITEM itm = { 0 };
 		itm.iSubItem = nSubItem;
-		itm.mask = TLVIF_TEXT;
+		itm.mask = TLVIF_TEXT | TLVIF_FORMAT;
+		itm.format = format;
 		itm.pszText = const_cast<LPTSTR>(pstrString);
 		return SetSubItem(hItem, &itm);
 	}
@@ -927,12 +922,11 @@ public:
 
 				UINT format = pItem->mask & TLVIF_FORMAT ? pItem->format : 0;
 
-				dc.DrawText(pItem->pszText,
-					-1,
-					&rc,
+				dc.DrawText(pItem->pszText,	-1,	&rc,
 					DT_VCENTER | DT_SINGLELINE | DT_WORD_ELLIPSIS | format);
 
-				if (pItem->mask & TLVIF_STATE) dc.SelectFont(hOldFont);
+				if (pItem->mask & TLVIF_STATE) 
+					dc.SelectFont(hOldFont);
 			}
 		}
 	}

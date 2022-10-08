@@ -16,13 +16,14 @@ std::wstring DiaSymbol::Name() const {
 	if (S_OK == m_spSym->get_name(&name) && name.Length() > 0)
 		return name.m_str;
 
+	auto type = Type();
 	switch (Tag()) {
 		case SymbolTag::PointerType:
-			return Type().Name() + L"*";
+			return type.Name() + L"*";
 		case SymbolTag::BaseType:
-			return SimpleTypeToString(Simple());
+			return SimpleTypeToString(Simple(), type ? (DWORD)Type().Length() : 0);
 		case SymbolTag::ArrayType:
-			return Type().Name() + std::format(L"[{}]", Count());
+			return type.Name() + std::format(L"[{}]", Count());
 	}
 	return L"";
 }
@@ -171,19 +172,34 @@ UdtType DiaSymbol::UdtKind() const {
 	return UdtType(kind);
 }
 
-std::wstring DiaSymbol::SimpleTypeToString(SimpleType type) {
+std::wstring DiaSymbol::SimpleTypeToString(SimpleType type, DWORD len) {
 	switch (type) {
 		case SimpleType::Void: return L"Void";
 		case SimpleType::Char: return L"Char";
 		case SimpleType::WChar: return L"WCHAR";
 		case SimpleType::Bit: return L"Bit";
 		case SimpleType::Complex: return L"Complex";
-		case SimpleType::Int8B: return L"Int8";
-		case SimpleType::UInt8B: return L"UInt8";
+		case SimpleType::Int:
+			switch (len) {
+				case 1:	return L"Int1B";
+				case 2: return L"Int2B";
+				case 4: return L"Int4B";
+				case 8: return L"Int8B";
+			}
+			break;
+		case SimpleType::UInt:
+			switch (len) {
+				case 1:	return L"UInt1B";
+				case 2: return L"UInt2B";
+				case 4: return L"UInt4B";
+				case 8: return L"UInt8B";
+			}
+			break;
+
 		case SimpleType::Bool: return L"Bool";
 		case SimpleType::Float: return L"Float";
-		case SimpleType::Int32B: return L"Int32";
-		case SimpleType::UInt32B: return L"UInt32";
+		case SimpleType::Int4B: return L"Int32";
+		case SimpleType::UInt4B: return L"UInt32";
 		case SimpleType::Hresult: return L"HRESULT";
 	}
 	return std::wstring();

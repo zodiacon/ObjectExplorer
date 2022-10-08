@@ -10,6 +10,7 @@
 #include "ObjectManager.h"
 #include "StructurePage.h"
 #include "SymbolManager.h"
+#include "DriverHelper.h"
 
 UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target, DWORD handleCount) {
 	CString title = typeName;
@@ -30,7 +31,7 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 	if(auto it = KernelTypes.find(typeName); it != KernelTypes.end()) {
 		auto sym = SymbolManager::Get().GetSymbol(it->second);
 		if (sym) {
-			page3.SetSymbol(std::move(sym));
+			page3.SetSymbol(std::move(sym), DriverHelper::GetObjectAddress(hObject));
 			page3.Create(::GetActiveWindow());
 			dlg.AddPage(L"Object", page3);
 		}
