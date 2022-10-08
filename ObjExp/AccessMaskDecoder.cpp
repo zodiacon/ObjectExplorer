@@ -153,7 +153,7 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 
 	{ L"Mutant", {
 		{ MUTEX_ALL_ACCESS,				L"MUTEX_ALL_ACCESS", true },
-		{ MUTEX_MODIFY_STATE,			L"QUERY/MODIFY_STATE" },
+		{ MUTEX_MODIFY_STATE,			L"MODIFY_STATE" },
 		},
 	},
 
@@ -164,14 +164,14 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 	},
 
 	{ L"FilterCommunicationPort", {
-		{ FLT_PORT_ALL_ACCESS,		L"FLT_PORT_ALL_ACCESS", true },
-		{ FLT_PORT_CONNECT,			L"CONNECT" },
+		{ FLT_PORT_ALL_ACCESS,			L"FLT_PORT_ALL_ACCESS", true },
+		{ FLT_PORT_CONNECT,				L"CONNECT" },
 		},
 	},
 
 	{ L"ALPC Port", {
-		{ PORT_ALL_ACCESS,		L"PORT_ALL_ACCESS", true },
-		{ PORT_CONNECT,			L"CONNECT" },
+		{ PORT_ALL_ACCESS,				L"PORT_ALL_ACCESS", true },
+		{ PORT_CONNECT,					L"CONNECT" },
 		},
 	},
 

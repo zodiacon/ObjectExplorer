@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjExp", "ObjExp\ObjExp.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WTLHelper", "WTLHelper\WTLHelper.vcxproj", "{AE53419F-A769-4548-8E15-E311904DF7DF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DiaHelper", "DiaHelper\DiaHelper.vcxproj", "{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -41,6 +43,18 @@ Global
 		{AE53419F-A769-4548-8E15-E311904DF7DF}.Release|x64.Build.0 = Release|x64
 		{AE53419F-A769-4548-8E15-E311904DF7DF}.Release|x86.ActiveCfg = Release|Win32
 		{AE53419F-A769-4548-8E15-E311904DF7DF}.Release|x86.Build.0 = Release|Win32
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Debug|ARM64.ActiveCfg = Debug|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Debug|ARM64.Build.0 = Debug|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Debug|x64.ActiveCfg = Debug|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Debug|x64.Build.0 = Debug|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Debug|x86.ActiveCfg = Debug|Win32
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Debug|x86.Build.0 = Debug|Win32
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Release|ARM64.ActiveCfg = Release|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Release|ARM64.Build.0 = Release|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Release|x64.ActiveCfg = Release|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Release|x64.Build.0 = Release|x64
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Release|x86.ActiveCfg = Release|Win32
+		{D1E93C91-D2D9-460B-A00E-1DCABAAFCB9F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

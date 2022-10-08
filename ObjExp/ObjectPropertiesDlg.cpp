@@ -27,7 +27,7 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     CImageList images;
     images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 2);
     UINT icons[] = {
-        IDI_INFO, IDI_MAGNET
+        IDI_INFO, IDI_MAGNET, IDI_STRUCT,
     };
     for(auto icon : icons)
         images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));

@@ -75,7 +75,9 @@
 #define IDD_PROCESSCHOOSER              276
 #define IDD_HANDLES                     277
 #define IDI_THREAD_ZOMBIE               278
+#define IDD_STRUCT                      278
 #define IDI_INFO                        280
+#define IDR_DRIVER                      282
 #define IDC_TYPE                        1000
 #define IDC_NAME                        1001
 #define IDC_HANDLES                     1002
@@ -104,6 +106,8 @@
 #define IDC_SYSLINK                     1028
 #define IDC_VERSION                     1029
 #define IDC_COPYRIGHT                   1030
+#define IDC_TREE1                       1034
+#define IDC_TREE                        1034
 #define ID_WINDOW_CLOSE                 32772
 #define ID_WINDOW_CLOSE_ALL             32773
 #define ID_OPTIONS_ALWAYSONTOP          32775
@@ -153,9 +157,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        281
+#define _APS_NEXT_RESOURCE_VALUE        283
 #define _APS_NEXT_COMMAND_VALUE         32821
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

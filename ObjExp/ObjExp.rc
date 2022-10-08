@@ -393,6 +393,13 @@ BEGIN
     CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,7,7,257,166
 END
 
+IDD_STRUCT DIALOGEX 0, 0, 271, 180
+STYLE DS_SETFONT | WS_CHILD | WS_CLIPCHILDREN
+FONT 8, "Tahoma", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_TREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,7,257,166
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -443,6 +450,14 @@ BEGIN
     END
 
     IDD_HANDLES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 264
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 173
+    END
+
+    IDD_STRUCT, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 264
@@ -588,6 +603,20 @@ BEGIN
     0,
     0, 0, 100, 100
 END
+
+IDD_STRUCT AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 100, 100
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// BIN
+//
+
+IDR_DRIVER              BIN                     "res\\kldbgdrv.sys"
 
 
 /////////////////////////////////////////////////////////////////////////////

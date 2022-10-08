@@ -7,6 +7,7 @@
 #include "SecurityHelper.h"
 #include <ThemeHelper.h>
 #include "AppSettings.h"
+#include "DbgDriver.h"
 
 CAppModule _Module;
 AppSettings g_Settings;
@@ -41,6 +42,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lps
 	hRes = _Module.Init(nullptr, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
+	if (SecurityHelper::IsRunningElevated()) {
+		DbgDriver::Get().Open();
+	}
 	ThemeHelper::Init();
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 

@@ -13,7 +13,7 @@ LRESULT CAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	CenterWindow(GetParent());
 	VersionResourceHelper vh;
 	auto version = vh.GetValue(L"ProductVersion");
-	SetDlgItemText(IDC_VERSION, L"Object Explorer v" + version);
+	SetDlgItemText(IDC_VERSION, vh.GetValue(L"ProductName") + L" v" + version);
 	SetDlgItemText(IDC_COPYRIGHT, vh.GetValue(L"LegalCopyright"));
 
 	return TRUE;

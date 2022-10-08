@@ -89,7 +89,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,7 +123,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,7 +157,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -193,7 +193,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -222,6 +222,7 @@
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AccessMaskDecoder.cpp" />
     <ClCompile Include="AppSettings.cpp" />
+    <ClCompile Include="DbgDriver.cpp" />
     <ClCompile Include="HandlesPage.cpp" />
     <ClCompile Include="HandlesView.cpp" />
     <ClCompile Include="DriverHelper.cpp" />
@@ -248,6 +249,9 @@
     <ClCompile Include="ObjectTypesView.cpp" />
     <ClCompile Include="SecurityInfo.cpp" />
     <ClCompile Include="StringHelper.cpp" />
+    <ClCompile Include="StructurePage.cpp" />
+    <ClCompile Include="SymbolManager.cpp" />
+    <ClCompile Include="SymbolToTreeView.cpp" />
     <ClCompile Include="ViewFactory.cpp" />
     <ClCompile Include="ZombieProcessesView.cpp" />
   </ItemGroup>
@@ -255,6 +259,7 @@
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AccessMaskDecoder.h" />
     <ClInclude Include="AppSettings.h" />
+    <ClInclude Include="DbgDriver.h" />
     <ClInclude Include="DriverHelper.h" />
     <ClInclude Include="GenericPage.h" />
     <ClInclude Include="HandlesPage.h" />
@@ -279,7 +284,11 @@
     <ClInclude Include="ObjectTypesView.h" />
     <ClInclude Include="SecurityInfo.h" />
     <ClInclude Include="StringHelper.h" />
+    <ClInclude Include="StructurePage.h" />
+    <ClInclude Include="SymbolManager.h" />
+    <ClInclude Include="SymbolToTreeView.h" />
     <ClInclude Include="TimerManager.h" />
+    <ClInclude Include="TreeListView.h" />
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="ViewFactory.h" />
     <ClInclude Include="ZombieProcessesView.h" />
@@ -358,8 +367,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="res\driver.bin" />
+    <None Include="res\kldbgdrv.sys" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DiaHelper\DiaHelper.vcxproj">
+      <Project>{d1e93c91-d2d9-460b-a00e-1dcabaafcb9f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\WTLHelper\WTLHelper.vcxproj">
       <Project>{ae53419f-a769-4548-8e15-e311904df7df}</Project>
     </ProjectReference>

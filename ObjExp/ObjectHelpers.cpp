@@ -8,6 +8,8 @@
 #include "StringHelper.h"
 #include "HandlesPage.h"
 #include "ObjectManager.h"
+#include "StructurePage.h"
+#include "SymbolManager.h"
 
 UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target, DWORD handleCount) {
 	CString title = typeName;
@@ -24,6 +26,11 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 		page2.Create(::GetActiveWindow());
 		dlg.AddPage(L"Handles", page2);
 	}
+	auto sym = SymbolManager::Get().GetSymbol(L"_ALPC_PORT");
+	CStructPage page3(hObject, sym);
+	page3.Create(::GetActiveWindow());
+	dlg.AddPage(L"Object", page3);
+
 	dlg.DoModal();
 
 	return 0;

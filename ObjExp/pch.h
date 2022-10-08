@@ -31,6 +31,7 @@ extern CAppModule _Module;
 #include <commoncontrols.h>
 #include <aclui.h>
 #include <Psapi.h>
+#include <utility>
 
 #include <strsafe.h>
 #include <dontuse.h>

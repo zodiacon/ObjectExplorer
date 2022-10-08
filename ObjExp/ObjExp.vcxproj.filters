@@ -25,6 +25,9 @@
     <Filter Include="Dialogs">
       <UniqueIdentifier>{1cec88d0-c1fa-4272-9ec8-d19027a1eee1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DebugDriver">
+      <UniqueIdentifier>{95cf344e-4875-4881-a2e4-51b6c1423fc6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -105,15 +108,24 @@
     <ClCompile Include="AppSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DbgDriver.cpp">
+      <Filter>DebugDriver</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolToTreeView.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="StructurePage.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolManager.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NtDll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AccessMaskDecoder.h">
@@ -199,6 +211,24 @@
     </ClInclude>
     <ClInclude Include="AppSettings.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DbgDriver.h">
+      <Filter>DebugDriver</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolToTreeView.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="StructurePage.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeListView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolManager.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="NtDll.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -411,5 +441,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="res\driver.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\kldbgdrv.sys" />
   </ItemGroup>
 </Project>

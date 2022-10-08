@@ -8,6 +8,7 @@
 #include "Interfaces.h"
 #include "CustomTabView.h"
 #include <Theme.h>
+#include "SymbolManager.h"
 
 class CMainFrame :
 	public CFrameWindowImpl<CMainFrame>,
@@ -65,6 +66,7 @@ private:
 	CUpdateUIBase& GetUI() override;
 	bool AddToolBar(HWND tb) override;
 	void SetStatusText(int index, PCWSTR text) override;
+
 	void ActivatePage(int page);
 	void InitMenu();
 	void SetAlwaysOnTop(bool alwaysOnTop);
