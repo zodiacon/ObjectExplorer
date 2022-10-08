@@ -164,6 +164,13 @@ bool DiaSymbol::IsVirtual() const {
 	m_spSym->get_virtual(&virt);
 	return virt;
 }
+
+UdtType DiaSymbol::UdtKind() const {
+	DWORD kind;
+	m_spSym->get_udtKind(&kind);
+	return UdtType(kind);
+}
+
 std::wstring DiaSymbol::SimpleTypeToString(SimpleType type) {
 	switch (type) {
 		case SimpleType::Void: return L"Void";

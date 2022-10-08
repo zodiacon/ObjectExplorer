@@ -5,8 +5,7 @@
 #include "ResourceManager.h"
 #include "ObjectManager.h"
 #include "TreeListView.h"
-
-class DiaSymbol;
+#include "DiaHelper.h"
 
 class CStructPage :
 	public CDialogImpl<CStructPage>,
@@ -15,11 +14,9 @@ class CStructPage :
 public:
 	enum { IDD = IDD_STRUCT };
 
-	CStructPage(HANDLE hObject, DiaSymbol const& sym);
+	explicit CStructPage(HANDLE hObject);
 
-	//CString GetColumnText(HWND, int row, int col) const;
-	//void DoSort(SortInfo const* si);
-	//int GetRowImage(HWND, int, int) const;
+	void SetSymbol(DiaSymbol sym, PVOID address = nullptr);
 
 	BEGIN_MSG_MAP(CStructPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -33,15 +30,12 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	enum class ColumnType {
-		PID, Handle, ProcessName, Attributes, Access, DecodedAccess,
-	};
-
 private:
-	DiaSymbol const& m_Object;
+	DiaSymbol m_Object;
+	PVOID m_Address;
 	HANDLE m_hObject;
-	CString m_TypeName;
 	CTreeListView m_Tree;
+	CFont m_font;
 };
 
 

@@ -26,11 +26,15 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 		page2.Create(::GetActiveWindow());
 		dlg.AddPage(L"Handles", page2);
 	}
-	auto sym = SymbolManager::Get().GetSymbol(L"_ALPC_PORT");
-	CStructPage page3(hObject, sym);
-	page3.Create(::GetActiveWindow());
-	dlg.AddPage(L"Object", page3);
-
+	CStructPage page3(hObject);
+	if(auto it = KernelTypes.find(typeName); it != KernelTypes.end()) {
+		auto sym = SymbolManager::Get().GetSymbol(it->second);
+		if (sym) {
+			page3.SetSymbol(std::move(sym));
+			page3.Create(::GetActiveWindow());
+			dlg.AddPage(L"Object", page3);
+		}
+	}
 	dlg.DoModal();
 
 	return 0;

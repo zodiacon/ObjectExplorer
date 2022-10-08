@@ -401,6 +401,17 @@ public:
 		_Init();
 		return 0;
 	}
+
+	bool AddColumn(PCWSTR text, int width, DWORD format = HDF_LEFT) {
+		auto header = GetHeaderControl();
+		HDITEM col;
+		col.mask = HDI_FORMAT | HDI_TEXT | HDI_WIDTH;
+		col.fmt = format;
+		col.cxy = width;
+		col.pszText = (PWSTR)text;
+		return header.InsertItem(header.GetItemCount(), &col);
+	}
+
 	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		if (!m_fontHeader.IsNull()) m_fontHeader.DeleteObject();
 		NONCLIENTMETRICS ncm = { 0 };
@@ -418,14 +429,17 @@ public:
 		m_ctrlTree.SetFocus();
 		return 0;
 	}
+
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		T* pT = static_cast<T*>(this);
 		pT->UpdateLayout();
 		return 0;
 	}
+
 	LRESULT OnEraseBkGnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		return 1; // Children fill entire client area
 	}
+
 	LPARAM OnHScroll(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		// Thanks to Oleg Reabciuc for providing the horizontal scrolling
 		// support for this control
@@ -446,7 +460,7 @@ public:
 		int nScrollMax;                         // Maximum scrolling value
 		p->GetScrollRange(SB_HORZ, &nScrollMin, &nScrollMax);
 
-		// Check which kind of scoll is wanted
+		// Check which kind of scroll is wanted
 		switch (nSBCode) {
 			case SB_LEFT:                          // Scoll to left most position
 				nCurPos = 0;
@@ -929,5 +943,3 @@ class CTreeListView : public CTreeListViewImpl<CTreeListView> {
 public:
 	DECLARE_WND_CLASS(L"WTL_TreeListView")
 };
-
-

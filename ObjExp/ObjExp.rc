@@ -306,6 +306,14 @@ IDI_THREAD_ZOMBIE       ICON                    "res\\threads-zombie.ico"
 
 IDI_INFO                ICON                    "res\\Info.ico"
 
+IDI_BITFIELD            ICON                    "res\\bitfield.ico"
+
+IDI_ENUM                ICON                    "res\\enum.ico"
+
+IDI_FIELD               ICON                    "res\\field.ico"
+
+IDI_UNION               ICON                    "res\\union.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

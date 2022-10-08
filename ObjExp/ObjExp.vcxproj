@@ -299,6 +299,7 @@
   <ItemGroup>
     <Image Include="res\alpc.ico" />
     <Image Include="res\atom.ico" />
+    <Image Include="res\bitfield.ico" />
     <Image Include="res\briefcase.ico" />
     <Image Include="res\callback.ico" />
     <Image Include="res\car.ico" />
@@ -316,11 +317,13 @@
     <Image Include="res\desktop.ico" />
     <Image Include="res\device.ico" />
     <Image Include="res\directx.ico" />
+    <Image Include="res\enum.ico" />
     <Image Include="res\etw.ico" />
     <Image Include="res\etwreg.ico" />
     <Image Include="res\event-key.ico" />
     <Image Include="res\event.ico" />
     <Image Include="res\eventpair.ico" />
+    <Image Include="res\field.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\find.ico" />
     <Image Include="res\folder.ico" />
@@ -361,6 +364,7 @@
     <Image Include="res\token.ico" />
     <Image Include="res\type.ico" />
     <Image Include="res\types.ico" />
+    <Image Include="res\union.ico" />
     <Image Include="res\user.ico" />
     <Image Include="res\view.ico" />
     <Image Include="res\windowstation.ico" />
