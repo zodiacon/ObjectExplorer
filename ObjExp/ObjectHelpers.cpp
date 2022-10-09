@@ -168,3 +168,39 @@ bool ObjectHelpers::IsNamedObjectType(USHORT index) {
 	return std::find(std::begin(nonNamed), std::end(nonNamed), type) == std::end(nonNamed);
 }
 
+HANDLE ObjectHelpers::OpenObject(PCWSTR name, PCWSTR typeName, DWORD access) {
+	HANDLE hObject = nullptr;
+	CString type(typeName);
+	OBJECT_ATTRIBUTES attr;
+	UNICODE_STRING uname;
+	RtlInitUnicodeString(&uname, name);
+	InitializeObjectAttributes(&attr, &uname, 0, nullptr, nullptr);
+	auto status = STATUS_UNSUCCESSFUL;
+
+	if (type == L"Event")
+		status = NT::NtOpenEvent(&hObject, access, &attr);
+	else if (type == L"Mutant")
+		status = NT::NtOpenMutant(&hObject, access, &attr);
+	else if (type == L"Section")
+		status = NT::NtOpenSection(&hObject, access, &attr);
+	else if (type == L"Session")
+		status = NT::NtOpenSession(&hObject, access, &attr);
+	else if (type == L"Semaphore")
+		status = NT::NtOpenSemaphore(&hObject, access, &attr);
+	else if (type == "EventPair")
+		status = NT::NtOpenEventPair(&hObject, access, &attr);
+	else if (type == L"IoCompletion")
+		status = NT::NtOpenIoCompletion(&hObject, access, &attr);
+	else if (type == L"SymbolicLink")
+		status = NT::NtOpenSymbolicLinkObject(&hObject, access, &attr);
+	else if (type == L"Key")
+		status = NT::NtOpenKey(&hObject, access, &attr);
+	else if (type == L"Job")
+		status = NT::NtOpenJobObject(&hObject, access, &attr);
+	else if (type == L"File" || type == L"Device") {
+		IO_STATUS_BLOCK ioStatus;
+		status = NT::NtOpenFile(&hObject, access, &attr, &ioStatus, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, 0);
+	}
+
+	return hObject;
+}

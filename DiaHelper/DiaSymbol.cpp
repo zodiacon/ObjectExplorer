@@ -21,9 +21,11 @@ std::wstring DiaSymbol::Name() const {
 		case SymbolTag::PointerType:
 			return type.Name() + L"*";
 		case SymbolTag::BaseType:
-			return SimpleTypeToString(Simple(), type ? (DWORD)Type().Length() : 0);
+			return SimpleTypeToString(Simple(), type ? (DWORD)type.Length() : 0);
 		case SymbolTag::ArrayType:
 			return type.Name() + std::format(L"[{}]", Count());
+		case SymbolTag::FunctionType:
+			return Type().Name();
 	}
 	return L"";
 }
@@ -126,6 +128,9 @@ std::wstring DiaSymbol::TypeName() const {
 	if(Location() == LocationKind::BitField)
 		name += std::format(L" Pos {}, {} Bit{}", BitPosition(), Length(), Length() > 1 ? L"s" : L"").c_str();
 
+	if (name.empty())
+		DebugBreak();
+
 	return name;
 }
 
@@ -139,6 +144,11 @@ uint32_t DiaSymbol::ClassParentId() const {
 	DWORD id = 0;
 	m_spSym->get_classParentId(&id);
 	return id;
+}
+
+int32_t DiaSymbol::GetFieldOffset(std::wstring_view name, CompareOptions options) const {
+	auto fields = FindChildren(SymbolTag::Data, name.data(), options);
+	return fields.size() == 1 ? fields[0].Offset() : -1;
 }
 
 std::vector<DiaSymbol> DiaSymbol::FindChildren(SymbolTag tag, PCWSTR name, CompareOptions options) const {
@@ -185,6 +195,7 @@ std::wstring DiaSymbol::SimpleTypeToString(SimpleType type, DWORD len) {
 				case 2: return L"Int2B";
 				case 4: return L"Int4B";
 				case 8: return L"Int8B";
+				default: return L"Int8B";
 			}
 			break;
 		case SimpleType::UInt:
@@ -193,14 +204,16 @@ std::wstring DiaSymbol::SimpleTypeToString(SimpleType type, DWORD len) {
 				case 2: return L"UInt2B";
 				case 4: return L"UInt4B";
 				case 8: return L"UInt8B";
+				default: return L"UInt8B";
 			}
 			break;
 
 		case SimpleType::Bool: return L"Bool";
 		case SimpleType::Float: return L"Float";
-		case SimpleType::Int4B: return L"Int32";
-		case SimpleType::UInt4B: return L"UInt32";
+		case SimpleType::Int4B: return L"Int4B";
+		case SimpleType::UInt4B: return L"UInt4B";
 		case SimpleType::Hresult: return L"HRESULT";
 	}
-	return std::wstring();
+	//return L"<" + std::to_wstring((int)type) + L" " + std::to_wstring(len) + L">";
+	return L"<Unknown>";
 }

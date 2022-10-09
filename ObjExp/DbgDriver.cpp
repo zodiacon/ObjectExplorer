@@ -157,3 +157,4 @@ bool DbgDriver::WriteFileFromResource(PCWSTR path, UINT id, PCWSTR type) {
     ::CloseHandle(hFile);
     return ok;
 }
+

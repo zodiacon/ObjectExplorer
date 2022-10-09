@@ -11,6 +11,8 @@ public:
 	const DiaSymbol GetSymbol(PCWSTR name) const;
 	DiaSession& Session() const;
 
+	std::wstring ReadUnicodeString(PVOID address);
+
 private:
 	SymbolManager();
 

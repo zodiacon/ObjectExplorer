@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "SymbolToTreeView.h"
 #include "TreeListView.h"
+#include "SymbolManager.h"
 #include "DbgDriver.h"
 
 void SymbolToTreeView::FillTreeView(CTreeListView& tv, HTREEITEM hRoot, DiaSymbol const& sym, PVOID address) {
@@ -20,7 +21,7 @@ void SymbolToTreeView::FillTreeView(CTreeListView& tv, HTREEITEM hRoot, DiaSymbo
 					break;
 			}
 		}
-		auto hItem = tv.GetTreeControl().InsertItem(std::format(L"{:3X}: {}", member.Offset(), member.Name()).c_str(), 
+		auto hItem = tv.GetTreeControl().InsertItem(std::format(L"{:3X}: {}", member.Offset(), member.Name()).c_str(),
 			image, image, hRoot, TVI_LAST);
 		tv.SetSubItemText(hItem, 1, member.TypeName().c_str());
 
@@ -44,9 +45,28 @@ void SymbolToTreeView::FillTreeView(CTreeListView& tv, HTREEITEM hRoot, DiaSymbo
 		}
 
 		if (member.Type().Tag() == SymbolTag::UDT) {
-			if(address)
-				tv.SetSubItemText(hItem, 2, std::format(L"0x{:X}", (DWORD64)((PBYTE)address + member.Offset())).c_str(), TLVIFMT_RIGHT);
-			FillTreeView(tv, hItem, member.Type(), (PBYTE)address + member.Offset());
+			if (address) {
+				bool isString;
+				auto value = GetSpecialValue(member, type, address, isString);
+				if (!value.empty())
+					tv.SetSubItemText(hItem, 2, value.c_str(), isString ? TLVIFMT_LEFT : TLVIFMT_RIGHT);
+			}
+			FillTreeView(tv, hItem, member.Type(), address == nullptr ? nullptr : (PBYTE)address + member.Offset());
 		}
 	}
+}
+
+std::wstring SymbolToTreeView::GetSpecialValue(DiaSymbol const& field, DiaSymbol const& type, PVOID address, bool& isString) {
+	isString = false;
+	auto typeName = field.TypeName();
+	if (typeName == L"_LARGE_INTEGER") {
+		auto& driver = DbgDriver::Get();
+		auto value = driver.ReadVirtual<ULONG64>((PBYTE)address + field.Offset());
+		return std::format(L"0x{:X}", value);
+	}
+	else if (typeName == L"_UNICODE_STRING") {
+		isString = true;
+		return SymbolManager::Get().ReadUnicodeString((PBYTE)address + field.Offset());
+	}
+	return L"";
 }

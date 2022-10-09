@@ -36,6 +36,7 @@ public:
     std::wstring TypeName() const;
     DiaSymbol ObjectPointerType() const;
     uint32_t ClassParentId() const;
+    int32_t GetFieldOffset(std::wstring_view name, CompareOptions options = CompareOptions::None) const;
 
     std::vector<DiaSymbol> FindChildren(SymbolTag tag = SymbolTag::Null, PCWSTR name = nullptr,
         CompareOptions options = CompareOptions::None) const;
