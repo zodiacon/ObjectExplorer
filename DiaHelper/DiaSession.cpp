@@ -61,7 +61,13 @@ std::vector<DiaSymbol> DiaSession::FindChildren(PCWSTR name, SymbolTag tag, Comp
 
 bool DiaSession::OpenCommon(PCWSTR path, bool image) {
 	if (g_hDiaDll == nullptr) {
-		g_hDiaDll = ::LoadLibrary(L"msdia140.dll");
+		WCHAR path[MAX_PATH];
+		if (::GetModuleFileName(nullptr, path, _countof(path))) {
+			auto bs = wcsrchr(path, L'\\');
+			*bs = 0;
+			wcscat_s(path, L"\\msdia140.dll");
+			g_hDiaDll = ::LoadLibrary(path);
+		}
 	}
 	CComPtr<IDiaDataSource> spSource;
 	HRESULT hr;

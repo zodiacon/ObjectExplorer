@@ -6,14 +6,11 @@
 #define IOCTL_DEBUG_CONTROL \
     CTL_CODE(FILE_DEVICE_UNKNOWN, 1, METHOD_NEITHER, FILE_READ_ACCESS | FILE_WRITE_ACCESS)
 
+static constexpr WCHAR kernelDbgDriverName[] = L"kldbgdrv";
+
 enum class SysDbgCommand : ULONG {
     QueryModuleInformation = 0,
     QueryTraceInformation = 1,
-    SetTracepoint = 2,
-    SetSpecialCall = 3,
-    ClearSpecialCalls = 4,
-    QuerySpecialCalls = 5,
-    BreakPoint = 6,
     QueryVersion = 7,
     ReadVirtual = 8,
     WriteVirtual = 9,
@@ -34,18 +31,11 @@ enum class SysDbgCommand : ULONG {
     SetAutoKdEnable = 24,
     GetPrintBufferSize = 25,
     SetPrintBufferSize = 26,
-    GetKdUmExceptionEnable = 27,
-    SetKdUmExceptionEnable = 28,
     GetTriageDump = 29,
     GetKdBlockEnable = 30,
     SetKdBlockEnable = 31,
     RegisterForUmBreakInfo = 32,
-    GetUmBreakPid = 33,
-    ClearUmBreakPid = 34,
-    GetUmAttachPid = 35,
-    ClearUmAttachPid = 36,
     GetLiveKernelDump = 37,
-    KdPullRemoteFile = 38,
 };
 
 struct DriverDebugControl {
@@ -113,7 +103,7 @@ bool DbgDriver::Install() {
     if (!hScm)
         return false;
 
-    auto hService = ::OpenService(hScm, L"kldbgdrv", SERVICE_START);
+    auto hService = ::OpenService(hScm, kernelDbgDriverName, SERVICE_START);
     if (!hService) {
         WCHAR path[MAX_PATH];
         ::GetSystemDirectory(path, _countof(path));
@@ -121,7 +111,8 @@ bool DbgDriver::Install() {
         if (!WriteFileFromResource(path, IDR_DRIVER))
             return false;
 
-        hService = ::CreateServiceW(hScm, L"kldbgdrv", nullptr, SERVICE_ALL_ACCESS, SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START,
+        hService = ::CreateServiceW(hScm, kernelDbgDriverName, nullptr, 
+            SERVICE_ALL_ACCESS, SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START,
             SERVICE_ERROR_NORMAL, path, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
     ::CloseServiceHandle(hScm);
