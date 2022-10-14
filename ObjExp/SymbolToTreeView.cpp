@@ -45,7 +45,7 @@ void SymbolToTreeView::FillTreeView(CTreeListView& tv, HTREEITEM hRoot, DiaSymbo
 		}
 
 		if (member.Type().Tag() == SymbolTag::UDT) {
-			if (address) {
+			if (address && driver) {
 				bool isString;
 				auto value = GetSpecialValue(member, type, address, isString);
 				if (!value.empty())

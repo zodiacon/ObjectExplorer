@@ -12,7 +12,7 @@ SymbolManager::operator bool() const {
 }
 
 const DiaSymbol SymbolManager::GetSymbol(PCWSTR name) const {
-	auto symbols = m_session.FindChildren(m_session.GlobalScope(), SymbolTag::UDT, name);
+	auto symbols = m_session.FindChildren(m_session.GlobalScope(), name);
 	return symbols.empty() ? DiaSymbol::Empty : DiaSymbol(symbols[0]);
 }
 
@@ -26,7 +26,7 @@ SymbolManager::SymbolManager() {
 std::wstring SymbolManager::ReadUnicodeString(PVOID address) {
 	static auto bufferOffset = 0;
 	if (bufferOffset == 0) {
-		auto symbols = m_session.FindChildren(m_session.GlobalScope(), SymbolTag::UDT, L"_UNICODE_STRING");
+		auto symbols = m_session.FindChildren(m_session.GlobalScope(), L"_UNICODE_STRING", SymbolTag::UDT);
 		if (symbols.size() != 1)
 			return L"";
 		bufferOffset = symbols[0].GetFieldOffset(L"Buffer");

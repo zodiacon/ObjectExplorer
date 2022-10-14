@@ -14,5 +14,6 @@
 #include <string>
 #include <vector>
 #include <format>
+#include "dia2.h"
 
 #endif //PCH_H

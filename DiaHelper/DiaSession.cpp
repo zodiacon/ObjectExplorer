@@ -36,7 +36,7 @@ DiaSymbol DiaSession::GlobalScope() const {
 	return DiaSymbol(spSym);
 }
 
-std::vector<DiaSymbol> DiaSession::FindChildren(DiaSymbol const& parent, SymbolTag tag, PCWSTR name, CompareOptions options) const {
+std::vector<DiaSymbol> DiaSession::FindChildren(DiaSymbol const& parent, PCWSTR name, SymbolTag tag, CompareOptions options) const {
 	std::vector<DiaSymbol> symbols;
 	CComPtr<IDiaEnumSymbols> spEnum;
 	if (SUCCEEDED(m_spSession->findChildren(parent.m_spSym, (enum SymTagEnum)tag, name, (DWORD)options, &spEnum))) {
@@ -53,6 +53,10 @@ std::vector<DiaSymbol> DiaSession::FindChildren(DiaSymbol const& parent, SymbolT
 		}
 	}
 	return symbols;
+}
+
+std::vector<DiaSymbol> DiaSession::FindChildren(PCWSTR name, SymbolTag tag, CompareOptions options) const {
+	return FindChildren(GlobalScope(), name, tag, options);
 }
 
 bool DiaSession::OpenCommon(PCWSTR path, bool image) {

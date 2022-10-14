@@ -89,7 +89,7 @@ public:
 		m_cxHeader(0),
 		m_nOffset(0),
 		m_dwExStyle(0),
-		m_dwHeaderStyle(WS_CHILD | WS_VISIBLE | HDS_BUTTONS | HDS_HORZ | HDS_DRAGDROP) {
+		m_dwHeaderStyle(WS_CHILD | WS_VISIBLE | HDS_HORZ) {
 	}
 
 	// Operations

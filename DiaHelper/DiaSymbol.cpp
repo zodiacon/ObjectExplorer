@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "DiaHelper.h"
-#include "DiaSymbol.h"
 
 DiaSymbol DiaSymbol::Empty;
 
@@ -9,6 +8,12 @@ DiaSymbol::DiaSymbol(IDiaSymbol* sym) : m_spSym(sym) {
 
 DiaSymbol::operator bool() const {
 	return m_spSym != nullptr;
+}
+
+uint32_t DiaSymbol::TimeStamp() const {
+	DWORD ts = 0;
+	m_spSym->get_timeStamp(&ts);
+	return ts;
 }
 
 std::wstring DiaSymbol::Name() const {
@@ -32,8 +37,22 @@ std::wstring DiaSymbol::Name() const {
 
 std::wstring DiaSymbol::UndecoratedName() const {
 	CComBSTR name;
-	m_spSym->get_undecoratedName(&name);
-	return name.Length() == 0 ? L"" : name.m_str;
+	return S_OK == m_spSym->get_undecoratedName(&name) ? name.m_str : L"";
+}
+
+std::wstring DiaSymbol::CompilerName() const {
+	CComBSTR name;
+	return S_OK == m_spSym->get_compilerName(&name) ? name.m_str : L"";
+}
+
+std::wstring DiaSymbol::SourceFileName() const {
+	CComBSTR name;
+	return S_OK == m_spSym->get_sourceFileName(&name) ? name.m_str : L"";
+}
+
+std::wstring DiaSymbol::ObjectFileName() const {
+	CComBSTR name;
+	return S_OK == m_spSym->get_objectFileName(&name) ? name.m_str : L"";
 }
 
 uint32_t DiaSymbol::Id() const {
@@ -66,6 +85,11 @@ DiaSymbol DiaSymbol::ClassParent() const {
 	return DiaSymbol(sym);
 }
 
+std::wstring DiaSymbol::LibraryName() const {
+	CComBSTR name;
+	return S_OK == m_spSym->get_libraryName(&name) ? name.m_str : L"";
+}
+
 DiaSymbol DiaSymbol::LexicalParent() const {
 	CComPtr<IDiaSymbol> sym;
 	m_spSym->get_lexicalParent(&sym);
@@ -75,6 +99,12 @@ DiaSymbol DiaSymbol::LexicalParent() const {
 DiaSymbol DiaSymbol::Type() const {
 	CComPtr<IDiaSymbol> sym;
 	m_spSym->get_type(&sym);
+	return DiaSymbol(sym);
+}
+
+DiaSymbol DiaSymbol::ArrayIndexType() const {
+	CComPtr<IDiaSymbol> sym;
+	m_spSym->get_arrayIndexType(&sym);
 	return DiaSymbol(sym);
 }
 
@@ -102,10 +132,79 @@ DataItemKind DiaSymbol::Kind() const {
 	return static_cast<DataItemKind>(kind);
 }
 
+CodeLanguage DiaSymbol::Language() const {
+	DWORD lang;
+	return S_OK == m_spSym->get_language(&lang) ? CodeLanguage(lang) : CodeLanguage::Unknown;
+}
+
+uint32_t DiaSymbol::AddressSection() const {
+	ATLASSERT(Location() == LocationKind::Static);
+	DWORD address = 0;
+	m_spSym->get_addressSection(&address);
+	return address;
+}
+
+uint32_t DiaSymbol::AddressOffset() const {
+	ATLASSERT(Location() == LocationKind::Static);
+	DWORD address = 0;
+	m_spSym->get_addressOffset(&address);
+	return address;
+}
+
+uint64_t DiaSymbol::VirtualAddress() const {
+	ATLASSERT(Location() == LocationKind::Static);
+	ULONGLONG address = 0;
+	m_spSym->get_virtualAddress(&address);
+	return address;
+}
+
+uint32_t DiaSymbol::Slot() const {
+	ATLASSERT(Location() == LocationKind::Slot);
+	DWORD slot = 0;
+	m_spSym->get_slot(&slot);
+	return slot;
+}
+
+uint32_t DiaSymbol::Signature() const {
+	DWORD sig = 0;
+	m_spSym->get_signature(&sig);
+	return sig;
+}
+
+uint32_t DiaSymbol::OffsetInUdt() const {
+	DWORD offset = 0;
+	m_spSym->get_offsetInUdt(&offset);
+	return offset;
+}
+
+GUID DiaSymbol::Guid() const {
+	GUID guid;
+	return S_OK == m_spSym->get_guid(&guid) ? guid : GUID_NULL;
+}
+
+bool DiaSymbol::IsConst() const {
+	BOOL b = FALSE;
+	m_spSym->get_constType(&b);
+	return b;
+}
+
 uint32_t DiaSymbol::Count() const {
 	DWORD count = 0;
 	m_spSym->get_count(&count);
 	return count;
+}
+
+VARIANT DiaSymbol::Value() const {
+	VARIANT value;
+	::VariantClear(&value);
+	m_spSym->get_value(&value);
+	return value;
+}
+
+uint32_t DiaSymbol::TypeId() const {
+	DWORD id = 0;
+	m_spSym->get_typeId(&id);
+	return id;
 }
 
 uint32_t DiaSymbol::BitPosition() const {
@@ -147,11 +246,11 @@ uint32_t DiaSymbol::ClassParentId() const {
 }
 
 int32_t DiaSymbol::GetFieldOffset(std::wstring_view name, CompareOptions options) const {
-	auto fields = FindChildren(SymbolTag::Data, name.data(), options);
+	auto fields = FindChildren(name.data(), SymbolTag::Data, options);
 	return fields.size() == 1 ? fields[0].Offset() : -1;
 }
 
-std::vector<DiaSymbol> DiaSymbol::FindChildren(SymbolTag tag, PCWSTR name, CompareOptions options) const {
+std::vector<DiaSymbol> DiaSymbol::FindChildren(PCWSTR name, SymbolTag tag, CompareOptions options) const {
 	std::vector<DiaSymbol> symbols;
 	CComPtr<IDiaEnumSymbols> spEnum;
 	if (SUCCEEDED(m_spSym->findChildren((enum SymTagEnum)tag, name, (DWORD)options, &spEnum))) {
@@ -170,10 +269,106 @@ std::vector<DiaSymbol> DiaSymbol::FindChildren(SymbolTag tag, PCWSTR name, Compa
 	return symbols;
 }
 
+bool DiaSymbol::IsVolatile() const {
+	BOOL b = FALSE;
+	m_spSym->get_volatileType(&b);
+	return b;
+}
+
 bool DiaSymbol::IsVirtual() const {
 	BOOL virt = false;
 	m_spSym->get_virtual(&virt);
 	return virt;
+}
+
+bool DiaSymbol::IsIntrinsic() const {
+	BOOL virt = false;
+	m_spSym->get_intrinsic(&virt);
+	return virt;
+}
+
+bool DiaSymbol::IsIntroVirtual() const {
+	BOOL virt = false;
+	m_spSym->get_intro(&virt);
+	return virt;
+}
+
+bool DiaSymbol::IsEditAndContinueEnabled() const {
+	BOOL b = false;
+	m_spSym->get_editAndContinueEnabled(&b);
+	return b;
+}
+
+bool DiaSymbol::IsCompilerGenerated() const {
+	BOOL b = false;
+	m_spSym->get_compilerGenerated(&b);
+	return b;
+}
+
+bool DiaSymbol::IsUnalignedType() const {
+	BOOL b = false;
+	m_spSym->get_unalignedType(&b);
+	return b;
+}
+
+bool DiaSymbol::IsPureVirtual() const {
+	BOOL b = FALSE;
+	m_spSym->get_pure(&b);
+	return b;
+}
+
+bool DiaSymbol::IsPacked() const {
+	BOOL b = FALSE;
+	m_spSym->get_packed(&b);
+	return b;
+}
+
+bool DiaSymbol::IsReference() const {
+	BOOL b = FALSE;
+	m_spSym->get_reference(&b);
+	return b;
+}
+
+bool DiaSymbol::IsNested() const {
+	BOOL b = FALSE;
+	m_spSym->get_nested(&b);
+	return b;
+}
+
+bool DiaSymbol::IsCode() const {
+	BOOL b = FALSE;
+	m_spSym->get_code(&b);
+	return b;
+}
+
+bool DiaSymbol::IsFunction() const {
+	BOOL b = FALSE;
+	m_spSym->get_function(&b);
+	return b;
+}
+
+bool DiaSymbol::IsScoped() const {
+	BOOL b = FALSE;
+	m_spSym->get_scoped(&b);
+	return b;
+}
+
+bool DiaSymbol::HasConstructor() const {
+	BOOL b = FALSE;
+	m_spSym->get_constructor(&b);
+	return b;
+}
+
+bool DiaSymbol::HasNestedTypes() const {
+	BOOL b = FALSE;
+	m_spSym->get_hasNestedTypes(&b);
+	return b;
+}
+
+bool DiaSymbol::IsManaged() const {
+	BOOL b = FALSE;
+	m_spSym->get_managed(&b);
+	return b;
 }
 
 UdtType DiaSymbol::UdtKind() const {

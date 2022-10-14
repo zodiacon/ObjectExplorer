@@ -109,17 +109,21 @@ void DbgDriver::Close() {
 }
 
 bool DbgDriver::Install() {
-    WCHAR path[MAX_PATH];
-    ::GetSystemDirectory(path, _countof(path));
-    wcscat_s(path, L"\\Drivers\\kldbgdrv.sys");
-    if (!WriteFileFromResource(path, IDR_DRIVER))
-        return false;
-
     auto hScm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS);
     if (!hScm)
         return false;
-    auto hService = ::CreateServiceW(hScm, L"kldbgdrv", nullptr, SERVICE_ALL_ACCESS, SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START,
-        SERVICE_ERROR_NORMAL, path, nullptr, nullptr, nullptr, nullptr, nullptr);
+
+    auto hService = ::OpenService(hScm, L"kldbgdrv", SERVICE_START);
+    if (!hService) {
+        WCHAR path[MAX_PATH];
+        ::GetSystemDirectory(path, _countof(path));
+        wcscat_s(path, L"\\Drivers\\kldbgdrv.sys");
+        if (!WriteFileFromResource(path, IDR_DRIVER))
+            return false;
+
+        hService = ::CreateServiceW(hScm, L"kldbgdrv", nullptr, SERVICE_ALL_ACCESS, SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START,
+            SERVICE_ERROR_NORMAL, path, nullptr, nullptr, nullptr, nullptr, nullptr);
+    }
     ::CloseServiceHandle(hScm);
     if (!hService)
         return false;
