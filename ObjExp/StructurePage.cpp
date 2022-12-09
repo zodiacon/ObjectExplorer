@@ -20,7 +20,7 @@ LRESULT CStructPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     m_Tree.AddColumn(L"Value", 150, HDF_CENTER);
     m_Tree.AddColumn(L"Details", 150, HDF_LEFT);
     m_font.CreatePointFont(100, L"Consolas");
-    m_Tree.GetTreeControl().SetFont(m_font);
+//    m_Tree.GetTreeControl().SetFont(m_font);
 
     CImageList images;
     images.Create(16, 16, ILC_COLOR32, 8, 0);

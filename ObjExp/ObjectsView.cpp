@@ -67,7 +67,7 @@ int CObjectsView::GetRowImage(HWND, int row, int col) const {
 	return ResourceManager::Get().GetTypeImage(m_Objects[row]->TypeIndex);
 }
 
-int CObjectsView::GetSaveColumnRange(int& start) const {
+int CObjectsView::GetSaveColumnRange(HWND, int& start) const {
 	start = 2;
 	return 1;
 }

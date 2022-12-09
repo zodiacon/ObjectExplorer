@@ -112,7 +112,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	m_view.m_bTabCloseButton = FALSE;
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, 
-		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_WINDOWEDGE);
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
 	ViewFactory::Get().Init(this, m_view);
 
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
@@ -144,9 +144,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	SetDarkMode(AppSettings::Get().DarkMode());
 
-	// register object for message filtering and idle updates
 	auto pLoop = _Module.GetMessageLoop();
-	ATLASSERT(pLoop);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 

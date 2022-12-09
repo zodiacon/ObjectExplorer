@@ -45,7 +45,7 @@ CString CZombieProcessesView::GetColumnText(HWND, int row, int col) const {
 		case ColumnType::Handles: return std::format("{}", item.Handles.size()).c_str();
 		case ColumnType::ExitCode: return std::format("0x{:X}", item.ExitCode).c_str();
 		case ColumnType::CreateTime: return CTime(*(FILETIME*)&item.CreateTime).Format(L"%x %X");
-		case ColumnType::ExitTime: return CTime(*(FILETIME*)&item.ExitTime).Format(L"%x %X");
+		case ColumnType::ExitTime: return item.ExitTime == 0 ? CString(L"") : CTime(*(FILETIME*)&item.ExitTime).Format(L"%x %X");
 		case ColumnType::KernelTime: return StringHelper::TimeSpanToString(item.KernelTime);
 		case ColumnType::UserTime: return StringHelper::TimeSpanToString(item.UserTime);
 		case ColumnType::CPUTime: return StringHelper::TimeSpanToString(item.UserTime + item.KernelTime);
@@ -66,7 +66,7 @@ int CZombieProcessesView::GetRowImage(HWND, int row, int col) const {
 	return ImageIconCache::Get().GetIcon(m_Items[row].FullPath);
 }
 
-int CZombieProcessesView::GetSaveColumnRange(int& start) const {
+int CZombieProcessesView::GetSaveColumnRange(HWND, int& start) const {
 	return 2;
 }
 

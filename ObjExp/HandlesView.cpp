@@ -246,7 +246,7 @@ void CHandlesView::DoTimerUpdate() {
 		}, this, nullptr));
 }
 
-int CHandlesView::GetSaveColumnRange(int& start) const {
+int CHandlesView::GetSaveColumnRange(HWND, int& start) const {
 	return 3;
 }
 
