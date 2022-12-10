@@ -125,8 +125,8 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 		FILETIME create, exit, kernel, user;
 		if (::GetProcessTimes(hObject, &create, &exit, &kernel, &user)) {
 			props.push_back({ L"Started: ", CTime(create).Format(L"%c") });
-			auto total = 10000 * (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user);	// msec
-			auto seconds = CTimeSpan(total * 1000).Format(L"%H:%M:%S");
+			auto total = (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user) / 10000;	// msec
+			auto seconds = CTimeSpan(total / 1000).Format(L"%H:%M:%S");
 			props.push_back({ L"CPU Time: ", std::format(L"{}.{}", (PCWSTR)seconds, total % 1000).c_str() });
 			if (::WaitForSingleObject(hObject, 0) == WAIT_OBJECT_0) {
 				//
@@ -143,15 +143,26 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 		FILETIME create, exit, kernel, user;
 		if (::GetThreadTimes(hObject, &create, &exit, &kernel, &user)) {
 			props.push_back({ L"Started: ", CTime(create).Format(L"%c") });
-			auto total = 10000 * (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user);	// msec
-			auto seconds = CTimeSpan(total * 1000).Format(L"%H:%M:%S");
-			props.push_back({ L"CPU Time: ", std::format(L"{}.{}", (PCWSTR)seconds, total % 1000).c_str() });
+			auto total = (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user) / 10000;	// msec
+			auto seconds = CTimeSpan(total / 1000).Format(L"%H:%M:%S");
+			props.push_back({ L"CPU Time: ", std::format(L"{}.{:03}", (PCWSTR)seconds, total % 1000).c_str() });
 			if (::WaitForSingleObject(hObject, 0) == WAIT_OBJECT_0) {
 				//
 				// thread dead
 				//
 				props.push_back({ L"Exited: ", CTime(exit).Format(L"%c") });
 			}
+		}
+	}
+	else if (::_wcsicmp(type, L"Job") == 0) {
+		JOBOBJECT_BASIC_ACCOUNTING_INFORMATION info;
+		if (::QueryInformationJobObject(hObject, JobObjectBasicAccountingInformation, &info, sizeof(info), nullptr)) {
+			props.push_back({ L"Active Processes: ", std::to_wstring(info.ActiveProcesses).c_str() });
+			props.push_back({ L"Total Processes: ", std::to_wstring(info.TotalProcesses).c_str() });
+			auto total = (info.TotalUserTime.QuadPart + info.TotalKernelTime.QuadPart) / 10000;
+			auto seconds = CTimeSpan(total / 1000).Format(L"%H:%M:%S");
+			props.push_back({ L"CPU Time: ", std::format(L"{}.{:03}", (PCWSTR)seconds, total % 1000).c_str() });
+			props.push_back({ L"Page Faults: ", std::to_wstring(info.TotalPageFaultCount).c_str() });
 		}
 	}
 
