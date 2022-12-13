@@ -12,6 +12,9 @@ SymbolManager::operator bool() const {
 }
 
 const DiaSymbol SymbolManager::GetSymbol(PCWSTR name) const {
+	if (!m_session)
+		return DiaSymbol::Empty;
+
 	auto symbols = m_session.FindChildren(m_session.GlobalScope(), name);
 	return symbols.empty() ? DiaSymbol::Empty : DiaSymbol(symbols[0]);
 }

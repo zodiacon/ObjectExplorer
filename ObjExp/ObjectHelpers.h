@@ -25,6 +25,7 @@ struct ObjectHelpers abstract final {
 		{ L"SymbolicLink", L"_OBJECT_SYMBOLIC_LINK" },
 		{ L"Driver", L"_DRIVER_OBJECT" },
 		{ L"Device", L"_DEVICE_OBJECT" },
+		{ L"Directory", L"_OBJECT_DIRECTORY" },
 	};
 };
 
