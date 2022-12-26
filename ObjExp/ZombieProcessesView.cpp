@@ -55,7 +55,8 @@ CString CZombieProcessesView::GetColumnText(HWND, int row, int col) const {
 			auto count = std::min((int)item.Handles.size(), 5);
 			for (auto i = 0; i < count; i++) {
 				auto& hi = item.Handles[i];
-				text += std::format(L"H: 0x{:X} PID: {} ({}) ", hi.Handle, hi.Pid, ProcessHelper::GetProcessName2(hi.Pid)).c_str();
+				text += std::format(L"H: 0x{:X} PID: {} ({}) ", hi.Handle, hi.Pid, 
+					(PCWSTR)ProcessHelper::GetProcessName2(hi.Pid)).c_str();
 			}
 			return text;
 	}

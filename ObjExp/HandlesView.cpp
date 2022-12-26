@@ -151,6 +151,7 @@ void CHandlesView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT ne
 }
 
 void CHandlesView::OnPageActivated(bool active) {
+	m_Active = active;
 	if (active) {
 		UpdateUI();
 		UI().UIEnable(ID_RUN, true);
@@ -327,7 +328,7 @@ LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
 	DoSort(GetSortInfo(m_List));
 	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
-	if (IsRunning()) {
+	if (m_Active && IsRunning()) {
 		ActivateTimer(true);
 		UpdateStatusText();
 	}
@@ -350,7 +351,8 @@ LRESULT CHandlesView::OnCloseHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	std::wstring text;
 	if (count == 1) {
 		auto& hi = m_Handles[m_List.GetNextItem(-1, LVNI_SELECTED)];
-		text = std::format(L"Close handle 0x{:X} ({}) {}", hi->HandleValue, hi->Type, hi->Name.empty() ? L"" : (L"(" + hi->Name + L")"));
+		text = std::format(L"Close handle 0x{:X} ({}) {}", hi->HandleValue, (PCWSTR)hi->Type, 
+			hi->Name.empty() ? L"" : (L"(" + hi->Name + L")"));
 	}
 	else {
 		text = std::format(L"Close {} handles?", count);
