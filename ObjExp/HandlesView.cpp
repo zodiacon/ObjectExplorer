@@ -151,7 +151,6 @@ void CHandlesView::OnStateChanged(HWND, int from, int to, UINT oldState, UINT ne
 }
 
 void CHandlesView::OnPageActivated(bool active) {
-	m_Active = active;
 	if (active) {
 		UpdateUI();
 		UI().UIEnable(ID_RUN, true);
@@ -173,7 +172,8 @@ void CHandlesView::ShowObjectProperties(int row) const {
 }
 
 void CHandlesView::UpdateStatusText() const {
-	GetFrame()->SetStatusText(7, std::format(L"Handles: {}", m_Handles.size()).c_str());
+	if(IsActive())
+		GetFrame()->SetStatusText(7, std::format(L"Handles: {}", m_Handles.size()).c_str());
 }
 
 void CHandlesView::DoTimerWorkAsync() {
@@ -328,7 +328,7 @@ LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
 	DoSort(GetSortInfo(m_List));
 	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
-	if (m_Active && IsRunning()) {
+	if (IsActive() && IsRunning()) {
 		ActivateTimer(true);
 		UpdateStatusText();
 	}

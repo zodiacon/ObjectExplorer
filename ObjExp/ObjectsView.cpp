@@ -73,7 +73,8 @@ int CObjectsView::GetSaveColumnRange(HWND, int& start) const {
 }
 
 void CObjectsView::UpdateStatusText() const {
-	GetFrame()->SetStatusText(7, std::format(L"Objects: {}", m_Objects.size()).c_str());
+	if(IsActive())
+		GetFrame()->SetStatusText(7, std::format(L"Objects: {}", m_Objects.size()).c_str());
 }
 
 CString CObjectsView::GetColumnText(HWND h, int row, int col) const {

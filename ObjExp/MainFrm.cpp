@@ -321,9 +321,8 @@ LRESULT CMainFrame::OnZombieThreads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 LRESULT CMainFrame::OnAboutWindows(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ThemeHelper::Suspend();
-	::ShellAbout(m_hWnd, L"Windows", nullptr, nullptr);
-	ThemeHelper::Resume();
+	std::thread([this]() { ::ShellAbout(m_hWnd, L"Windows", nullptr, nullptr); }).detach();
+
 	return 0;
 }
 

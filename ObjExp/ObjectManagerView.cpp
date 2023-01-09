@@ -453,9 +453,11 @@ void CObjectManagerView::ApplyFilter() {
 	UpdateStatusText();
 }
 void CObjectManagerView::UpdateStatusText() {
-	CString text;
-	text.Format(L"Items: %u\n", (ULONG)m_Objects.size());
-	GetFrame()->SetStatusText(7, text);
+	if (IsActive()) {
+		CString text;
+		text.Format(L"Items: %u\n", (ULONG)m_Objects.size());
+		GetFrame()->SetStatusText(7, text);
+	}
 }
 
 LRESULT CObjectManagerView::OnQuickFind(WORD, WORD, HWND, BOOL&) {

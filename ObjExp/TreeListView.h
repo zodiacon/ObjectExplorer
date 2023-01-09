@@ -278,7 +278,7 @@ public:
 		m_ctrlTree.ModifyStyle(0, TVS_NOHSCROLL | TVS_FULLROWSELECT);  // we need these
 
 		// Create the header control
-		m_ctrlHeader.Create(this, 2, p->m_hWnd, &p->rcDefault, nullptr, m_dwHeaderStyle);
+		m_ctrlHeader.Create(this, 2, p->m_hWnd, &p->rcDefault, nullptr, m_dwHeaderStyle | HDS_FULLDRAG);
 		ATLASSERT(m_ctrlHeader.IsWindow());
 		::SetWindowTheme(m_ctrlHeader, L" ", L" ");
 		p->SendMessage(WM_SETTINGCHANGE);

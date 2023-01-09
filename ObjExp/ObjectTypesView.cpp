@@ -107,9 +107,7 @@ void CObjectTypesView::OnPageActivated(bool activate) {
 	UI().UIEnable(ID_RUN, true);
 	ActivateTimer(activate);
 	if (activate) {
-		CString text;
-		text.Format(L"Object Types: %d\n", (int)m_Items.size());
-		GetFrame()->SetStatusText(7, text);
+		UpdateStatusText();
 	}
 }
 
@@ -235,6 +233,14 @@ void CObjectTypesView::UpdateUI(bool force) {
 	ui.UIEnable(ID_EDIT_CUT, false);
 	ui.UIEnable(ID_TYPESLIST_ALLHANDLES, m_List.GetSelectedCount() == 1);
 	CTimerManager::UpdateIntervalUI();
+}
+
+void CObjectTypesView::UpdateStatusText() {
+	if (IsActive()) {
+		CString text;
+		text.Format(L"Object Types: %d\n", (int)m_Items.size());
+		GetFrame()->SetStatusText(7, text);
+	}
 }
 
 CObjectTypesView::ColumnType CObjectTypesView::MapChangeToColumn(ObjectManager::ChangeType type) const {

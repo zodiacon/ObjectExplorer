@@ -48,6 +48,8 @@ public:
 	END_MSG_MAP()
 
 private:
+	void UpdateStatusText();
+
 	enum class ColumnType {
 		None,
 		Name, Index, Handles, Objects, PeakHandles, PeakObjects, Pool,

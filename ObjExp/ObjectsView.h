@@ -84,5 +84,5 @@ private:
 	CString m_TypeName;
 	wil::unique_handle m_hProcess;
 	std::atomic<bool> m_UpdateInProgress{ false };
-	bool m_UpdateProcNames{ false }, m_UpdateObjectNames{ false };
+	bool m_UpdateProcNames: 1 { false }, m_UpdateObjectNames: 1 { false };
 };

@@ -34,6 +34,10 @@ protected:
 		return static_cast<T const*>(this)->m_hWnd;
 	}
 
+	bool IsActive() const {
+		return m_IsActive;
+	}
+
 	void PageActivated(bool active) override {
 		m_IsActive = active;
 		static_cast<T*>(this)->OnPageActivated(active);
@@ -62,5 +66,5 @@ private:
 	void UpdateUI(bool) {}
 
 	IMainFrame* m_pFrame;
-	bool m_IsActive{ false };
+	bool m_IsActive{ true };
 };

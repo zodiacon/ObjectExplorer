@@ -167,7 +167,8 @@ void CZombieProcessesView::RefreshThreads() {
 	}
 	Sort(m_List);
 	m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
-	GetFrame()->SetStatusText(7, std::format(L"Zombie Threads: {}", m_Items.size()).c_str());
+	if(IsActive())
+		GetFrame()->SetStatusText(7, std::format(L"Zombie Threads: {}", m_Items.size()).c_str());
 }
 
 void CZombieProcessesView::Refresh() {
@@ -176,9 +177,10 @@ void CZombieProcessesView::Refresh() {
 	UpdateUI();
 }
 
-void CZombieProcessesView::UpdateUI(bool active) {
-	if (active) {
-		GetFrame()->SetStatusText(7, std::format(L"Zombie Processes: {}", m_Items.size()).c_str());
+void CZombieProcessesView::UpdateUI(bool force) {
+	if (IsActive()) {
+		auto text = m_Processes ? std::format(L"Zombie Processes: {}", m_Items.size()) : std::format(L"Zombie Threads: {}", m_Items.size());
+		GetFrame()->SetStatusText(7, text.c_str());
 		int selected = m_List.GetSelectedCount();
 		UI().UIEnable(ID_EDIT_COPY, selected > 0);
 		UI().UIEnable(ID_VIEW_PROPERTIES, selected == 1);
