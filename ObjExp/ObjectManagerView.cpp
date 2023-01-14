@@ -283,7 +283,7 @@ void CObjectManagerView::UpdateList(bool newNode) {
 			path = L"\\";
 		m_Objects.clear();
 		m_Objects.reserve(128);
-		for (auto& item : ObjectManager::EnumDirectoryObjects(path)) {
+		for (auto const& item : ObjectManager::EnumDirectoryObjects(path)) {
 			if (m_ShowDirectories || item.TypeName != L"Directory") {
 				ObjectData data;
 				data.Name = item.Name.c_str();
@@ -499,3 +499,4 @@ LRESULT CObjectManagerView::OnSwitchToListMode(WORD, WORD, HWND, BOOL&) {
 	}
 	return 0;
 }
+

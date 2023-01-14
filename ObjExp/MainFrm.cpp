@@ -292,12 +292,12 @@ void CMainFrame::SetStatusText(int index, PCWSTR text) {
 	m_StatusBar.SetText(index, text);
 }
 
-LRESULT CMainFrame::OnAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const {
 	ViewFactory::Get().CreateView(ViewType::AllHandles);
 	return 0;
 }
 
-LRESULT CMainFrame::OnAllObjects(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnAllObjects(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const {
 	ViewFactory::Get().CreateView(ViewType::Objects);
 	return 0;
 }
@@ -374,7 +374,6 @@ void CMainFrame::SetDarkMode(bool dark) {
 	ThemeHelper::UpdateMenuColors(*this, dark);
 	UpdateMenu(GetMenu(), true);
 	DrawMenuBar();
-
 	UISetCheck(ID_OPTIONS_DARKMODE, dark);
 }
 

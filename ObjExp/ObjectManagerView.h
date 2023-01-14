@@ -43,9 +43,6 @@ public:
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_JUMPTOTARGET, OnJumpToTarget)
 		COMMAND_ID_HANDLER(ID_VIEW_QUICKFIND, OnQuickFind)
 		//COMMAND_ID_HANDLER(ID_EDIT_SECURITY, OnEditSecurity)
-		CHAIN_MSG_MAP(CVirtualListView<CObjectManagerView>)
-		CHAIN_MSG_MAP(CTreeViewHelper<CObjectManagerView>)
-		CHAIN_MSG_MAP(CViewBase<CObjectManagerView>)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnRefresh)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
@@ -53,6 +50,9 @@ public:
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_COPYFULLOBJECTPATH, OnCopyFullObjectPath)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_SHOWDIRECTORIESINLIST, OnShowDirectories)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_LISTMODE, OnSwitchToListMode)
+		CHAIN_MSG_MAP(CVirtualListView<CObjectManagerView>)
+		CHAIN_MSG_MAP(CTreeViewHelper<CObjectManagerView>)
+		CHAIN_MSG_MAP(CViewBase<CObjectManagerView>)
 	END_MSG_MAP()
 
 private:
@@ -68,6 +68,7 @@ private:
 	LRESULT OnQuickFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnShowDirectories(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnSwitchToListMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnUpdateTheme(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	struct ObjectData {
 		CString Name, FullName, Type, SymbolicLinkTarget;
