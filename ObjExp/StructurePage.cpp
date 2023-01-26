@@ -15,6 +15,7 @@ LRESULT CStructPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     InitDynamicLayout(false);
 
     m_Tree.SubclassWindow(GetDlgItem(IDC_TREE));
+    m_Tree.GetTreeControl().SetExtendedStyle(TVS_EX_DOUBLEBUFFER, TVS_EX_DOUBLEBUFFER);
     m_Tree.AddColumn(L"Field", 200, HDF_CENTER);
     m_Tree.AddColumn(L"Type", 180, HDF_CENTER);
     m_Tree.AddColumn(L"Value", 150, HDF_CENTER);

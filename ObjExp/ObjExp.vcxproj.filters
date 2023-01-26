@@ -452,10 +452,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="res\driver.bin">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\kldbgdrv.sys" />
   </ItemGroup>
 </Project>
