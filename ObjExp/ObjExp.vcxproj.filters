@@ -120,6 +120,9 @@
     <ClCompile Include="SymbolManager.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="NtDll.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

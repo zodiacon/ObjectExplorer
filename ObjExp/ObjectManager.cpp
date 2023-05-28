@@ -191,13 +191,6 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 		status = NT::NtOpenEvent(&hObject, access, &attr);
 	else if (type == L"Mutant")
 		status = NT::NtOpenMutant(&hObject, access, &attr);
-	else if (type == L"WindowStation") {
-		static auto OpenWinSta = (decltype(NT::NtUserOpenWindowStation)*)::GetProcAddress(::GetModuleHandle(L"win32u"), "NtUserOpenWindowStation");
-		if (OpenWinSta) {
-			hObject = OpenWinSta(&attr, access);
-			status = hObject ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
-		}
-	}
 	else if (type == L"ALPC Port") {
 		//
 		// special case: find a handle to this named object and duplicate the handle
@@ -219,6 +212,10 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 		status = NT::NtOpenKey(&hObject, access, &attr);
 	else if (type == L"Job")
 		status = NT::NtOpenJobObject(&hObject, access, &attr);
+	else if (type == L"WindowStation") {
+		hObject = NT::NtUserOpenWindowStation(&attr, access);
+		status = hObject ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
+	}
 	else if (type == L"Directory")
 		status = NT::NtOpenDirectoryObject(&hObject, access, &attr);
 	else if (type == L"File" || type == L"Device") {

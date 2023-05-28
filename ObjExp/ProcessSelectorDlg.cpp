@@ -143,7 +143,7 @@ void CProcessSelectorDlg::ApplyFilter(PCWSTR filter) {
         m_Processes.Filter(nullptr);
     else {
         text.MakeLower();
-        m_Processes.Filter([&](auto& p, int) {
+        m_Processes.Filter([&](auto& p, auto) {
             CString name(p.Name.c_str());
             name.MakeLower();
             return name.Find(text) >= 0;

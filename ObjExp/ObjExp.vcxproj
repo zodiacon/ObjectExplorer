@@ -89,7 +89,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,7 +123,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,7 +157,7 @@
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -193,7 +193,7 @@
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\DiaHelper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -229,6 +229,7 @@
     <ClCompile Include="GenericPage.cpp" />
     <ClCompile Include="ImageIconCache.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="NtDll.cpp" />
     <ClCompile Include="ObjectHelpers.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="ObjectManagerView.cpp" />
@@ -376,7 +377,7 @@
     <ProjectReference Include="..\DiaHelper\DiaHelper.vcxproj">
       <Project>{d1e93c91-d2d9-460b-a00e-1dcabaafcb9f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\WTLHelper\WTLHelper.vcxproj">
+    <ProjectReference Include="..\WTLHelper\WTLHelper\WTLHelper.vcxproj">
       <Project>{ae53419f-a769-4548-8e15-e311904df7df}</Project>
     </ProjectReference>
   </ItemGroup>
