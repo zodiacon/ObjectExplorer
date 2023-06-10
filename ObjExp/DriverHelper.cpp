@@ -64,7 +64,7 @@ HANDLE DriverHelper::DupHandle(HANDLE hObject, ULONG pid, ACCESS_MASK access, DW
 	if (!hTarget) {
 		wil::unique_handle hProcess(OpenProcess(pid, PROCESS_DUP_HANDLE));
 		if (hProcess)
-			::DuplicateHandle(hObject, hProcess.get(), ::GetCurrentProcess(), &hTarget, access, FALSE, flags);
+			::DuplicateHandle(hProcess.get(), hObject, ::GetCurrentProcess(), &hTarget, access, FALSE, flags);
 	}
 	return hTarget;
 }

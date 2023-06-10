@@ -26,7 +26,6 @@ protected:
 	END_MSG_MAP()
 
 private:
-	void ShowTab(int index);
 	void UpdateSize();
 
 	LRESULT OnTabChanged(int, LPNMHDR, BOOL&);
