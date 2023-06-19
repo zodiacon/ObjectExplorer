@@ -192,8 +192,8 @@ public:
 
 	const std::vector<std::shared_ptr<ObjectInfo>>& GetObjects() const;
 
-	static HANDLE DupHandle(HANDLE h, DWORD pid, ACCESS_MASK access = GENERIC_READ, DWORD flags = 0);
-	static NTSTATUS OpenObject(PCWSTR path, PCWSTR type, HANDLE& handle, DWORD access = GENERIC_READ);
+	static HANDLE DupHandle(HANDLE h, DWORD pid, ACCESS_MASK access = READ_CONTROL, DWORD flags = 0);
+	static NTSTATUS OpenObject(PCWSTR path, PCWSTR type, HANDLE& handle, DWORD access = READ_CONTROL);
 	static std::pair<HANDLE, DWORD> FindFirstHandle(PCWSTR name, USHORT index, DWORD pid = 0);
 
 	enum class ChangeType {

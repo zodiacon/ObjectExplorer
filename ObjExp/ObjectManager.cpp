@@ -196,7 +196,8 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 		// special case: find a handle to this named object and duplicate the handle
 		//
 		auto [handle, pid] = FindFirstHandle(path, GetType(typeName)->TypeIndex);
-		hObject = DriverHelper::DupHandle(handle, pid, GENERIC_READ, 0);
+		if(handle)
+			hObject = DriverHelper::DupHandle(handle, pid, access, 0);
 	}
 	else if (type == L"Section")
 		status = NT::NtOpenSection(&hObject, access, &attr);
@@ -212,6 +213,8 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 		status = NT::NtOpenKey(&hObject, access, &attr);
 	else if (type == L"Job")
 		status = NT::NtOpenJobObject(&hObject, access, &attr);
+	else if (type == L"Session")
+		status = NT::NtOpenSession(&hObject, access, &attr);
 	else if (type == L"WindowStation") {
 		hObject = NT::NtUserOpenWindowStation(&attr, access);
 		status = hObject ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
@@ -366,7 +369,7 @@ std::shared_ptr<ObjectTypeInfo> ObjectManager::GetType(USHORT index) {
 }
 
 CString ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type) {
-	HANDLE hDup = DriverHelper::DupHandle(hObject, pid, 0);
+	HANDLE hDup = DriverHelper::DupHandle(hObject, pid, READ_CONTROL);
 	CString name;
 	if (hDup) {
 		name = GetObjectName(hDup, type);
