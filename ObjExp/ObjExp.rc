@@ -55,8 +55,7 @@ BEGIN
     BEGIN
         MENUITEM "&Run As Administrator...",    ID_FILE_RUNASADMINISTRATOR
         MENUITEM SEPARATOR
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "&Save...\tCtrl+S",            ID_FILE_SAVE
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
@@ -510,8 +509,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,2,0
- PRODUCTVERSION 2,0,2,0
+ FILEVERSION 2,0,3,0
+ PRODUCTVERSION 2,0,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -527,13 +526,13 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Scorpio Software"
-            VALUE "FileDescription", "Kernel Object Explorer"
-            VALUE "FileVersion", "2.0.2.0"
+            VALUE "FileDescription", "Kernel Objects Explorer"
+            VALUE "FileVersion", "2.0.3"
             VALUE "InternalName", "ObjExp"
             VALUE "LegalCopyright", "©2021-2023 Pavel Yosifovich"
             VALUE "OriginalFilename", "ObjExp.exe"
             VALUE "ProductName", "Object Explorer"
-            VALUE "ProductVersion", "2.0.2.0"
+            VALUE "ProductVersion", "2.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -714,7 +713,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ATL_IDS_IDLEMESSAGE     "Ready"
+    ATL_IDS_IDLEMESSAGE     " "
 END
 
 STRINGTABLE

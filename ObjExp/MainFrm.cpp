@@ -12,6 +12,7 @@
 #include <ThemeHelper.h>
 #include <VersionResourceHelper.h>
 #include "AppSettings.h"
+#include <thread>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -253,6 +254,7 @@ LRESULT CMainFrame::OnPageActivated(int, LPNMHDR hdr, BOOL&) {
 void CMainFrame::ActivatePage(int page) {
 	if (m_CurrentPage >= 0 && m_CurrentPage < m_view.GetPageCount()) {
 		((IView*)m_view.GetPageData(m_CurrentPage))->PageActivated(false);
+		UIEnable(ID_FILE_SAVE, FALSE);
 	}
 	if (page >= 0) {
 		auto view = (IView*)m_view.GetPageData(page);
@@ -375,5 +377,9 @@ void CMainFrame::SetDarkMode(bool dark) {
 	UpdateMenu(GetMenu(), true);
 	DrawMenuBar();
 	UISetCheck(ID_OPTIONS_DARKMODE, dark);
+}
+
+LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	return 0;
 }
 

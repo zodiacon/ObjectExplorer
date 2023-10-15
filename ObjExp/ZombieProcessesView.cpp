@@ -8,6 +8,8 @@
 #include "ImageIconCache.h"
 #include "ClipboardHelper.h"
 #include "ObjectHelpers.h"
+#include <ThemeHelper.h>
+#include <fstream>
 
 CString CZombieProcessesView::GetTitle() const {
 	return m_Processes ? L"Zombie Processes" : L"Zombie Threads";
@@ -184,6 +186,7 @@ void CZombieProcessesView::UpdateUI(bool force) {
 		int selected = m_List.GetSelectedCount();
 		UI().UIEnable(ID_EDIT_COPY, selected > 0);
 		UI().UIEnable(ID_VIEW_PROPERTIES, selected == 1);
+		UI().UIEnable(ID_FILE_SAVE, TRUE);
 	}
 }
 
@@ -241,5 +244,20 @@ LRESULT CZombieProcessesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
 
 LRESULT CZombieProcessesView::OnRefresh(WORD, WORD, HWND, BOOL&) {
 	Refresh();
+	return 0;
+}
+
+LRESULT CZombieProcessesView::OnSave(WORD, WORD, HWND, BOOL&) const {
+	CSimpleFileDialog dlg(TRUE, L"csv", L"ZombieProcesses", 
+		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+		L"CSV Files (*.csv)\0*.csv\0All Files\0*.*\0", m_hWnd);
+	ThemeHelper::Suspend();
+	auto save = dlg.DoModal() == IDOK;
+	ThemeHelper::Resume();
+	if (save) {
+		auto text = ListViewHelper::GetAllRowsAsString(m_List, L",", L"\n");
+		std::wofstream stm(dlg.m_szFileName);
+		stm.write(text, text.GetLength());
+	}
 	return 0;
 }
