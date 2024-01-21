@@ -55,11 +55,8 @@ int ObjectManager::EnumTypes() {
 
 		type->TotalNumberOfHandles = raw->TotalNumberOfHandles;
 		type->TotalNumberOfObjects = raw->TotalNumberOfObjects;
-		type->TotalNonPagedPoolUsage = raw->TotalNonPagedPoolUsage;
-		type->TotalPagedPoolUsage = raw->TotalPagedPoolUsage;
 		type->HighWaterNumberOfObjects = raw->HighWaterNumberOfObjects;
 		type->HighWaterNumberOfHandles = raw->HighWaterNumberOfHandles;
-		type->TotalNamePoolUsage = raw->TotalNamePoolUsage;
 
 		TotalObjects += raw->TotalNumberOfObjects;
 		TotalHandles += raw->TotalNumberOfHandles;
