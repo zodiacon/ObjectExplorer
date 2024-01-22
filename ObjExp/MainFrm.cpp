@@ -383,3 +383,7 @@ LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	return 0;
 }
 
+LRESULT CMainFrame::OnMenuBuilt(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	AddSubMenu((HMENU)wParam);
+	return 0;
+}
