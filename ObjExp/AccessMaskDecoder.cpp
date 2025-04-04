@@ -29,6 +29,9 @@
 #define PORT_CONNECT 0x0001
 #define PORT_ALL_ACCESS (STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | PORT_CONNECT)
 
+#define PROFILE_CONTROL 0x0001
+#define PROFILE_ALL_ACCESS (STANDARD_RIGHTS_REQUIRED | PROFILE_CONTROL)
+
 #define WMIGUID_QUERY                 0x0001
 #define WMIGUID_SET                   0x0002
 #define WMIGUID_NOTIFICATION          0x0004
@@ -484,6 +487,12 @@ std::unordered_map<std::wstring, std::vector<AccessMaskDecoder::AccessMaskPair>>
 	{ L"Callback", {
 		{ STANDARD_RIGHTS_REQUIRED | 1, L"CALLBACK_ALL_ACCESS", true },
 		{ 1,							L"MODIFY_STATE" },
+		},
+	},
+
+	{ L"Profile", {
+		{ PROFILE_ALL_ACCESS,	L"PROFILE_ALL_ACCESS", true },
+		{ PROFILE_CONTROL, 		L"CONTROL" },
 		},
 	},
 

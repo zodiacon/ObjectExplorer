@@ -200,7 +200,7 @@ NTSTATUS ObjectManager::OpenObject(PCWSTR path, PCWSTR typeName, HANDLE& hObject
 		status = NT::NtOpenSection(&hObject, access, &attr);
 	else if (type == L"Semaphore")
 		status = NT::NtOpenSemaphore(&hObject, access, &attr);
-	else if (type == "EventPair")
+	else if (type == L"EventPair")
 		status = NT::NtOpenEventPair(&hObject, access, &attr);
 	else if (type == L"IoCompletion")
 		status = NT::NtOpenIoCompletion(&hObject, access, &attr);
