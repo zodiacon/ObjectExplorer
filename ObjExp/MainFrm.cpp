@@ -34,6 +34,7 @@ void CMainFrame::InitMenu(HMENU hMenu) {
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
+		{ ID_OPTIONS_FONT, IDI_FONT },
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_FILE_SAVE, IDI_SAVE },
 		{ ID_VIEW_FIND, IDI_FIND },
@@ -137,6 +138,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	SetAlwaysOnTop(AppSettings::Get().AlwaysOnTop());
 
+	if (auto lf = AppSettings::Get().Font(); lf.lfFaceName[0])
+		m_ViewFont.CreateFontIndirect(&lf);
+
 	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTMANAGERNAMESPACE);
 	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTTYPES);
 
@@ -166,6 +170,55 @@ LRESULT CMainFrame::OnAlwaysOnTop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	auto alwaysOnTop = !(GetExStyle() & WS_EX_TOPMOST);
 	SetAlwaysOnTop(alwaysOnTop);
 	AppSettings::Get().AlwaysOnTop(alwaysOnTop);
+	return 0;
+}
+
+HFONT CMainFrame::GetViewFont() const {
+	return m_ViewFont.m_hFont;
+}
+
+LRESULT CMainFrame::OnOptionsFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	LOGFONT lf{};
+	if (m_ViewFont)
+		m_ViewFont.GetLogFont(lf);
+	else {
+		// start from the font the lists currently use
+		CFontHandle font(AtlGetDefaultGuiFont());
+		if (m_view.GetPageCount() > 0) {
+			auto view = (IView*)m_view.GetPageData(m_view.GetActivePage());
+			HWND hList = nullptr;
+			::EnumChildWindows(view->GetHwnd(), [](HWND hWnd, LPARAM p) -> BOOL {
+				WCHAR className[32];
+				if (::GetClassName(hWnd, className, _countof(className)) && ::_wcsicmp(className, WC_LISTVIEW) == 0) {
+					*(HWND*)p = hWnd;
+					return FALSE;
+				}
+				return TRUE;
+				}, (LPARAM)&hList);
+			if (hList)
+				font = (HFONT)::SendMessage(hList, WM_GETFONT, 0, 0);
+		}
+		if (font)
+			font.GetLogFont(lf);
+	}
+
+	CFontDialog dlg(&lf, CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT, nullptr, m_hWnd);
+	
+	if (!WTLHelper::InvokeFontDialog(dlg, m_hWnd))
+		return 0;
+
+	CFont font;
+	if (!font.CreateFontIndirect(&dlg.m_lf))
+		return 0;
+
+	//
+	// set the new font before destroying the old one, which the controls still use
+	//
+	for (int i = 0; i < m_view.GetPageCount(); i++)
+		ViewFactory::SetViewFont(((IView*)m_view.GetPageData(i))->GetHwnd(), font);
+	m_ViewFont.Attach(font.Detach());
+	AppSettings::Get().Font(dlg.m_lf);
+
 	return 0;
 }
 

@@ -20,5 +20,6 @@ public:
 	DEF_SETTING(ViewStatusBar, int)
 	DEF_SETTING(SingleInstance, int)
 	DEF_SETTING(MainWindowPlacement, WINDOWPLACEMENT)
+	DEF_SETTING(Font, LOGFONT)
 };
 

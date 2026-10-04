@@ -2,6 +2,7 @@
 #include "StructurePage.h"
 #include "SymbolToTreeView.h"
 #include "TreeListView.h"
+#include "ResourceManager.h"
 
 CStructPage::CStructPage(HANDLE hObject) : m_hObject(hObject), m_Object(DiaSymbol::Empty) {
 }
@@ -23,12 +24,11 @@ LRESULT CStructPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     m_font.CreatePointFont(100, L"Consolas");
 //    m_Tree.GetTreeControl().SetFont(m_font);
 
-    CImageList images;
-    images.Create(16, 16, ILC_COLOR32, 8, 0);
+    m_TreeImages.Create(16, 16, ILC_COLOR32, 8, 0);
     UINT icons[] = { IDI_STRUCT, IDI_UNION, IDI_FIELD, IDI_ENUM, IDI_BITFIELD };
     for (auto icon : icons)
-        images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
-    m_Tree.GetTreeControl().SetImageList(images);
+        ResourceManager::AddIcon(m_TreeImages, icon);
+    m_Tree.GetTreeControl().SetImageList(m_TreeImages);
 
     auto hRoot = m_Tree.GetTreeControl().InsertItem(m_Object.Name().c_str(), 0, 0, TVI_ROOT, TVI_LAST);
     if (m_Address)

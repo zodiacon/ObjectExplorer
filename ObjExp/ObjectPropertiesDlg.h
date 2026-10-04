@@ -42,5 +42,6 @@ private:
 	std::vector<TabItem> m_Pages;
 	CString m_Title, m_Type;
 	CTabCtrl m_Tabs;
+	CImageListManaged m_TabImages;	// the tab control doesn't destroy its image list
 	int m_SelectedPage{ -1 }, m_LastActivePage{ -1 };
 };

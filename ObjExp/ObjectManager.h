@@ -98,7 +98,7 @@ public:
 		auto p = EnumHandlesBuffer();
 		if (!p)
 			return {};
-		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
+		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : GetType(type)->TypeIndex;
 		auto count = p->NumberOfHandles;
 		std::vector<std::shared_ptr<T>> objects;
 		objects.reserve(filteredTypeIndex < 0 ? TotalObjects + 100 : 1024);
@@ -162,7 +162,7 @@ public:
 		auto p = EnumHandlesBuffer();
 		if (!p)
 			return {};
-		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
+		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : GetType(type)->TypeIndex;
 		auto count = p->NumberOfHandles;
 		std::vector<std::shared_ptr<T>> handles;
 		handles.reserve(pid == 0 ? count : count / 16);
@@ -233,6 +233,8 @@ private:
 	inline static std::unordered_map<int16_t, ObjectTypePtr> s_typesMap;
 	inline static std::unordered_map<std::wstring, ObjectTypePtr> s_typesNameMap;
 	inline static std::vector<Change> s_changes;
+	// guards the type maps, which worker threads read while EnumTypes may add new types
+	inline static wil::srwlock s_typesLock;
 
 	std::vector<std::shared_ptr<ObjectInfo>> m_objects;
 	std::unordered_map<PVOID, std::shared_ptr<ObjectInfo>> m_objectsByAddress;

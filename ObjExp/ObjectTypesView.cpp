@@ -90,15 +90,47 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	auto count = ObjectManager::EnumTypes();
 	m_Items = ObjectManager::GetObjectTypes();
 	m_List.SetItemCount(count);
+	UpdateChanges();	// initial counts, no changes yet
 
 	Run(true);
 
 	return 0;
 }
 
+void CObjectTypesView::UpdateChanges() {
+	m_Changes.clear();
+	for (auto& type : ObjectManager::GetObjectTypes()) {
+		TypeCounts counts{ type->TotalNumberOfHandles, type->TotalNumberOfObjects, type->HighWaterNumberOfHandles, type->HighWaterNumberOfObjects };
+		auto [it, inserted] = m_LastCounts.try_emplace(type.get(), counts);
+		if (inserted)
+			continue;
+
+		auto& last = it->second;
+		auto add = [&](ObjectManager::ChangeType change, uint32_t now, uint32_t before) {
+			if (now != before)
+				m_Changes.push_back({ type, change, (int32_t)now - (int32_t)before });
+		};
+		add(ObjectManager::ChangeType::TotalHandles, counts.Handles, last.Handles);
+		add(ObjectManager::ChangeType::TotalObjects, counts.Objects, last.Objects);
+		add(ObjectManager::ChangeType::PeakHandles, counts.PeakHandles, last.PeakHandles);
+		add(ObjectManager::ChangeType::PeakObjects, counts.PeakObjects, last.PeakObjects);
+		last = counts;
+	}
+}
+
 void CObjectTypesView::DoTimerUpdate() {
 	ObjectManager::EnumTypes();
-	SortPreservingSelection(m_List, m_Items, [&] { DoSort(GetSortInfo(m_List)); });
+	UpdateChanges();
+	SortPreservingSelection(m_List, m_Items, [&] {
+		// types registered since the last update are appended by EnumTypes
+		auto& types = ObjectManager::GetObjectTypes();
+		if (types.size() > m_Items.size()) {
+			m_Items.insert(m_Items.end(), types.begin() + m_Items.size(), types.end());
+			m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+			UpdateStatusText();
+		}
+		DoSort(GetSortInfo(m_List));
+		});
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 }
 
@@ -215,10 +247,9 @@ DWORD CObjectTypesView::OnSubItemPrePaint(int, LPNMCUSTOMDRAW cd) {
 
 	auto index = (int)cd->dwItemSpec;
 	auto item = m_Items[index];
-	auto& changes = m_mgr.GetChanges();
 	lcd->clrText = ::GetSysColor(COLOR_WINDOWTEXT);
 
-	for (auto& change : changes) {
+	for (auto& change : m_Changes) {
 		if (std::get<0>(change) == item && MapChangeToColumn(std::get<1>(change)) == col) {
 			lcd->clrTextBk = std::get<2>(change) >= 0 ? m_Green : m_Red;
 			//lcd->clrText = std::get<2>(change) >= 0 ? theme->TextColor : RGB(255, 255, 255);

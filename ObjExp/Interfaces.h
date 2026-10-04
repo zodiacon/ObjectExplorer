@@ -11,6 +11,8 @@ struct IMainFrame abstract {
 	virtual CUpdateUIBase& GetUI() = 0;
 	virtual bool AddToolBar(HWND tb) = 0;
 	virtual void SetStatusText(int index, PCWSTR text) = 0;
+	// user selected font for view contents (null if default)
+	virtual HFONT GetViewFont() const = 0;
 };
 
 struct IView {

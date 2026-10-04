@@ -28,6 +28,7 @@ struct ViewFactory final {
 	bool Init(IMainFrame* frame, CNativeCustomTabView& tabs);
 	IView* CreateView(ViewType type, DWORD pid = 0, PCWSTR sparam = nullptr);
 	void SetTabIcon(IView* view, ViewIconType iconType);
+	static void SetViewFont(HWND hView, HFONT font);
 
 private:
 	ViewFactory() = default;

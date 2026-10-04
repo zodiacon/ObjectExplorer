@@ -4,10 +4,20 @@
 #include <unordered_set>
 
 int ObjectManager::EnumTypes() {
-	const ULONG len = 1 << 14;
-	wil::unique_virtualalloc_ptr<> buffer(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-	if (!NT_SUCCESS(NT::NtQueryObject(nullptr, NT::ObjectTypesInformation, buffer.get(), len, nullptr)))
-		return 0;
+	ULONG len = 1 << 14;
+	wil::unique_virtualalloc_ptr<> buffer;
+	NTSTATUS status;
+	for (;;) {
+		buffer.reset(::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		if (!buffer)
+			return static_cast<int>(s_types.size());
+		status = NT::NtQueryObject(nullptr, NT::ObjectTypesInformation, buffer.get(), len, nullptr);
+		if (status != STATUS_INFO_LENGTH_MISMATCH || len >= (1 << 24))
+			break;
+		len *= 2;
+	}
+	if (!NT_SUCCESS(status))
+		return static_cast<int>(s_types.size());
 
 	auto p = static_cast<NT::OBJECT_TYPES_INFORMATION*>(buffer.get());
 	bool empty = s_types.empty();
@@ -20,7 +30,6 @@ int ObjectManager::EnumTypes() {
 	}
 	else {
 		s_changes.clear();
-		ATLASSERT(count == s_types.size());
 	}
 	auto raw = &p->TypeInformation[0];
 	TotalHandles = TotalObjects = PeakObjects = PeakHandles = 0;
@@ -30,8 +39,15 @@ int ObjectManager::EnumTypes() {
 			// TypeIndex is only supported since Win8. Uses the fake index for previous OS.
 			raw->TypeIndex = static_cast<decltype(raw->TypeIndex)>(i);
 		}
-		auto type = empty ? std::make_shared<ObjectTypeInfo>() : s_typesMap[raw->TypeIndex];
-		if (empty) {
+		std::shared_ptr<ObjectTypeInfo> type;
+		if (!empty) {
+			if (auto it = s_typesMap.find(raw->TypeIndex); it != s_typesMap.end())
+				type = it->second;
+		}
+		// a new type may be registered (e.g. by a driver) after the first enumeration
+		bool isNew = type == nullptr;
+		if (isNew) {
+			type = std::make_shared<ObjectTypeInfo>();
 			type->GenericMapping = raw->GenericMapping;
 			type->TypeIndex = raw->TypeIndex;
 			type->DefaultNonPagedPoolCharge = raw->DefaultNonPagedPoolCharge;
@@ -64,7 +80,9 @@ int ObjectManager::EnumTypes() {
 		PeakObjects += raw->HighWaterNumberOfObjects;
 		PeakHandles += raw->HighWaterNumberOfHandles;
 
-		if (empty) {
+		if (isNew) {
+			// the maps are read by worker threads (GetType)
+			auto lock = s_typesLock.lock_exclusive();
 			s_types.emplace_back(type);
 			s_typesMap.insert({ type->TypeIndex, type });
 			s_typesNameMap.insert({ std::wstring(type->TypeName), type });
@@ -85,6 +103,7 @@ std::shared_ptr<ObjectTypeInfo> ObjectManager::GetType(PCWSTR name) {
 	if (s_types.empty())
 		EnumTypes();
 
+	auto lock = s_typesLock.lock_shared();
 	return s_typesNameMap.at(name);
 }
 
@@ -279,7 +298,7 @@ bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 		return false;
 	} while (true);
 
-	auto filteredTypeIndex = type == nullptr || ::wcslen(type) == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
+	auto filteredTypeIndex = type == nullptr || ::wcslen(type) == 0 ? -1 : GetType(type)->TypeIndex;
 
 	auto p = (NT::SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
 	auto count = p->NumberOfHandles;
@@ -474,9 +493,9 @@ CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type) {
 
 CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type, ULONG64 key) {
 	ATLASSERT(!s_types.empty());
-	static int processTypeIndex = s_typesNameMap.at(L"Process")->TypeIndex;
-	static int threadTypeIndex = s_typesNameMap.at(L"Thread")->TypeIndex;
-	static int fileTypeIndex = s_typesNameMap.at(L"File")->TypeIndex;
+	static int processTypeIndex = GetType(L"Process")->TypeIndex;
+	static int threadTypeIndex = GetType(L"Thread")->TypeIndex;
+	static int fileTypeIndex = GetType(L"File")->TypeIndex;
 	ATLASSERT(processTypeIndex > 0 && threadTypeIndex > 0);
 
 	if (type == processTypeIndex || type == threadTypeIndex)
@@ -497,7 +516,18 @@ CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type, ULONG64 key) {
 std::shared_ptr<ObjectTypeInfo> ObjectManager::GetType(USHORT index) {
 	if (s_types.empty())
 		EnumTypes();
-	return s_typesMap.at(index);
+	{
+		auto lock = s_typesLock.lock_shared();
+		if (auto it = s_typesMap.find(index); it != s_typesMap.end())
+			return it->second;
+	}
+	//
+	// a type registered since the last enumeration (EnumTypes will pick it up)
+	//
+	auto type = std::make_shared<ObjectTypeInfo>();
+	type->TypeIndex = static_cast<decltype(type->TypeIndex)>(index);
+	type->TypeName.Format(L"<Type %u>", (unsigned)index);
+	return type;
 }
 
 CString ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type, PVOID object) {

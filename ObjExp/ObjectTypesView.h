@@ -59,6 +59,7 @@ private:
 	};
 
 	ColumnType MapChangeToColumn(ObjectManager::ChangeType type) const;
+	void UpdateChanges();
 
 	// Handler prototypes (uncomment arguments if needed):
 	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -74,7 +75,15 @@ private:
 	LRESULT OnUpdateTheme(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
-	ObjectManager m_mgr;
+	struct TypeCounts {
+		uint32_t Handles, Objects, PeakHandles, PeakObjects;
+	};
+	//
+	// counts as of this view's previous update: ObjectManager's own change list is reset by every
+	// EnumTypes caller (e.g. the main window's status bar timer), so the view tracks its own changes
+	//
+	std::unordered_map<ObjectTypeInfo const*, TypeCounts> m_LastCounts;
+	std::vector<ObjectManager::Change> m_Changes;
 	std::vector<std::shared_ptr<ObjectTypeInfo>> m_Items;
 	COLORREF m_Green, m_Red;
 };

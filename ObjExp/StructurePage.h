@@ -35,6 +35,7 @@ private:
 	PVOID m_Address;
 	HANDLE m_hObject;
 	CTreeListView m_Tree;
+	CImageListManaged m_TreeImages;	// the tree doesn't destroy its image list
 	CFont m_font;
 };
 

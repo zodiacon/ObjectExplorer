@@ -32,13 +32,27 @@ HRESULT __stdcall SecurityInfo::GetObjectInformation(PSI_OBJECT_INFO pObjectInfo
 }
 
 HRESULT __stdcall SecurityInfo::GetSecurity(SECURITY_INFORMATION RequestedInformation, PSECURITY_DESCRIPTOR* ppSecurityDescriptor, BOOL fDefault) {
-	DWORD len;
-	if (::GetKernelObjectSecurity(m_hObject, RequestedInformation, (PSECURITY_DESCRIPTOR)m_buffer, sizeof(m_buffer), &len)) {
-		*ppSecurityDescriptor = m_buffer;
-		return S_OK;
+	//
+	// the caller frees the descriptor with LocalFree
+	//
+	DWORD len = 0;
+	::GetKernelObjectSecurity(m_hObject, RequestedInformation, nullptr, 0, &len);
+	for (;;) {
+		if (len == 0)
+			return HRESULT_FROM_WIN32(::GetLastError());
+		auto sd = (PSECURITY_DESCRIPTOR)::LocalAlloc(LPTR, len);
+		if (!sd)
+			return E_OUTOFMEMORY;
+		if (::GetKernelObjectSecurity(m_hObject, RequestedInformation, sd, len, &len)) {
+			*ppSecurityDescriptor = sd;
+			return S_OK;
+		}
+		auto error = ::GetLastError();
+		::LocalFree(sd);
+		// the descriptor may have grown in the meantime
+		if (error != ERROR_INSUFFICIENT_BUFFER)
+			return HRESULT_FROM_WIN32(error);
 	}
-
-	return HRESULT_FROM_WIN32(::GetLastError());
 }
 
 HRESULT __stdcall SecurityInfo::SetSecurity(SECURITY_INFORMATION SecurityInformation, PSECURITY_DESCRIPTOR pSecurityDescriptor) {

@@ -324,11 +324,10 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		WS_CLIPSIBLINGS | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);
 
-	CImageList images;
-	images.Create(16, 16, ILC_COLOR | ILC_COLOR32, 2, 0);
-	images.AddIcon(AtlLoadIconImage(IDI_DIRECTORY, 0, 16, 16));
-	images.AddIcon(AtlLoadIconImage(IDI_FOLDER_CLOSED, 0, 16, 16));
-	m_Tree.SetImageList(images, TVSIL_NORMAL);
+	m_TreeImages.Create(16, 16, ILC_COLOR | ILC_COLOR32, 2, 0);
+	ResourceManager::AddIcon(m_TreeImages, IDI_DIRECTORY);
+	ResourceManager::AddIcon(m_TreeImages, IDI_FOLDER_CLOSED);
+	m_Tree.SetImageList(m_TreeImages, TVSIL_NORMAL);
 
 	m_List.InsertColumn(0, L"Name", LVCFMT_LEFT, 400);
 	m_List.InsertColumn(1, L"Type", LVCFMT_LEFT, 150);

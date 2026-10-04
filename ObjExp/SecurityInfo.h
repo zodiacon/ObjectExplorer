@@ -20,6 +20,5 @@ private:
 private:
 	CString m_name;
 	HANDLE m_hObject;
-	BYTE m_buffer[1 << 10];
 };
 

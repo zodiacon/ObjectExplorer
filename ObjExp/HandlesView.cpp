@@ -31,6 +31,11 @@ CString CHandlesView::GetTitle() const {
 }
 
 void CHandlesView::Refresh() {
+	if (m_UpdateCycle) {
+		// the worker is using the tracker; refresh when its results come in
+		m_RefreshPending = true;
+		return;
+	}
 	CWaitCursor wait;
 	m_Tracker.EnumHandles(true);
 	m_Handles = m_Tracker.GetNewHandles();
@@ -210,10 +215,15 @@ void CHandlesView::DoTimerWorkAsync() {
 	}
 
 	PostMessage(WM_CONTINUEUPDATE);
-	m_UpdateInProgress = false;
+	// must be last: once cleared, the view may be destroyed
+	m_WorkerRunning = false;
 }
 
 void CHandlesView::DoTimerUpdate() {
+	// the timer can be restarted (page activation, run/interval commands) while an update is still in progress
+	if (m_UpdateCycle)
+		return;
+
 	ActivateTimer(false);
 	bool dead = m_hProcess && ::WaitForSingleObject(m_hProcess.get(), 0) == WAIT_OBJECT_0;
 	if (dead) {
@@ -241,10 +251,15 @@ void CHandlesView::DoTimerUpdate() {
 		m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	}
 
-	m_UpdateInProgress = true;
-	ATLVERIFY(::TrySubmitThreadpoolCallback([](auto, auto param) {
+	m_UpdateCycle = true;
+	m_WorkerRunning = true;
+	if (!::TrySubmitThreadpoolCallback([](auto, auto param) {
 		return ((CHandlesView*)param)->DoTimerWorkAsync();
-		}, this, nullptr));
+		}, this, nullptr)) {
+		m_WorkerRunning = false;
+		m_UpdateCycle = false;
+		ActivateTimer(IsActive());
+	}
 }
 
 int CHandlesView::GetSaveColumnRange(HWND, int& start) const {
@@ -323,12 +338,20 @@ LRESULT CHandlesView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
-	SortPreservingSelection(m_List, m_Handles, [&] {
-		for (auto& hi : m_TempHandles)
-			m_Handles.push_back(hi);
-		DoSort(GetSortInfo(m_List));
-		m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
-		});
+	m_UpdateCycle = false;
+	if (m_RefreshPending) {
+		// replaces everything the worker found
+		m_RefreshPending = false;
+		Refresh();
+	}
+	else {
+		SortPreservingSelection(m_List, m_Handles, [&] {
+			for (auto& hi : m_TempHandles)
+				m_Handles.push_back(hi);
+			DoSort(GetSortInfo(m_List));
+			m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+			});
+	}
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	if (IsActive() && IsRunning()) {
 		ActivateTimer(true);
@@ -340,7 +363,7 @@ LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
 
 LRESULT CHandlesView::OnDestroy(UINT, WPARAM, LPARAM, BOOL& handled) {
 	Run(false, false);
-	while (m_UpdateInProgress) {
+	while (m_WorkerRunning) {
 		::Sleep(100);
 	}
 	handled = FALSE;
@@ -348,12 +371,21 @@ LRESULT CHandlesView::OnDestroy(UINT, WPARAM, LPARAM, BOOL& handled) {
 }
 
 LRESULT CHandlesView::OnCloseHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int count = m_List.GetSelectedCount();
-	ATLASSERT(count > 0);
+	//
+	// capture the selected handles now: the list keeps updating while the confirmation box is shown,
+	// so the selected row indices may refer to other handles by the time it's closed
+	//
+	std::vector<std::shared_ptr<HandleInfoEx>> handles;
+	for (auto n : SelectedItemsView(m_List))
+		handles.push_back(m_Handles[n]);
+	int count = (int)handles.size();
+	if (count == 0)
+		return 0;
+
 	std::wstring text;
 	if (count == 1) {
-		auto& hi = m_Handles[m_List.GetNextItem(-1, LVNI_SELECTED)];
-		text = std::format(L"Close handle 0x{:X} ({}) {}", hi->HandleValue, (PCWSTR)hi->Type, 
+		auto& hi = handles[0];
+		text = std::format(L"Close handle 0x{:X} ({}) {}", hi->HandleValue, (PCWSTR)hi->Type,
 			hi->Name.empty() ? L"" : (L"(" + hi->Name + L")"));
 	}
 	else {
@@ -363,9 +395,10 @@ LRESULT CHandlesView::OnCloseHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		return 0;
 
 	int closed = 0;
-	for (auto n : SelectedItemsView(m_List)) {
-		auto& hi = m_Handles[n];
-		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, DUPLICATE_CLOSE_SOURCE);
+	for (auto& hi : handles) {
+		// DUPLICATE_SAME_ACCESS so the duplication succeeds the first time: the source handle is closed even if it fails,
+		// and a retry would close whatever handle has that value by then
+		auto hDup = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, 0, DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS);
 		if (hDup) {
 			::CloseHandle(hDup);
 			closed++;

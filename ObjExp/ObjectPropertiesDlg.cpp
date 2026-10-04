@@ -24,14 +24,13 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     SetDialogIcon(ResourceManager::Get().GetTypeIcon(m_Type));
     SetWindowText(m_Title);
     m_Tabs.Attach(GetDlgItem(IDC_TABS));
-    CImageList images;
-    images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 2);
+    m_TabImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 2);
     UINT icons[] = {
         IDI_INFO, IDI_MAGNET, IDI_STRUCT,
     };
     for(auto icon : icons)
-        images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
-    m_Tabs.SetImageList(images);
+        ResourceManager::AddIcon(m_TabImages, icon);
+    m_Tabs.SetImageList(m_TabImages);
 
     for(int i = 0; i < m_Pages.size(); i++) {
         auto& page = m_Pages[i];

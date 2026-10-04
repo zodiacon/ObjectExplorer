@@ -26,7 +26,20 @@ HICON ResourceManager::GetTypeIcon(PCWSTR typeName) const {
 	int index = 0;
 	if (auto it = m_typeNameToImage.find(typeName); it != m_typeNameToImage.end())
 		index = it->second;
-	return m_typeImages.GetIcon(index);
+	// GetIcon creates a new icon on each call, so keep the ones handed out
+	auto& hIcon = m_typeIcons[index];
+	if (!hIcon)
+		hIcon = m_typeImages.GetIcon(index);
+	return hIcon;
+}
+
+int ResourceManager::AddIcon(HIMAGELIST images, UINT id) {
+	auto hIcon = AtlLoadIconImage(id, 0, 16, 16);
+	if (!hIcon)
+		return -1;
+	int n = ImageList_AddIcon(images, hIcon);
+	::DestroyIcon(hIcon);
+	return n;
 }
 
 HIMAGELIST ResourceManager::GetTypesImageList() const {
@@ -38,6 +51,9 @@ void ResourceManager::Destroy() {
 		m_monoFont.DeleteObject();
 	if (m_defaultFont)
 		m_defaultFont.DeleteObject();
+	for (auto& [index, hIcon] : m_typeIcons)
+		::DestroyIcon(hIcon);
+	m_typeIcons.clear();
 	if(m_typeImages)
 		m_typeImages.Destroy();
 }
@@ -48,7 +64,7 @@ ResourceManager::ResourceManager() {
 	//
 	// add default object icon
 	//
-	m_typeImages.AddIcon(AtlLoadIconImage(IDI_OBJECT, 0, 16, 16));
+	AddIcon(m_typeImages, IDI_OBJECT);
 
 	std::unordered_map<std::wstring, UINT> icons = { 
 		{ L"Process", IDI_PROCESS },
@@ -104,7 +120,7 @@ ResourceManager::ResourceManager() {
 	for (auto& info : mgr.GetObjectTypes()) {
 		auto it = icons.find((PCWSTR)info->TypeName);
 		if (it != end(icons)) {
-			auto image = m_typeImages.AddIcon(AtlLoadIconImage(it->second, 0, 16, 16));
+			auto image = AddIcon(m_typeImages, it->second);
 			ATLASSERT(image >= 0);
 			m_typeToImage.insert({ info->TypeIndex, image });
 			m_typeNameToImage.insert({ (PCWSTR)info->TypeName, image });

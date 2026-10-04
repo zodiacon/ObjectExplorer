@@ -17,13 +17,18 @@ int ImageIconCache::GetIcon(std::wstring const& path, HICON* phIcon) const {
 	auto hIcon = ::ExtractAssociatedIcon(_Module.GetModuleInstance(), spath.GetBufferSetLength(MAX_PATH), &index);
 
 	if (hIcon) {
+		// the image list keeps its own copy
 		int n = m_images.AddIcon(hIcon);
 		if (n >= 0) {
-			if (phIcon)
-				*phIcon = hIcon;
 			m_icons.insert({ path, n });
-			return n;
+			if (phIcon) {
+				// the caller owns this one, as with the cached path above
+				*phIcon = hIcon;
+				return n;
+			}
 		}
+		::DestroyIcon(hIcon);
+		return n >= 0 ? n : 0;
 	}
 	return 0;
 }

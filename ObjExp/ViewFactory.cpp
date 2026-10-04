@@ -6,6 +6,7 @@
 #include "HandlesView.h"
 #include "ObjectsView.h"
 #include "ZombieProcessesView.h"
+#include "ResourceManager.h"
 
 ViewFactory& ViewFactory::Get() {
     static ViewFactory factory;
@@ -19,17 +20,18 @@ bool ViewFactory::Init(IMainFrame* frame, CNativeCustomTabView& tabs) {
         IDI_TYPES, IDI_PACKAGE, IDI_MAGNET, IDI_MAGNET2, IDI_OBJECTS,
         IDI_PROCESS_ZOMBIE, IDI_THREAD_ZOMBIE,
     };
+    // lives as long as the tab view
     CImageList images;
     images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 4);
     for (auto icon : icons)
-        images.AddIcon(AtlLoadIconImage(icon, 0, 16, 16));
+        ResourceManager::AddIcon(images, icon);
     tabs.SetImageList(images);
 
     ViewIconType iconTypes[] = {
         ViewIconType::ZombieProcess,
     };
     for (auto icon : iconTypes) {
-        int n = images.AddIcon(AtlLoadIconImage((UINT)icon, 0, 16, 16));
+        int n = ResourceManager::AddIcon(images, (UINT)icon);
         m_tabIcons.insert({ icon, n });
     }
 
@@ -88,10 +90,26 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
             break;
         }
     }
-    if(view)
+    if (view) {
+        if (auto font = m_pFrame->GetViewFont())
+            SetViewFont(view->GetHwnd(), font);
         m_tabs->AddPage(view->GetHwnd(), view->GetTitle(), image, view);
+    }
 
     return view;
+}
+
+void ViewFactory::SetViewFont(HWND hView, HFONT font) {
+    //
+    // only the data controls (lists and trees) get the font; toolbars, edits etc. keep theirs
+    //
+    ::EnumChildWindows(hView, [](HWND hWnd, LPARAM font) -> BOOL {
+        WCHAR className[32];
+        if (::GetClassName(hWnd, className, _countof(className)) &&
+            (::_wcsicmp(className, WC_LISTVIEW) == 0 || ::_wcsicmp(className, WC_TREEVIEW) == 0))
+            ::SendMessage(hWnd, WM_SETFONT, (WPARAM)font, TRUE);
+        return TRUE;
+        }, (LPARAM)font);
 }
 
 void ViewFactory::SetTabIcon(IView* view, ViewIconType iconType) {

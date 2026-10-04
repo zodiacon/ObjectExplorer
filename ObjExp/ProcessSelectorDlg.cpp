@@ -38,7 +38,9 @@ int CProcessSelectorDlg::GetRowImage(HWND, int row, int col) const {
         }
         if (item.Image < 0) {
             if (hIcon) {
+                // the image list keeps its own copy
                 item.Image = m_Icons.AddIcon(hIcon);
+                ::DestroyIcon(hIcon);
                 m_IconsMap.insert({ path, item.Image });
             }
             else

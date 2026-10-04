@@ -11,10 +11,7 @@ CString ProcessHelper::GetProcessName(DWORD pid) {
 			return wcsrchr(name, L'\\') + 1;
 		}
 	}
-	EnumProcesses();
-	if (auto it = s_names.find(pid); it != s_names.end())
-		return it->second;
-	return L"<Unknown>";
+	return LookupName(pid);
 }
 
 CString ProcessHelper::GetProcessName2(DWORD pid) {
@@ -25,7 +22,32 @@ CString ProcessHelper::GetProcessName2(DWORD pid) {
 			return wcsrchr(name, L'\\') + 1;
 		}
 	}
-	EnumProcesses();
+	return LookupName(pid);
+}
+
+CString ProcessHelper::LookupName(DWORD pid) {
+	//
+	// a snapshot older than this may miss new processes or have a reused PID's old name
+	//
+	const DWORD64 MaxAge = 5000;
+	// don't take a new snapshot for every unknown PID (e.g. handles of processes that exited)
+	const DWORD64 MinRefreshInterval = 1000;
+
+	auto now = ::GetTickCount64();
+	{
+		auto lock = s_lock.lock_shared();
+		auto age = now - s_lastEnum;
+		auto it = s_names.find(pid);
+		if (it != s_names.end() && age < MaxAge)
+			return it->second;
+		if (it == s_names.end() && age < MinRefreshInterval)
+			return L"<Unknown>";
+	}
+
+	auto names = EnumProcesses();
+	auto lock = s_lock.lock_exclusive();
+	s_names = std::move(names);
+	s_lastEnum = ::GetTickCount64();
 	if (auto it = s_names.find(pid); it != s_names.end())
 		return it->second;
 	return L"<Unknown>";
@@ -72,31 +94,36 @@ std::wstring ProcessHelper::GetUserName(DWORD pid) {
 	return std::wstring(domain) + L"\\" + name;
 }
 
-void ProcessHelper::EnumProcesses(bool force) {
-	if (!force && !s_names.empty())
-		return;
-
+std::unordered_map<DWORD, CString> ProcessHelper::EnumProcesses() {
+	std::unordered_map<DWORD, CString> names;
 	wil::unique_handle hSnaphost(::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
 	if (!hSnaphost)
-		return;
+		return names;
 
 	PROCESSENTRY32 pe;
 	pe.dwSize = sizeof(pe);
-	::Process32First(hSnaphost.get(), &pe);
+	if (!::Process32First(hSnaphost.get(), &pe))
+		return names;
 
-	while (::Process32Next(hSnaphost.get(), &pe)) {
-		wil::unique_handle hProcess(::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pe.th32ProcessID));
-		if (hProcess && wcsrchr(pe.szExeFile, L'.'))
-			continue;
-
-		s_names.insert({ pe.th32ProcessID, pe.szExeFile });
-	}
+	names.reserve(512);
+	do {
+		names.insert({ pe.th32ProcessID, pe.szExeFile });
+	} while (::Process32Next(hSnaphost.get(), &pe));
+	return names;
 }
 
 std::wstring ProcessHelper::GetDosNameFromNtName(PCWSTR name) {
+	static wil::srwlock lock;
 	static std::vector<std::pair<std::wstring, std::wstring>> deviceNames;
-	static bool first = true;
-	if (first) {
+	static DWORD64 lastUpdate;
+
+	//
+	// rebuild the drive list now and then, as drives can be added or removed (e.g. USB, mounted images)
+	//
+	auto now = ::GetTickCount64();
+	auto guard = lock.lock_exclusive();
+	if (deviceNames.empty() || now - lastUpdate > 5000) {
+		deviceNames.clear();
 		auto drives = ::GetLogicalDrives();
 		int drive = 0;
 		while (drives) {
@@ -112,12 +139,14 @@ std::wstring ProcessHelper::GetDosNameFromNtName(PCWSTR name) {
 			drive++;
 			drives >>= 1;
 		}
-		first = false;
+		lastUpdate = now;
 	}
 
 	for (auto& [ntName, dosName] : deviceNames) {
-		if (::_wcsnicmp(name, ntName.c_str(), ntName.size()) == 0)
-			return dosName + (name + ntName.size());
+		// the device name must be followed by a separator, or \Device\HarddiskVolume1 would match \Device\HarddiskVolume10
+		auto len = ntName.size();
+		if (::_wcsnicmp(name, ntName.c_str(), len) == 0 && (name[len] == L'\\' || name[len] == 0))
+			return dosName + (name + len);
 	}
 	return L"";
 }

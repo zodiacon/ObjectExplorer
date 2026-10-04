@@ -71,9 +71,10 @@ private:
 		CString ProcessName;
 		CString Type;
 		DWORD64 TargetTime;
-		bool NameChecked : 1{ false };
-		bool NewHandle : 1{false };
-		bool ClosedHandle : 1 { false};
+		bool NameChecked{ false };
+		// written by the update worker while the list is painted
+		std::atomic<bool> NewHandle{ false };
+		std::atomic<bool> ClosedHandle{ false };
 	};
 
 	enum class ColumnType {
@@ -88,6 +89,10 @@ private:
 	DWORD m_Pid;
 	CString m_TypeName;
 	wil::unique_handle m_hProcess;
-	std::atomic<bool> m_UpdateInProgress{ false };
+	// set while the worker thread runs (it uses this view)
+	std::atomic<bool> m_WorkerRunning{ false };
+	// set from submitting an update until its results are merged (UI thread only)
+	bool m_UpdateCycle{ false };
+	bool m_RefreshPending{ false };
 	bool m_UpdateProcNames : 1{ false }, m_UpdateObjectNames : 1{ false };
 };

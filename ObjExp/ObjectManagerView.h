@@ -106,6 +106,7 @@ private:
 
 private:
 	CTreeViewCtrlEx m_Tree;
+	CImageListManaged m_TreeImages;	// the tree doesn't destroy its image list
 	CListViewCtrl m_List;
 	CQuickFindEdit m_QuickFind;
 	SortedFilteredVector<ObjectData> m_Objects;
