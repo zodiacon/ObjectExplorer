@@ -6,6 +6,10 @@
 #include "HandlesView.h"
 #include "ObjectsView.h"
 #include "ZombieProcessesView.h"
+#include "SearchView.h"
+#include "PipesView.h"
+#include "ProcessesView.h"
+#include "SystemInfoView.h"
 #include "ResourceManager.h"
 
 ViewFactory& ViewFactory::Get() {
@@ -16,9 +20,11 @@ ViewFactory& ViewFactory::Get() {
 bool ViewFactory::Init(IMainFrame* frame, CNativeCustomTabView& tabs) {
     m_pFrame = frame;
     m_tabs = &tabs;
+    // tab images, by index
     UINT icons[] = {
         IDI_TYPES, IDI_PACKAGE, IDI_MAGNET, IDI_MAGNET2, IDI_OBJECTS,
-        IDI_PROCESS_ZOMBIE, IDI_THREAD_ZOMBIE,
+        IDI_PROCESS_ZOMBIE, IDI_THREAD_ZOMBIE, IDI_FIND, IDI_PLUG, IDI_MESSAGE,
+        IDI_PROCESS, IDI_THREAD, IDI_INFO,
     };
     // lives as long as the tab view
     CImageList images;
@@ -89,13 +95,54 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
             view = p;
             break;
         }
+
+        case ViewType::Search:
+            return CreateSearchView(sparam, false);
+
+        case ViewType::Pipes:
+        case ViewType::Mailslots:
+        {
+            auto p = new CPipesView(m_pFrame, type == ViewType::Mailslots);
+            p->Create(*m_tabs, CWindow::rcDefault, nullptr, style);
+            image = type == ViewType::Pipes ? 8 : 9;
+            view = p;
+            break;
+        }
+
+        case ViewType::Processes:
+        case ViewType::Threads:
+        {
+            auto p = new CProcessesView(m_pFrame, type == ViewType::Threads);
+            p->Create(*m_tabs, CWindow::rcDefault, nullptr, style);
+            image = type == ViewType::Processes ? 10 : 11;
+            view = p;
+            break;
+        }
+
+        case ViewType::SystemInformation:
+        {
+            auto p = new CSystemInfoView(m_pFrame);
+            p->Create(*m_tabs, CWindow::rcDefault, nullptr, style);
+            image = 12;
+            view = p;
+            break;
+        }
     }
+    return AddView(view, image);
+}
+
+IView* ViewFactory::CreateSearchView(PCWSTR text, bool matchCase) {
+    auto p = new CSearchView(m_pFrame, text, matchCase);
+    p->Create(*m_tabs, CWindow::rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+    return AddView(p, 7);
+}
+
+IView* ViewFactory::AddView(IView* view, int image) {
     if (view) {
         if (auto font = m_pFrame->GetViewFont())
             SetViewFont(view->GetHwnd(), font);
         m_tabs->AddPage(view->GetHwnd(), view->GetTitle(), image, view);
     }
-
     return view;
 }
 

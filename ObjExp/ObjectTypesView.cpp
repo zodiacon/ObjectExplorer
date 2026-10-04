@@ -266,8 +266,6 @@ DWORD CObjectTypesView::OnItemPrePaint(int, LPNMCUSTOMDRAW cd) {
 void CObjectTypesView::UpdateUI(bool force) {
 	auto& ui = UI();
 	ui.UIEnable(ID_EDIT_COPY, m_List.GetSelectedCount() > 0);
-	ui.UIEnable(ID_EDIT_PASTE, false);
-	ui.UIEnable(ID_EDIT_CUT, false);
 	ui.UIEnable(ID_TYPESLIST_ALLHANDLES, m_List.GetSelectedCount() == 1);
 	CTimerManager::UpdateIntervalUI();
 }

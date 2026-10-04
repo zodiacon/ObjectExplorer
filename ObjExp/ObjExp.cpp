@@ -8,6 +8,7 @@
 #include <WTLHelper.h>
 #include "AppSettings.h"
 #include "DbgDriver.h"
+#include "SingleInstance.h"
 
 CAppModule _Module;
 AppSettings g_Settings;
@@ -42,6 +43,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lps
 
 	auto& settings = AppSettings::Get();
 	settings.LoadFromKey(L"SOFTWARE\\ScorpioSoftware\\ObjectExplorer");
+
+	if (settings.SingleInstance() && SingleInstance::ActivateOther()) {
+		::CoUninitialize();
+		return 0;
+	}
 
 	hRes = _Module.Init(nullptr, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));

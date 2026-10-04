@@ -156,14 +156,19 @@
 #define ID_SYSTEM_ZOMBIETHREADS         32818
 #define ID_HELP_ABOUTWINDOWS            32819
 #define ID_OPTIONS_DARKMODE             32820
+#define ID_OPTIONS_SINGLEINSTANCE       32821
+#define ID_OBJECTLIST_SECURITY          32822
+#define ID_PIPELIST_FINDHANDLES         32823
+#define IDD_FIND                        287
+#define IDC_MATCHCASE                   1035
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        287
-#define _APS_NEXT_COMMAND_VALUE         32821
-#define _APS_NEXT_CONTROL_VALUE         1035
+#define _APS_NEXT_RESOURCE_VALUE        288
+#define _APS_NEXT_COMMAND_VALUE         32824
+#define _APS_NEXT_CONTROL_VALUE         1036
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

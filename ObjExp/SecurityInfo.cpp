@@ -3,7 +3,7 @@
 
 #pragma comment(lib, "Aclui")
 
-SecurityInfo::SecurityInfo(HANDLE hObject, PCWSTR name) : m_hObject(hObject), m_name(name) {
+SecurityInfo::SecurityInfo(HANDLE hObject, PCWSTR name, bool readOnly) : m_hObject(hObject), m_name(name), m_ReadOnly(readOnly) {
 }
 
 HRESULT __stdcall SecurityInfo::QueryInterface(REFIID riid, void** ppvObj) {
@@ -23,7 +23,7 @@ ULONG __stdcall SecurityInfo::Release(void) {
 }
 
 HRESULT __stdcall SecurityInfo::GetObjectInformation(PSI_OBJECT_INFO pObjectInfo) {
-	pObjectInfo->dwFlags = SI_ADVANCED | SI_EDIT_ALL;
+	pObjectInfo->dwFlags = SI_ADVANCED | SI_EDIT_ALL | (m_ReadOnly ? SI_READONLY : 0);
 	pObjectInfo->hInstance = nullptr;
 	pObjectInfo->pszPageTitle = nullptr;
 	pObjectInfo->pszObjectName = (LPWSTR)(LPCWSTR)m_name;

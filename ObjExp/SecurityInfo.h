@@ -2,7 +2,7 @@
 
 class SecurityInfo : public ISecurityInformation {
 public:
-	SecurityInfo(HANDLE hObject, PCWSTR name);
+	SecurityInfo(HANDLE hObject, PCWSTR name, bool readOnly = false);
 
 private:
 	// Inherited via ISecurityInformation
@@ -20,5 +20,6 @@ private:
 private:
 	CString m_name;
 	HANDLE m_hObject;
+	bool m_ReadOnly;
 };
 

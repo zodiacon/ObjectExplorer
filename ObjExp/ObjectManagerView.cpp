@@ -382,10 +382,17 @@ LRESULT CObjectManagerView::OnRefresh(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CObjectManagerView::OnEditSecurity(WORD, WORD, HWND, BOOL&) {
-	auto index = m_List.GetSelectedIndex();
-	ATLASSERT(index >= 0);
-	auto& item = m_Objects[index];
-
+	if (m_Splitter.GetActivePane() == 1) {
+		int row = m_List.GetNextItem(-1, LVNI_SELECTED);
+		if (row >= 0) {
+			// copy, as the timer may replace the items while the dialog is open
+			auto item = m_Objects[row];
+			ObjectHelpers::EditNamespaceObjectSecurity(m_hWnd, item.FullName, item.Type);
+		}
+	}
+	else if (m_Tree.GetSelectedItem()) {
+		ObjectHelpers::EditNamespaceObjectSecurity(m_hWnd, GetDirectoryPath(m_Tree.GetSelectedItem()), L"Directory");
+	}
 	return 0;
 }
 
@@ -472,30 +479,18 @@ bool CObjectManagerView::ShowProperties(int index) const {
 	return ShowProperties(item.FullName, item.Type, item.SymbolicLinkTarget);
 }
 
+CString CObjectManagerView::GetDirectoryPath(HTREEITEM hItem) const {
+	auto path = GetFullItemPath(m_Tree, hItem).Mid(1);
+	// the root's path is empty
+	return path.IsEmpty() ? CString(L"\\") : path;
+}
+
 bool CObjectManagerView::ShowProperties(HTREEITEM hItem) const {
-	auto path = GetFullItemPath(m_Tree, hItem);
-	return ShowProperties(path.Mid(1), L"Directory");
+	return ShowProperties(GetDirectoryPath(hItem), L"Directory");
 }
 
 bool CObjectManagerView::ShowProperties(PCWSTR fullName, PCWSTR type, PCWSTR target) const {
-	if (type == CString(L"Type")) {
-		//
-		// special treatment for type objects
-		//
-		CString name(fullName);
-		int bs = name.ReverseFind(L'\\');
-		ObjectHelpers::ShowObjectProperties(nullptr, type, name.Mid(bs + 1));
-		return true;
-	}
-	HANDLE hObject{ nullptr };
-	auto status = ObjectManager::OpenObject(fullName, type, hObject);
-	if (hObject) {
-		ObjectHelpers::ShowObjectProperties(hObject, type, fullName, target);
-		::CloseHandle(hObject);
-		return true;
-	}
-	AtlMessageBox(m_hWnd, L"Error opening object.", IDS_TITLE, MB_ICONERROR);
-	return false;
+	return ObjectHelpers::ShowNamespaceObjectProperties(m_hWnd, fullName, type, target);
 }
 
 void CObjectManagerView::EnumDirectory(CTreeItem root, const CString& path) {

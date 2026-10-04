@@ -366,6 +366,12 @@
     <ClCompile Include="SymbolToTreeView.cpp" />
     <ClCompile Include="ViewFactory.cpp" />
     <ClCompile Include="ZombieProcessesView.cpp" />
+    <ClCompile Include="FindDlg.cpp" />
+    <ClCompile Include="PipesView.cpp" />
+    <ClCompile Include="ProcessesView.cpp" />
+    <ClCompile Include="SearchView.cpp" />
+    <ClCompile Include="SingleInstance.cpp" />
+    <ClCompile Include="SystemInfoView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
@@ -402,6 +408,12 @@
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="ViewFactory.h" />
     <ClInclude Include="ZombieProcessesView.h" />
+    <ClInclude Include="FindDlg.h" />
+    <ClInclude Include="PipesView.h" />
+    <ClInclude Include="ProcessesView.h" />
+    <ClInclude Include="SearchView.h" />
+    <ClInclude Include="SingleInstance.h" />
+    <ClInclude Include="SystemInfoView.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ObjExp.rc" />

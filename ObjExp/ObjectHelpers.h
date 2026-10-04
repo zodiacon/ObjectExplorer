@@ -8,6 +8,9 @@ struct ObjectHelpers abstract final {
 	static bool IsNamedObjectType(USHORT index);
 	static HANDLE OpenObject(PCWSTR path, PCWSTR typeName, DWORD access);
 	static PVOID GetObjectAddress(PCWSTR fullName);
+	// objects in the object manager namespace (by full name); failures are reported to the user
+	static bool ShowNamespaceObjectProperties(HWND hParent, PCWSTR fullName, PCWSTR type, PCWSTR target = nullptr);
+	static bool EditNamespaceObjectSecurity(HWND hParent, PCWSTR fullName, PCWSTR type);
 
 	inline static std::map<CString, CString> KernelTypes{
 		{ L"ALPC Port", L"_ALPC_PORT" },

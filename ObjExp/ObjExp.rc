@@ -61,9 +61,7 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
     END
     POPUP "&View"
     BEGIN
@@ -106,10 +104,11 @@ BEGIN
     END
     POPUP "&Options"
     BEGIN
-        MENUITEM "&Maintain List of Objects Per Type", ID_OPTIONS_MAINTAINLISTOFOBJECTSPERTYPE
         MENUITEM "&Always On Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Font...",                    ID_OPTIONS_FONT
         MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
+        MENUITEM SEPARATOR
+        MENUITEM "&Single Instance",            ID_OPTIONS_SINGLEINSTANCE
     END
     POPUP "&Tab"
     BEGIN
@@ -139,6 +138,7 @@ BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "Copy Full Directory Name",    ID_OBJECTTREE_COPYFULLDIRECTORYNAME
         MENUITEM SEPARATOR
+        MENUITEM "&Security...",                ID_OBJECTLIST_SECURITY
         MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
     POPUP "objectlist"
@@ -149,6 +149,7 @@ BEGIN
         MENUITEM "&Show Directories in List",   ID_OBJECTLIST_SHOWDIRECTORIESINLIST
         MENUITEM "&List Mode",                  ID_OBJECTLIST_LISTMODE
         MENUITEM SEPARATOR
+        MENUITEM "&Security...",                ID_OBJECTLIST_SECURITY
         MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
     POPUP "objectlistnoselect"
@@ -160,6 +161,13 @@ BEGIN
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "Close...\tDel",               ID_HANDLELIST_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
+    END
+    POPUP "pipelist"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Find Handles",               ID_PIPELIST_FINDHANDLES
         MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
@@ -393,6 +401,19 @@ BEGIN
     PUSHBUTTON      "Refresh",IDC_REFRESH,7,264,50,14
 END
 
+IDD_FIND DIALOGEX 0, 0, 290, 92
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Find Handle or Object"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Name contains:",IDC_STATIC,7,9,52,8
+    EDITTEXT        IDC_TEXT,63,7,220,14,ES_AUTOHSCROLL
+    CONTROL         "&Match case",IDC_MATCHCASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,27,80,10
+    LTEXT           "Searches the names of all handles and of all objects in the object manager namespace.",IDC_STATIC,7,42,276,18
+    DEFPUSHBUTTON   "Find",IDOK,173,71,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,233,71,50,14
+END
+
 IDD_HANDLES DIALOGEX 0, 0, 271, 180
 STYLE DS_SETFONT | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "Tahoma", 400, 0, 0x0
@@ -484,10 +505,6 @@ IDR_MAINFRAME ACCELERATORS
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
@@ -509,8 +526,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,0,0
- PRODUCTVERSION 2,1,0,0
+ FILEVERSION 2,2,0,0
+ PRODUCTVERSION 2,2,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -527,12 +544,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Scorpio Software"
             VALUE "FileDescription", "Kernel Objects Explorer"
-            VALUE "FileVersion", "2.1.0.0"
+            VALUE "FileVersion", "2.2.0.0"
             VALUE "InternalName", "ObjExp"
             VALUE "LegalCopyright", "©2021-2026 Pavel Yosifovich"
             VALUE "OriginalFilename", "ObjExp.exe"
             VALUE "ProductName", "Object Explorer"
-            VALUE "ProductVersion", "2.1.0.0"
+            VALUE "ProductVersion", "2.2.0.0"
         END
     END
     BLOCK "VarFileInfo"

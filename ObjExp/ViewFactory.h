@@ -13,9 +13,14 @@ enum class ViewType {
 	HandlesOfType,
 	ProcessHandles,
 	Objects,
-	Search,
+	Search,		// use CreateSearchView
 	ZombieProcesses,
 	ZombieThreads,
+	Pipes,
+	Mailslots,
+	Processes,
+	Threads,
+	SystemInformation,
 };
 
 enum class ViewIconType {
@@ -27,11 +32,14 @@ struct ViewFactory final {
 	
 	bool Init(IMainFrame* frame, CNativeCustomTabView& tabs);
 	IView* CreateView(ViewType type, DWORD pid = 0, PCWSTR sparam = nullptr);
+	// searches the names of all handles and namespace objects for the text
+	IView* CreateSearchView(PCWSTR text, bool matchCase);
 	void SetTabIcon(IView* view, ViewIconType iconType);
 	static void SetViewFont(HWND hView, HFONT font);
 
 private:
 	ViewFactory() = default;
+	IView* AddView(IView* view, int image);
 
 	IMainFrame* m_pFrame{ nullptr };
 	CNativeCustomTabView* m_tabs;

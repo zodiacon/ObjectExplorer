@@ -11,6 +11,8 @@
 #include "StructurePage.h"
 #include "SymbolManager.h"
 #include "DriverHelper.h"
+#include "SecurityInfo.h"
+#include <WTLHelper.h>
 
 UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target, DWORD handleCount) {
 	CString title = typeName;
@@ -214,4 +216,44 @@ HANDLE ObjectHelpers::OpenObject(PCWSTR name, PCWSTR typeName, DWORD access) {
 	}
 
 	return hObject;
+}
+
+bool ObjectHelpers::ShowNamespaceObjectProperties(HWND hParent, PCWSTR fullName, PCWSTR type, PCWSTR target) {
+	if (::_wcsicmp(type, L"Type") == 0) {
+		//
+		// type objects can't be opened; their properties come from the type information
+		//
+		auto name = wcsrchr(fullName, L'\\');
+		ShowObjectProperties(nullptr, type, name ? name + 1 : fullName);
+		return true;
+	}
+	HANDLE hObject{ nullptr };
+	ObjectManager::OpenObject(fullName, type, hObject);
+	if (hObject) {
+		ShowObjectProperties(hObject, type, fullName, target);
+		::CloseHandle(hObject);
+		return true;
+	}
+	AtlMessageBox(hParent, L"Error opening object.", IDS_TITLE, MB_ICONERROR);
+	return false;
+}
+
+bool ObjectHelpers::EditNamespaceObjectSecurity(HWND hParent, PCWSTR fullName, PCWSTR type) {
+	HANDLE hObject{ nullptr };
+	ObjectManager::OpenObject(fullName, type, hObject, READ_CONTROL | WRITE_DAC | WRITE_OWNER);
+	bool readOnly = hObject == nullptr;
+	if (readOnly) {
+		// can still view it
+		ObjectManager::OpenObject(fullName, type, hObject, READ_CONTROL);
+	}
+	if (!hObject) {
+		AtlMessageBox(hParent, L"Error opening object.", IDS_TITLE, MB_ICONERROR);
+		return false;
+	}
+	SecurityInfo si(hObject, fullName, readOnly);
+	WTLHelper::SuspendHook();
+	::EditSecurity(hParent, &si);
+	WTLHelper::ResumeHook();
+	::CloseHandle(hObject);
+	return true;
 }

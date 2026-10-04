@@ -96,6 +96,24 @@
     <ClCompile Include="ZombieProcessesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="FindDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="PipesView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessesView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="SearchView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="SingleInstance.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemInfoView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
     <ClCompile Include="ImageIconCache.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
@@ -198,6 +216,24 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ZombieProcessesView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="FindDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="PipesView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessesView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="SearchView.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleInstance.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemInfoView.h">
       <Filter>Views</Filter>
     </ClInclude>
     <ClInclude Include="ImageIconCache.h">

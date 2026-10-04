@@ -20,6 +20,7 @@ public:
 	using CViewBase::CViewBase;
 
 	CString GetDirectoryPath() const;
+	CString GetDirectoryPath(HTREEITEM hItem) const;
 	void DoSort(const SortInfo* si);
 	CString GetColumnText(HWND, int row, int col);
 	int GetRowImage(HWND, int row, int col) const;
@@ -49,7 +50,7 @@ public:
 		COMMAND_CODE_HANDLER(EN_DELAYCHANGE, OnQuickTextChanged)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_JUMPTOTARGET, OnJumpToTarget)
 		COMMAND_ID_HANDLER(ID_VIEW_QUICKFIND, OnQuickFind)
-		//COMMAND_ID_HANDLER(ID_EDIT_SECURITY, OnEditSecurity)
+		COMMAND_ID_HANDLER(ID_OBJECTLIST_SECURITY, OnEditSecurity)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		COMMAND_ID_HANDLER(ID_VIEW_REFRESH, OnRefresh)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)

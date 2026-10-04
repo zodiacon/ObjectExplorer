@@ -11,6 +11,8 @@
 #include "ProcessSelectorDlg.h"
 #include <VersionResourceHelper.h>
 #include "AppSettings.h"
+#include "SingleInstance.h"
+#include "FindDlg.h"
 #include <thread>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
@@ -28,8 +30,6 @@ BOOL CMainFrame::OnIdle() {
 void CMainFrame::InitMenu(HMENU hMenu) {
 	MenuItemData const commands[] = {
 		{ ID_EDIT_COPY, IDI_COPY },
-		{ ID_EDIT_PASTE, IDI_PASTE },
-		{ ID_EDIT_CUT, IDI_CUT },
 		{ ID_OBJECTS_OBJECTTYPES, IDI_TYPES },
 		{ ID_OBJECTS_OBJECTMANAGERNAMESPACE, IDI_PACKAGE },
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
@@ -47,6 +47,11 @@ void CMainFrame::InitMenu(HMENU hMenu) {
 		{ ID_OBJECTS_ALLOBJECTS, IDI_OBJECTS },
 		{ ID_SYSTEM_ZOMBIEPROCESSES, IDI_PROCESS_ZOMBIE },
 		{ ID_SYSTEM_ZOMBIETHREADS, IDI_THREAD_ZOMBIE },
+		{ ID_OBJECTS_PIPES, IDI_PLUG },
+		{ ID_OBJECTS_MAILSLOTS, IDI_MESSAGE },
+		{ ID_SYSTEM_PROCESSES, IDI_PROCESS },
+		{ ID_SYSTEM_THREADS, IDI_THREAD },
+		{ ID_SYSTEM_SYSTEMINFORMATION, IDI_INFO },
 		{ ID_OBJECTS_HANDLESINPROCESS, IDI_MAGNET2 },
 		{ ID_TYPESLIST_ALLHANDLES, IDI_MAGNET2 },
 		{ ID_TYPESLIST_ALLOBJECTS, IDI_OBJECTS },
@@ -131,6 +136,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	if (AppSettings::Get().DarkMode())
 		UISetCheck(ID_OPTIONS_DARKMODE, true);
+	UISetCheck(ID_OPTIONS_SINGLEINSTANCE, AppSettings::Get().SingleInstance());
+	SingleInstance::Register(m_hWnd);
 
 	auto pLoop = _Module.GetMessageLoop();
 	pLoop->AddMessageFilter(this);
@@ -148,6 +155,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	SingleInstance::Unregister(m_hWnd);
 	WINDOWPLACEMENT wp{ sizeof(wp) };
 	GetWindowPlacement(&wp);
 	AppSettings::Get().MainWindowPlacement(wp);
@@ -276,10 +284,43 @@ LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 }
 
 LRESULT CMainFrame::OnRunAsAdmin(WORD, WORD, HWND, BOOL&) {
+	// the elevated instance must not find this one (single instance) while it's still closing
+	SingleInstance::Unregister(m_hWnd);
 	if (SecurityHelper::RunElevated(nullptr, true)) {
 		SendMessage(WM_CLOSE);
 	}
+	else {
+		SingleInstance::Register(m_hWnd);
+	}
 
+	return 0;
+}
+
+LRESULT CMainFrame::OnSingleInstance(WORD, WORD, HWND, BOOL&) {
+	auto& settings = AppSettings::Get();
+	settings.SingleInstance(!settings.SingleInstance());
+	UISetCheck(ID_OPTIONS_SINGLEINSTANCE, settings.SingleInstance());
+	return 0;
+}
+
+LRESULT CMainFrame::OnFind(WORD, WORD, HWND, BOOL&) {
+	CFindDlg dlg;
+	if (dlg.DoModal(m_hWnd) == IDOK)
+		ViewFactory::Get().CreateSearchView(dlg.GetText(), dlg.IsMatchCase());
+	return 0;
+}
+
+LRESULT CMainFrame::OnNewView(WORD, WORD id, HWND, BOOL&) {
+	ViewType type;
+	switch (id) {
+		case ID_OBJECTS_PIPES: type = ViewType::Pipes; break;
+		case ID_OBJECTS_MAILSLOTS: type = ViewType::Mailslots; break;
+		case ID_SYSTEM_PROCESSES: type = ViewType::Processes; break;
+		case ID_SYSTEM_THREADS: type = ViewType::Threads; break;
+		case ID_SYSTEM_SYSTEMINFORMATION: type = ViewType::SystemInformation; break;
+		default: return 0;
+	}
+	ViewFactory::Get().CreateView(type);
 	return 0;
 }
 
