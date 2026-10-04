@@ -41,7 +41,7 @@ void CObjectsView::DoSort(SortInfo const* si) {
 			if (!obj->NameChecked) {
 				if (ObjectHelpers::IsNamedObjectType(obj->TypeIndex)) {
 					auto& hi = obj->FirstHandle;
-					obj->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId, obj->TypeIndex);
+					obj->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId, obj->TypeIndex, obj->Object);
 				}
 				obj->NameChecked = true;
 			}
@@ -87,7 +87,7 @@ CString CObjectsView::GetColumnText(HWND h, int row, int col) const {
 		case ColumnType::Name:
 			if (!obj->NameChecked) {
 				auto& hi = obj->FirstHandle;
-				obj->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId, obj->TypeIndex);
+				obj->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId, obj->TypeIndex, obj->Object);
 				obj->NameChecked = true;
 			}
 			return obj->Name.c_str();
@@ -137,7 +137,8 @@ LRESULT CObjectsView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
 LRESULT CObjectsView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
 	ATLASSERT(m_List.GetSelectedCount() == 1);
 	int row = m_List.GetNextItem(-1, LVNI_SELECTED);
-	ShowObjectProperties(row);
+	if (row >= 0)
+		ShowObjectProperties(row);
 	return 0;
 }
 

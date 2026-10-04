@@ -34,7 +34,9 @@ void SymbolToTreeView::FillTreeView(CTreeListView& tv, HTREEITEM hRoot, DiaSymbo
 			ULONG64 value = 0;
 			if (member.Location() == LocationKind::BitField) {
 				if (driver.ReadVirtual((PBYTE)address + member.Offset(), (ULONG)type.Length(), &value)) {
-					tv.SetSubItemText(hItem, 2, std::format(L"0x{:X}", (value >> member.BitPosition()) & ((1 << (ULONG)member.Length()) - 1)).c_str(), TLVIFMT_RIGHT);
+					auto bits = member.Length();
+					auto mask = bits >= 64 ? ~0ULL : (1ULL << bits) - 1;
+					tv.SetSubItemText(hItem, 2, std::format(L"0x{:X}", (value >> member.BitPosition()) & mask).c_str(), TLVIFMT_RIGHT);
 				}
 			}
 			else if (type.Simple() != SimpleType::NoType || type.Tag() == SymbolTag::Enum || type.Tag() == SymbolTag::PointerType) {

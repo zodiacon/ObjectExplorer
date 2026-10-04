@@ -45,9 +45,6 @@
     <ClCompile Include="ProcessHandleTracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SecurityHelper.cpp">
-      <Filter>Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="ObjectTypesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
@@ -136,9 +133,6 @@
     </ClInclude>
     <ClInclude Include="ProcessHandleTracker.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SecurityHelper.h">
-      <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="ViewBase.h">
       <Filter>Views</Filter>

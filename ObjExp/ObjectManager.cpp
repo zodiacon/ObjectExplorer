@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ObjectManager.h"
 #include "DriverHelper.h"
+#include <unordered_set>
 
 int ObjectManager::EnumTypes() {
 	const ULONG len = 1 << 14;
@@ -151,6 +152,8 @@ wil::unique_virtualalloc_ptr<NT::SYSTEM_HANDLE_INFORMATION_EX> ObjectManager::En
 	wil::unique_virtualalloc_ptr<NT::SYSTEM_HANDLE_INFORMATION_EX> buffer;
 	do {
 		buffer.reset((NT::SYSTEM_HANDLE_INFORMATION_EX*)::VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+		if (!buffer)
+			return {};
 		auto status = NT::NtQuerySystemInformation(NT::SystemExtendedHandleInformation, buffer.get(), len, &len);
 		if (status == STATUS_INFO_LENGTH_MISMATCH) {
 			len <<= 1;
@@ -251,7 +254,7 @@ std::pair<HANDLE, DWORD> ObjectManager::FindFirstHandle(PCWSTR name, USHORT inde
 		if (index && handle.ObjectTypeIndex != index)
 			continue;
 
-		CString oname = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex);
+		CString oname = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex, handle.Object);
 		if (oname == name)
 			return { (HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId };
 	}
@@ -295,7 +298,7 @@ bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 			continue;
 
 		CString name;
-		if (namedObjectsOnly && (name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex)).IsEmpty())
+		if (namedObjectsOnly && (name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex, handle.Object)).IsEmpty())
 			continue;
 
 		auto hi = std::make_shared<HandleInfo>();
@@ -313,49 +316,181 @@ bool ObjectManager::EnumHandles(PCWSTR type, DWORD pid, bool namedObjectsOnly) {
 	return true;
 }
 
+namespace {
+	//
+	// Querying the name of a file object opened for synchronous I/O can block indefinitely
+	// (e.g. a pipe with a pending read), so file names are queried on worker threads with a timeout.
+	// A worker that times out is abandoned, not terminated; it exits by itself once the query completes.
+	// While it's stuck, its key is remembered so the same object isn't queried again.
+	//
+	class FileNameResolver {
+	public:
+		static CString GetName(HANDLE hFile, ULONG64 key);
+
+	private:
+		enum class State : LONG { Busy, Completed, Abandoned };
+
+		struct Worker {
+			wil::unique_event_nothrow Start, Done;
+			wil::unique_handle hFile;
+			ULONG64 Key{ 0 };
+			NTSTATUS Status{ STATUS_UNSUCCESSFUL };
+			LONG State{ (LONG)State::Completed };
+			BYTE Buffer[2048];
+		};
+
+		struct Shared {
+			wil::srwlock Lock;
+			std::vector<Worker*> Idle;
+			std::unordered_set<ULONG64> StuckKeys;
+			int StuckCount{ 0 };
+		};
+
+		static Shared& GetShared() {
+			// intentionally leaked so abandoned workers can still use it during process shutdown
+			static auto shared = new Shared;
+			return *shared;
+		}
+
+		static Worker* CreateWorker();
+		static void ReturnToPool(Worker* worker);
+		static DWORD WINAPI WorkerThread(PVOID p);
+
+		static constexpr DWORD QueryTimeout = 100;
+		static constexpr int MaxStuckWorkers = 16;
+	};
+
+	FileNameResolver::Worker* FileNameResolver::CreateWorker() {
+		auto worker = new (std::nothrow) Worker;
+		if (!worker)
+			return nullptr;
+
+		if (FAILED(worker->Start.create(wil::EventOptions::None)) || FAILED(worker->Done.create(wil::EventOptions::None))) {
+			delete worker;
+			return nullptr;
+		}
+
+		wil::unique_handle hThread(::CreateThread(nullptr, 1 << 16, WorkerThread, worker, STACK_SIZE_PARAM_IS_A_RESERVATION, nullptr));
+		if (!hThread) {
+			delete worker;
+			return nullptr;
+		}
+		return worker;
+	}
+
+	void FileNameResolver::ReturnToPool(Worker* worker) {
+		auto& shared = GetShared();
+		auto lock = shared.Lock.lock_exclusive();
+		shared.Idle.push_back(worker);
+	}
+
+	DWORD WINAPI FileNameResolver::WorkerThread(PVOID p) {
+		auto worker = (Worker*)p;
+		for (;;) {
+			worker->Start.wait();
+			worker->Status = NT::NtQueryObject(worker->hFile.get(), NT::ObjectNameInformation, worker->Buffer, sizeof(worker->Buffer), nullptr);
+			worker->hFile.reset();
+			if (::InterlockedCompareExchange(&worker->State, (LONG)State::Completed, (LONG)State::Busy) == (LONG)State::Busy) {
+				worker->Done.SetEvent();
+				continue;
+			}
+
+			//
+			// the caller gave up on this worker
+			//
+			auto& shared = GetShared();
+			{
+				auto lock = shared.Lock.lock_exclusive();
+				shared.StuckCount--;
+				if (worker->Key)
+					shared.StuckKeys.erase(worker->Key);
+			}
+			delete worker;
+			return 0;
+		}
+	}
+
+	CString FileNameResolver::GetName(HANDLE hFile, ULONG64 key) {
+		auto& shared = GetShared();
+		Worker* worker = nullptr;
+		{
+			auto lock = shared.Lock.lock_exclusive();
+			if (key && shared.StuckKeys.contains(key))
+				return L"";
+			if (!shared.Idle.empty()) {
+				worker = shared.Idle.back();
+				shared.Idle.pop_back();
+			}
+			else if (shared.StuckCount >= MaxStuckWorkers) {
+				return L"";
+			}
+		}
+		if (!worker) {
+			worker = CreateWorker();
+			if (!worker)
+				return L"";
+		}
+
+		//
+		// the worker gets its own handle, since the caller closes its handle when we return
+		//
+		HANDLE hDup;
+		if (!::DuplicateHandle(::GetCurrentProcess(), hFile, ::GetCurrentProcess(), &hDup, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+			ReturnToPool(worker);
+			return L"";
+		}
+		worker->hFile.reset(hDup);
+		worker->Key = key;
+		worker->State = (LONG)State::Busy;
+		worker->Start.SetEvent();
+
+		if (!worker->Done.wait(QueryTimeout)) {
+			{
+				auto lock = shared.Lock.lock_exclusive();
+				if (::InterlockedCompareExchange(&worker->State, (LONG)State::Abandoned, (LONG)State::Busy) == (LONG)State::Busy) {
+					shared.StuckCount++;
+					if (key)
+						shared.StuckKeys.insert(key);
+					return L"";
+				}
+			}
+			// completed just as the timeout expired
+			worker->Done.wait();
+		}
+
+		CString name;
+		if (NT_SUCCESS(worker->Status)) {
+			auto info = (NT::POBJECT_NAME_INFORMATION)worker->Buffer;
+			name = CString(info->Name.Buffer, info->Name.Length / sizeof(WCHAR));
+		}
+		ReturnToPool(worker);
+		return name;
+	}
+}
+
 CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type) {
+	return GetObjectName(hDup, type, 0);
+}
+
+CString ObjectManager::GetObjectName(HANDLE hDup, USHORT type, ULONG64 key) {
 	ATLASSERT(!s_types.empty());
 	static int processTypeIndex = s_typesNameMap.at(L"Process")->TypeIndex;
 	static int threadTypeIndex = s_typesNameMap.at(L"Thread")->TypeIndex;
 	static int fileTypeIndex = s_typesNameMap.at(L"File")->TypeIndex;
 	ATLASSERT(processTypeIndex > 0 && threadTypeIndex > 0);
 
+	if (type == processTypeIndex || type == threadTypeIndex)
+		return L"";
+
+	if (type == fileTypeIndex)
+		return FileNameResolver::GetName(hDup, key);
+
 	CString sname;
-
-	do {
-		if (type == processTypeIndex || type == threadTypeIndex)
-			break;
-
-		BYTE buffer[2048];
-		if (type == fileTypeIndex) {
-			// special case for files in case they're locked
-			struct Data {
-				HANDLE hDup;
-				BYTE* buffer;
-			} data = { hDup, buffer };
-
-			wil::unique_handle hThread(::CreateThread(nullptr, 1 << 13, [](auto p) {
-				auto d = (Data*)p;
-				return (DWORD)NT::NtQueryObject(d->hDup, NT::ObjectNameInformation, d->buffer, sizeof(buffer), nullptr);
-				}, &data, STACK_SIZE_PARAM_IS_A_RESERVATION, nullptr));
-			if (::WaitForSingleObject(hThread.get(), 10) == WAIT_TIMEOUT) {
-				::TerminateThread(hThread.get(), 1);
-			}
-			else {
-				DWORD code;
-				::GetExitCodeThread(hThread.get(), &code);
-				if (code == STATUS_SUCCESS) {
-					auto name = (NT::POBJECT_NAME_INFORMATION)buffer;
-					sname = CString(name->Name.Buffer, name->Name.Length / sizeof(WCHAR));
-				}
-			}
-		}
-		else if (NT_SUCCESS(NT::NtQueryObject(hDup, NT::ObjectNameInformation, buffer, sizeof(buffer), nullptr))) {
-			auto name = (NT::POBJECT_NAME_INFORMATION)buffer;
-			sname = CString(name->Name.Buffer, name->Name.Length / sizeof(WCHAR));
-		}
-	} while (false);
-
+	BYTE buffer[2048];
+	if (NT_SUCCESS(NT::NtQueryObject(hDup, NT::ObjectNameInformation, buffer, sizeof(buffer), nullptr))) {
+		auto name = (NT::POBJECT_NAME_INFORMATION)buffer;
+		sname = CString(name->Name.Buffer, name->Name.Length / sizeof(WCHAR));
+	}
 	return sname;
 }
 
@@ -365,11 +500,13 @@ std::shared_ptr<ObjectTypeInfo> ObjectManager::GetType(USHORT index) {
 	return s_typesMap.at(index);
 }
 
-CString ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type) {
+CString ObjectManager::GetObjectName(HANDLE hObject, ULONG pid, USHORT type, PVOID object) {
 	HANDLE hDup = DriverHelper::DupHandle(hObject, pid, READ_CONTROL);
 	CString name;
 	if (hDup) {
-		name = GetObjectName(hDup, type);
+		// identifies the object, so a file object whose name query is stuck isn't queried again
+		auto key = object ? (ULONG64)(ULONG_PTR)object : ((ULONG64)pid << 32) | HandleToULong(hObject);
+		name = GetObjectName(hDup, type, key);
 		::CloseHandle(hDup);
 	}
 

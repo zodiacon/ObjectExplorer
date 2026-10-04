@@ -118,23 +118,29 @@ LRESULT CObjectTypesView::OnEditCopy(WORD, WORD, HWND, BOOL&) const {
 }
 
 LRESULT CObjectTypesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
-	ATLASSERT(m_List.GetSelectedCount() == 1);
-	auto& item = m_Items[m_List.GetNextItem(-1, LVNI_SELECTED)];
+	int row = m_List.GetNextItem(-1, LVNI_SELECTED);
+	if (row < 0)
+		return 0;
+	auto& item = m_Items[row];
 	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
 	return 0;
 }
 
 LRESULT CObjectTypesView::OnShowAllHandles(WORD, WORD, HWND, BOOL&) {
-	ATLASSERT(m_List.GetSelectedCount() == 1);
-	auto& item = m_Items[m_List.GetNextItem(-1, LVNI_SELECTED)];
+	int row = m_List.GetNextItem(-1, LVNI_SELECTED);
+	if (row < 0)
+		return 0;
+	auto& item = m_Items[row];
 	ViewFactory::Get().CreateView(ViewType::HandlesOfType, 0, item->TypeName);
 
 	return 0;
 }
 
 LRESULT CObjectTypesView::OnShowAllObjects(WORD, WORD, HWND, BOOL&) {
-	ATLASSERT(m_List.GetSelectedCount() == 1);
-	auto& item = m_Items[m_List.GetNextItem(-1, LVNI_SELECTED)];
+	int row = m_List.GetNextItem(-1, LVNI_SELECTED);
+	if (row < 0)
+		return 0;
+	auto& item = m_Items[row];
 	ViewFactory::Get().CreateView(ViewType::Objects, 0, item->TypeName);
 
 	return 0;
@@ -184,6 +190,8 @@ bool CObjectTypesView::OnRightClickList(HWND, int row, int col, POINT const& pt)
 }
 
 bool CObjectTypesView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const {
+	if (row < 0)
+		return false;
 	auto& item = m_Items[row];
 	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
 	return true;

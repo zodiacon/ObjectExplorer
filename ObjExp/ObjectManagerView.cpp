@@ -88,7 +88,8 @@ void CObjectManagerView::UpdateUI(bool force) {
 }
 
 bool CObjectManagerView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) const {
-	ShowProperties(row);
+	if (row >= 0)
+		ShowProperties(row);
 	return false;
 }
 
@@ -217,7 +218,7 @@ bool CObjectManagerView::OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT cons
 	auto cmd = GetFrame()->TrackPopupMenu(menu.GetSubMenu(1), TPM_RETURNCMD, pt.x, pt.y);
 	if (cmd) {
 		LRESULT result;
-		ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 1);
+		ProcessWindowMessage(m_hWnd, WM_COMMAND, cmd, 0, result, 0);
 		return true;
 	}
 	return false;

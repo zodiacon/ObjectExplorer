@@ -102,8 +102,12 @@ LRESULT CProcessSelectorDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 }
 
 LRESULT CProcessSelectorDlg::OnCloseCmd(WORD, WORD wID, HWND, BOOL&) {
-    if (wID == IDOK)
-        m_SelectedPid = m_Processes[m_List.GetSelectedIndex()].Id;
+    if (wID == IDOK) {
+        int index = m_List.GetSelectedIndex();
+        if (index < 0)
+            return 0;
+        m_SelectedPid = m_Processes[index].Id;
+    }
     ::UnregisterHotKey(m_hWnd, 1);
     EndDialog(wID);
 	return 0;
@@ -143,7 +147,7 @@ void CProcessSelectorDlg::ApplyFilter(PCWSTR filter) {
         m_Processes.Filter(nullptr);
     else {
         text.MakeLower();
-        m_Processes.Filter([&](auto& p, auto) {
+        m_Processes.Filter([text](auto& p, auto) {
             CString name(p.Name.c_str());
             name.MakeLower();
             return name.Find(text) >= 0;

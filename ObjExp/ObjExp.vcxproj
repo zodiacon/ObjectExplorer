@@ -358,7 +358,6 @@
     <ClCompile Include="ProcessHelper.cpp" />
     <ClCompile Include="ProcessSelectorDlg.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SecurityHelper.cpp" />
     <ClCompile Include="ObjectTypesView.cpp" />
     <ClCompile Include="SecurityInfo.cpp" />
     <ClCompile Include="StringHelper.cpp" />
@@ -393,7 +392,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="SecurityHelper.h" />
     <ClInclude Include="ObjectTypesView.h" />
     <ClInclude Include="SecurityInfo.h" />
     <ClInclude Include="StringHelper.h" />

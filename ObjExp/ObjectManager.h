@@ -96,6 +96,8 @@ public:
 			EnumTypes();
 
 		auto p = EnumHandlesBuffer();
+		if (!p)
+			return {};
 		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
 		auto count = p->NumberOfHandles;
 		std::vector<std::shared_ptr<T>> objects;
@@ -114,7 +116,7 @@ public:
 				object = std::make_shared<T>();
 				object->ManualHandleCount = 0;
 				if (!skipNames) {
-					auto name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex);
+					auto name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex, handle.Object);
 					if (namedOnly && name.IsEmpty())
 						continue;
 					object->Name = name;
@@ -158,6 +160,8 @@ public:
 			EnumTypes();
 
 		auto p = EnumHandlesBuffer();
+		if (!p)
+			return {};
 		auto filteredTypeIndex = type == nullptr || type[0] == 0 ? -1 : s_typesNameMap.at(type)->TypeIndex;
 		auto count = p->NumberOfHandles;
 		std::vector<std::shared_ptr<T>> handles;
@@ -172,7 +176,7 @@ public:
 
 			CString name;
 			if (!skipNames) {
-				name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex);
+				name = GetObjectName((HANDLE)handle.HandleValue, (DWORD)handle.UniqueProcessId, handle.ObjectTypeIndex, handle.Object);
 				if (namedObjectsOnly && name.IsEmpty())
 					continue;
 			}
@@ -207,7 +211,7 @@ public:
 	using Change = std::tuple<std::shared_ptr<ObjectTypeInfo>, ChangeType, int32_t>;
 	static const std::vector<Change>& GetChanges();
 
-	static CString GetObjectName(HANDLE hObject, ULONG pid, USHORT type);
+	static CString GetObjectName(HANDLE hObject, ULONG pid, USHORT type, PVOID object = nullptr);
 	static CString GetObjectName(HANDLE hDup, USHORT type);
 
 	static std::shared_ptr<ObjectTypeInfo> GetType(USHORT index);
@@ -222,6 +226,7 @@ public:
 
 private:
 	static wil::unique_virtualalloc_ptr<NT::SYSTEM_HANDLE_INFORMATION_EX> EnumHandlesBuffer();
+	static CString GetObjectName(HANDLE hDup, USHORT type, ULONG64 key);
 
 private:
 	inline static std::vector<ObjectTypePtr> s_types;

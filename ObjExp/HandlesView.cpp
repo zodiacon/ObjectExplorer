@@ -61,7 +61,7 @@ void CHandlesView::DoSort(SortInfo const* si) {
 		for (auto& hi : m_Handles) {
 			if (!hi->NameChecked) {
 				if (ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex))
-					hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex);
+					hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, hi->Object);
 				hi->NameChecked = true;
 			}
 		}
@@ -100,7 +100,7 @@ CString CHandlesView::GetColumnText(HWND h, int row, int col) const {
 		case ColumnType::Access: return std::format(L"0x{:08X}", hi->GrantedAccess).c_str();
 		case ColumnType::Name:
 			if (!hi->NameChecked) {
-				hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex);
+				hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, hi->Object);
 				hi->NameChecked = true;
 			}
 			return hi->Name.c_str();
@@ -194,7 +194,7 @@ void CHandlesView::DoTimerWorkAsync() {
 	for (auto& hi : m_Tracker.GetNewHandles()) {
 		hi->Type = ObjectManager::GetType(hi->ObjectTypeIndex)->TypeName;
 		if (ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex)) {
-			hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex);
+			hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, hi->Object);
 			hi->NameChecked = true;
 		}
 		if (m_Pid == 0)

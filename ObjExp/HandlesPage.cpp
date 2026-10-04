@@ -56,9 +56,12 @@ LRESULT CHandlesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
             }
         }
 
-        for (auto& handle : handles) {
-            if (handle->Object == address && handle->HandleValue != HandleToULong(m_hObject)) {
-                m_Handles.push_back(*handle);
+        if (address) {
+            auto pid = ::GetCurrentProcessId();
+            for (auto& handle : handles) {
+                if (handle->Object == address && !(handle->HandleValue == HandleToULong(m_hObject) && handle->ProcessId == pid)) {
+                    m_Handles.push_back(*handle);
+                }
             }
         }
     }

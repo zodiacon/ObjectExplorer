@@ -160,7 +160,7 @@ void CZombieProcessesView::RefreshThreads() {
 				::GetExitCodeThread(hDup, &z.ExitCode);
 				if (it == threads.end()) {
 					m_Items.push_back(std::move(z));
-					threads.insert({ pid, m_Items.size() - 1 });
+					threads.insert({ tid, m_Items.size() - 1 });
 				}
 			}
 		}
