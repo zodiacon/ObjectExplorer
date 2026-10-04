@@ -38,7 +38,8 @@ std::wstring SymbolManager::ReadUnicodeString(PVOID address) {
 		return L"";
 
 	auto& driver = DbgDriver::Get();
-	auto len = driver.ReadVirtual<USHORT>(address);
+	// whole characters only: an odd length would read past the string's buffer into its terminator
+	auto len = driver.ReadVirtual<USHORT>(address) & ~1;
 	if (len == 0)
 		return L"";
 

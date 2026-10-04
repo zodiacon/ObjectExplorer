@@ -235,19 +235,27 @@ void CHandlesView::DoTimerUpdate() {
 	}
 	int start = dead ? 0 : std::max(0, m_List.GetTopIndex() - 10);
 	int count = dead ? (int)m_Handles.size() : std::min(start + m_List.GetCountPerPage() + 100, (int)m_Handles.size());
-	int orgCount = count;
 	auto tick = ::GetTickCount64();
-	for (int i = start; i < count; i++) {
-		auto& hi = m_Handles[i];
-		if (hi->ClosedHandle && hi->TargetTime < tick) {
-			hi->ClosedHandle = false;
-			m_Handles.Remove(i);
-			i--;
-			count--;
-		}
-	}
-	if (orgCount != count) {
-		m_List.SetItemCountEx(count, LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+	auto expired = [&](auto const& hi) {
+		return hi->ClosedHandle && hi->TargetTime < tick;
+	};
+	bool remove = false;
+	for (int i = start; i < count && !remove; i++)
+		remove = expired(m_Handles[i]);
+	if (remove) {
+		// removing rows shifts the ones below, so keep the selection by item
+		SortPreservingSelection(m_List, m_Handles, [&] {
+			for (int i = start; i < count; i++) {
+				auto& hi = m_Handles[i];
+				if (expired(hi)) {
+					hi->ClosedHandle = false;
+					m_Handles.Remove(i);
+					i--;
+					count--;
+				}
+			}
+			m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+			});
 		m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	}
 

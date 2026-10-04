@@ -12,7 +12,11 @@ public:
 
 	enum { IDD = IDD_OBJECTPROPS };
 
-	bool AddPage(PCWSTR title, HWND hPage);
+	// tab images, in the order they're added to the image list
+	enum PageImage {
+		GeneralImage, HandlesImage, ObjectImage,
+	};
+	bool AddPage(PCWSTR title, HWND hPage, PageImage image);
 	bool AddPage(PCWSTR title, HPROPSHEETPAGE hPage);
 
 protected:
@@ -36,6 +40,7 @@ private:
 
 	struct TabItem {
 		CString Title;
+		int Image{ GeneralImage };
 		CWindow win;
 		CPropertyPageWindow page;
 	};

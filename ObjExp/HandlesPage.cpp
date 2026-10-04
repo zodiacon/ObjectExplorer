@@ -48,7 +48,8 @@ LRESULT CHandlesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     if (m_HandleCount) {
         PVOID address{ nullptr };
         m_Handles.clear();
-        auto handles = ObjectManager::EnumHandles2<>(m_TypeName);
+        // names aren't shown, and looking them up means duplicating every handle of the type
+        auto handles = ObjectManager::EnumHandles2<>(m_TypeName, 0, false, true);
         for (auto& handle : handles) {
             if (handle->HandleValue == HandleToULong(m_hObject) && handle->ProcessId == ::GetCurrentProcessId()) {
                 address = handle->Object;

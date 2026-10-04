@@ -3,9 +3,10 @@
 #include "ResourceManager.h"
 #include "AppSettings.h"
 
-bool CObjectPropertiesDlg::AddPage(PCWSTR title, HWND hPage) {
+bool CObjectPropertiesDlg::AddPage(PCWSTR title, HWND hPage, PageImage image) {
     TabItem item;
     item.Title = title;
+    item.Image = image;
     item.win.Attach(hPage);
     m_Pages.push_back(item);
     return true;
@@ -25,6 +26,7 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     SetWindowText(m_Title);
     m_Tabs.Attach(GetDlgItem(IDC_TABS));
     m_TabImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 4, 2);
+    // in PageImage order
     UINT icons[] = {
         IDI_INFO, IDI_MAGNET, IDI_STRUCT,
     };
@@ -34,7 +36,7 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
     for(int i = 0; i < m_Pages.size(); i++) {
         auto& page = m_Pages[i];
-        m_Tabs.AddItem(TCIF_TEXT | TCIF_IMAGE, page.Title, i, 0);
+        m_Tabs.AddItem(TCIF_TEXT | TCIF_IMAGE, page.Title, page.Image, 0);
         page.win.SetParent(m_hWnd);
     }
     m_Pages[0].win.ShowWindow(SW_SHOW);

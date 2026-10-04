@@ -85,13 +85,22 @@ bool DbgDriver::Open() {
     OBJECT_ATTRIBUTES attr;
     InitializeObjectAttributes(&attr, &devName, OBJ_CASE_INSENSITIVE, nullptr, nullptr);
     IO_STATUS_BLOCK ioStatus;
-    auto status = NtOpenFile(&m_hDevice, GENERIC_READ | GENERIC_WRITE, &attr, &ioStatus, 0, FILE_OPEN);
+    auto open = [&] {
+        return NtOpenFile(&m_hDevice, GENERIC_READ | GENERIC_WRITE, &attr, &ioStatus, 0, FILE_OPEN);
+    };
+    auto status = open();
     if (status == 0xc0000034 /* Object name not found */ && Install())
-        return Open();
-    return NT_SUCCESS(status);
+        status = open();
+    if (!NT_SUCCESS(status)) {
+        m_hDevice = nullptr;
+        Uninstall();
+        return false;
+    }
+    return true;
 }
 
 void DbgDriver::Close() {
+    // the driver stays loaded for other instances and later runs
     if (m_hDevice) {
         ::CloseHandle(m_hDevice);
         m_hDevice = nullptr;
@@ -99,29 +108,73 @@ void DbgDriver::Close() {
 }
 
 bool DbgDriver::Install() {
-    auto hScm = ::OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS);
+    wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE));
     if (!hScm)
         return false;
 
-    auto hService = ::OpenService(hScm, kernelDbgDriverName, SERVICE_START);
-    if (!hService) {
-        WCHAR path[MAX_PATH];
-        ::GetSystemDirectory(path, _countof(path));
-        wcscat_s(path, L"\\Drivers\\kldbgdrv.sys");
+    WCHAR path[MAX_PATH];
+    ::GetSystemDirectory(path, _countof(path));
+    wcscat_s(path, L"\\Drivers\\kldbgdrv.sys");
+
+    //
+    // the file may be missing even if the service exists
+    //
+    if (::GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES) {
         if (!WriteFileFromResource(path, IDR_DRIVER))
             return false;
-
-        hService = ::CreateServiceW(hScm, kernelDbgDriverName, nullptr, 
-            SERVICE_ALL_ACCESS, SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START,
-            SERVICE_ERROR_NORMAL, path, nullptr, nullptr, nullptr, nullptr, nullptr);
+        m_DriverPath = path;
+        m_WroteFile = true;
     }
-    ::CloseServiceHandle(hScm);
-    if (!hService)
-        return false;
 
-    auto ok = ::StartService(hService, 0, nullptr);
-    ::CloseServiceHandle(hService);
-    return ok;
+    const DWORD access = SERVICE_START | SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE;
+    wil::unique_schandle hService(::OpenService(hScm.get(), kernelDbgDriverName, access));
+    if (!hService) {
+        hService.reset(::CreateService(hScm.get(), kernelDbgDriverName, nullptr,
+            access, SERVICE_KERNEL_DRIVER, SERVICE_DEMAND_START,
+            SERVICE_ERROR_NORMAL, path, nullptr, nullptr, nullptr, nullptr, nullptr));
+        if (!hService) {
+            Uninstall();
+            return false;
+        }
+        m_CreatedService = true;
+    }
+
+    if (::StartService(hService.get(), 0, nullptr)) {
+        m_Started = true;
+        return true;
+    }
+    if (::GetLastError() == ERROR_SERVICE_ALREADY_RUNNING)
+        return true;
+
+    Uninstall();
+    return false;
+}
+
+void DbgDriver::Uninstall() {
+    if (m_Started || m_CreatedService) {
+        wil::unique_schandle hScm(::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
+        wil::unique_schandle hService(hScm ? ::OpenService(hScm.get(), kernelDbgDriverName, SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE) : nullptr);
+        if (hService) {
+            if (m_Started) {
+                SERVICE_STATUS status;
+                ::ControlService(hService.get(), SERVICE_CONTROL_STOP, &status);
+            }
+            if (m_CreatedService)
+                ::DeleteService(hService.get());
+        }
+    }
+    if (m_WroteFile) {
+        //
+        // the driver image may still be in use for a moment after the driver stops
+        //
+        for (int i = 0; i < 10 && !::DeleteFile(m_DriverPath.c_str()); i++) {
+            auto error = ::GetLastError();
+            if (error != ERROR_ACCESS_DENIED && error != ERROR_SHARING_VIOLATION)
+                break;
+            ::Sleep(100);
+        }
+    }
+    m_Started = m_CreatedService = m_WroteFile = false;
 }
 
 ULONG DbgDriver::ReadVirtual(PVOID address, ULONG size, PVOID buffer) {

@@ -24,6 +24,14 @@ private:
 	DbgDriver(DbgDriver const&) = delete;
 	DbgDriver& operator=(DbgDriver const&) = delete;
 
+	void Uninstall();
+
 	HANDLE m_hDevice{ nullptr };
+	//
+	// what Install did, so a failed install or open undoes only that:
+	// the driver may also be in use by others (e.g. a local kernel debugger)
+	//
+	bool m_Started{ false }, m_CreatedService{ false }, m_WroteFile{ false };
+	std::wstring m_DriverPath;
 };
 

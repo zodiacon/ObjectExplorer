@@ -574,6 +574,8 @@ LRESULT CObjectManagerView::OnJumpToTarget(WORD, WORD, HWND, BOOL&) {
 LRESULT CObjectManagerView::OnQuickTextChanged(WORD, WORD, HWND, BOOL&) {
 	m_QuickFind.GetWindowText(m_FilterText);
 	ApplyFilter(m_FilterText);
+	// filtering rebuilds the rows in their natural order
+	DoSort(GetSortInfo(m_List));
 	m_List.SetItemCountEx((int)m_Objects.size(), LVSICF_NOSCROLL);
 	return 0;
 }

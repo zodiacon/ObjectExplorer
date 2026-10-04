@@ -250,16 +250,24 @@ LRESULT CZombieProcessesView::OnRefresh(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CZombieProcessesView::OnSave(WORD, WORD, HWND, BOOL&) const {
-	CSimpleFileDialog dlg(TRUE, L"csv", L"ZombieProcesses", 
+	CSimpleFileDialog dlg(FALSE, L"csv", L"ZombieProcesses",
 		OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
 		L"CSV Files (*.csv)\0*.csv\0All Files\0*.*\0", m_hWnd);
 	WTLHelper::SuspendHook();
 	auto save = dlg.DoModal() == IDOK;
 	WTLHelper::ResumeHook();
 	if (save) {
-		auto text = ListViewHelper::GetAllRowsAsString(m_List, L",", L"\n");
-		std::wofstream stm(dlg.m_szFileName);
-		stm.write(text, text.GetLength());
+		auto text = ListViewHelper::GetAllRowsAsString(m_List, L",", L"\r\n");
+		//
+		// UTF-8 with a BOM (so Excel detects the encoding): names and paths may contain any character
+		//
+		CW2A utf8(text, CP_UTF8);
+		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr));
+		DWORD written;
+		static const BYTE bom[] = { 0xEF, 0xBB, 0xBF };
+		auto size = (DWORD)strlen(utf8);
+		if (!hFile || !::WriteFile(hFile.get(), bom, sizeof(bom), &written, nullptr) || !::WriteFile(hFile.get(), (PCSTR)utf8, size, &written, nullptr))
+			AtlMessageBox(m_hWnd, L"Failed to save file.", IDS_TITLE, MB_ICONERROR);
 	}
 	return 0;
 }

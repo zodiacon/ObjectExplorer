@@ -124,6 +124,8 @@ LRESULT CProcessSelectorDlg::OnFilterChanged(WORD, WORD id, HWND, BOOL&) {
     CString text;
     m_QuickFind.GetWindowText(text);
     ApplyFilter(text);
+    // filtering rebuilds the rows in their natural order
+    DoSort(GetSortInfo(m_List));
     m_List.SetItemCountEx((int)m_Processes.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
     m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 

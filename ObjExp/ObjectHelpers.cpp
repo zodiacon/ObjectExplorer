@@ -20,12 +20,12 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 	CGenericPage page1(hObject, typeName, name, target);
 	page1.Create(::GetActiveWindow());
 	handleCount = page1.GetHandleCount();
-	dlg.AddPage(L"General", page1);
+	dlg.AddPage(L"General", page1, CObjectPropertiesDlg::GeneralImage);
 	CHandlesPage page2(hObject, typeName, handleCount);
 	if (handleCount) {
 		CWaitCursor wait;	// handle count may be large
 		page2.Create(::GetActiveWindow());
-		dlg.AddPage(L"Handles", page2);
+		dlg.AddPage(L"Handles", page2, CObjectPropertiesDlg::HandlesImage);
 	}
 	CStructPage page3(hObject);
 	if(auto it = KernelTypes.find(typeName); it != KernelTypes.end()) {
@@ -33,7 +33,7 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 		if (sym) {
 			page3.SetSymbol(std::move(sym), DriverHelper::GetObjectAddress(hObject));
 			page3.Create(::GetActiveWindow());
-			dlg.AddPage(L"Object", page3);
+			dlg.AddPage(L"Object", page3, CObjectPropertiesDlg::ObjectImage);
 		}
 	}
 	dlg.DoModal();
@@ -127,7 +127,7 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 			props.push_back({ L"Started: ", CTime(create).Format(L"%c") });
 			auto total = (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user) / 10000;	// msec
 			auto seconds = CTimeSpan(total / 1000).Format(L"%H:%M:%S");
-			props.push_back({ L"CPU Time: ", std::format(L"{}.{}", (PCWSTR)seconds, total % 1000).c_str() });
+			props.push_back({ L"CPU Time: ", std::format(L"{}.{:03}", (PCWSTR)seconds, total % 1000).c_str() });
 			if (::WaitForSingleObject(hObject, 0) == WAIT_OBJECT_0) {
 				//
 				// process dead
