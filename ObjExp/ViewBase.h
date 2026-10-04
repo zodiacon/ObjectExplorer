@@ -2,6 +2,38 @@
 
 #include "Interfaces.h"
 #include "ToolbarHelper.h"
+#include <unordered_set>
+
+//
+// runs a sort of a virtual list's items, then reselects the rows by item identity,
+// as selection in an owner data list is by index. Items must be hashable (e.g. shared_ptr).
+//
+template<typename TItems, typename TSort>
+void SortPreservingSelection(CListViewCtrl& list, TItems const& items, TSort&& sort) {
+	using Item = std::decay_t<decltype(items[0])>;
+	std::unordered_set<Item> selected;
+	for (int i = list.GetNextItem(-1, LVNI_SELECTED); i >= 0 && i < (int)items.size(); i = list.GetNextItem(i, LVNI_SELECTED))
+		selected.insert(items[i]);
+	int focused = list.GetNextItem(-1, LVNI_FOCUSED);
+	Item focusedItem = focused >= 0 && focused < (int)items.size() ? items[focused] : Item{};
+
+	sort();
+
+	if (selected.empty() && !focusedItem)
+		return;
+
+	list.SetItemState(-1, 0, LVIS_SELECTED | LVIS_FOCUSED);
+	for (int i = 0; i < (int)items.size(); i++) {
+		auto const& item = items[i];
+		UINT state = 0;
+		if (selected.contains(item))
+			state |= LVIS_SELECTED;
+		if (focusedItem && item == focusedItem)
+			state |= LVIS_FOCUSED;
+		if (state)
+			list.SetItemState(i, state, state);
+	}
+}
 
 template<typename T, typename TBase = CFrameWindowImpl<T, CWindow, CControlWinTraits>>
 class CViewBase : public IView, public TBase {

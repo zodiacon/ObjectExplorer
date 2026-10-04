@@ -9,9 +9,11 @@
 #include <QuickFindEdit.h>
 #include <SortedFilteredVector.h>
 #include <CustomSplitterWindow.h>
+#include "TimerManager.h"
 
 class CObjectManagerView :
 	public CViewBase<CObjectManagerView>,
+	public CTimerManager<CObjectManagerView>,
 	public CVirtualListView<CObjectManagerView>,
 	public CTreeViewHelper<CObjectManagerView> {
 public:
@@ -29,6 +31,7 @@ public:
 	void OnStateChanged(HWND, int from, int to, UINT oldState, UINT newState);
 	bool JumpToObject(CString const& fullName);
 	void OnPageActivated(bool active);
+	void DoTimerUpdate();
 
 	//
 	// treeview overrides
@@ -39,6 +42,10 @@ public:
 
 	BEGIN_MSG_MAP(CObjectManagerView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(::RegisterWindowMessage(L"WTLHelperUpdateTheme"), OnUpdateTheme)
+		MESSAGE_HANDLER(WM_UPDATE_DARKMODE, OnUpdateTheme)
+		NOTIFY_CODE_HANDLER(NM_CUSTOMDRAW, OnListCustomDraw)
+		CHAIN_MSG_MAP(CTimerManager<CObjectManagerView>)
 		COMMAND_CODE_HANDLER(EN_DELAYCHANGE, OnQuickTextChanged)
 		COMMAND_ID_HANDLER(ID_OBJECTLIST_JUMPTOTARGET, OnJumpToTarget)
 		COMMAND_ID_HANDLER(ID_VIEW_QUICKFIND, OnQuickFind)
@@ -53,6 +60,7 @@ public:
 		CHAIN_MSG_MAP(CVirtualListView<CObjectManagerView>)
 		CHAIN_MSG_MAP(CTreeViewHelper<CObjectManagerView>)
 		CHAIN_MSG_MAP(CViewBase<CObjectManagerView>)
+		CHAIN_MSG_MAP_ALT(CTimerManager<CObjectManagerView>, 1)
 	END_MSG_MAP()
 
 private:
@@ -69,10 +77,19 @@ private:
 	LRESULT OnShowDirectories(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnSwitchToListMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnUpdateTheme(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnListCustomDraw(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+
+	enum class ObjectState {
+		None, New, Deleted,
+	};
 
 	struct ObjectData {
 		CString Name, FullName, Type, SymbolicLinkTarget;
+		ObjectState State{ ObjectState::None };
+		DWORD64 TargetTime{ 0 };	// when the New/Deleted highlight expires
 	};
+
+	static constexpr DWORD64 HighlightDuration = 2000;
 
 	void InitTree();
 	void UpdateList(bool newNode);
@@ -80,8 +97,8 @@ private:
 	bool ShowProperties(HTREEITEM hItem) const;
 	bool ShowProperties(PCWSTR fullName, PCWSTR type, PCWSTR target = nullptr) const;
 	void EnumDirectory(CTreeItem root, const CString& path);
-	void EnumAllObjects();
-	void EnumObjectsInDirectory(CString const path, SortedFilteredVector<ObjectData>& objects);
+	std::vector<ObjectData> EnumCurrentObjects();
+	static void EnumObjectsInDirectory(CString const path, std::vector<ObjectData>& objects);
 	void ApplyFilter(PCWSTR filter);
 	void UpdateStatusText();
 
@@ -98,5 +115,6 @@ private:
 	CString m_SelectedObjectFullName;
 	bool m_ShowDirectories{ false };
 	bool m_ListMode{ false };
+	COLORREF m_Green, m_Red;
 };
 

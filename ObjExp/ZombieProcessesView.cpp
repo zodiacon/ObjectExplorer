@@ -225,7 +225,9 @@ LRESULT CZombieProcessesView::OnEditCopy(WORD, WORD, HWND, BOOL&) const {
 
 LRESULT CZombieProcessesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
 	ATLASSERT(m_List.GetSelectedCount() == 1);
-	int row = m_List.GetSelectionMark();
+	int row = m_List.GetNextItem(-1, LVNI_SELECTED);
+	if (row < 0)
+		return 0;
 	auto& item = m_Items[row];
 	HANDLE hObject = ObjectManager::DupHandle(ULongToHandle(item.Handles[0].Handle), item.Handles[0].Pid,
 		(m_Processes ? PROCESS_QUERY_INFORMATION : THREAD_QUERY_INFORMATION) | SYNCHRONIZE);

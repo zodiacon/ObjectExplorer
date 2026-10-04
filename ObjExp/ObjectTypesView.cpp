@@ -98,7 +98,7 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 void CObjectTypesView::DoTimerUpdate() {
 	ObjectManager::EnumTypes();
-	DoSort(GetSortInfo(m_List));
+	SortPreservingSelection(m_List, m_Items, [&] { DoSort(GetSortInfo(m_List)); });
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 }
 

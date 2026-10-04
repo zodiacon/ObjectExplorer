@@ -9,6 +9,15 @@
 #include "ClipboardHelper.h"
 #include "ListViewhelper.h"
 #include "ObjectHelpers.h"
+#include <WTLHelper.h>
+#include <unordered_map>
+#include <unordered_set>
+
+namespace {
+	std::wstring_view View(CString const& s) {
+		return std::wstring_view((PCWSTR)s, s.GetLength());
+	}
+}
 
 CString CObjectManagerView::GetDirectoryPath() const {
 	return GetFullItemPath(m_Tree, m_Tree.GetSelectedItem()).Mid(1);
@@ -74,8 +83,8 @@ void CObjectManagerView::DoFind(const CString& text, DWORD flags) {
 
 void CObjectManagerView::UpdateUI(bool force) {
 	auto& ui = UI();
-	ui.UISetCheck(ID_RUN, false);
-	ui.UIEnable(ID_RUN, false);
+	ui.UIEnable(ID_RUN, true);
+	CTimerManager::UpdateIntervalUI();
 	ui.UISetCheck(ID_PAUSE, false);
 	ui.UIEnable(ID_PAUSE, false);
 	auto active = m_Splitter.GetActivePane();
@@ -124,24 +133,156 @@ bool CObjectManagerView::JumpToObject(CString const& fullName) {
 		m_Tree.SelectItem(hItem);
 		m_Tree.EnsureVisible(hItem);
 		UpdateList(true);
-		int n = 0;
-		for (auto const& obj : m_Objects) {
-			if (obj.Name == name)
-				break;
-			n++;
-		}
-		if (n < m_Objects.size()) {
-			m_List.SelectItem(n);
-			return true;
+		// index through the vector so the filtered/sorted display order is used
+		for (int n = 0; n < (int)m_Objects.size(); n++) {
+			if (m_Objects[n].Name == name) {
+				m_List.SelectItem(n);
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
 void CObjectManagerView::OnPageActivated(bool active) {
+	ActivateTimer(active);
 	if (active) {
 		UpdateStatusText();
 	}
+}
+
+void CObjectManagerView::DoTimerUpdate() {
+	//
+	// merge a fresh enumeration with the current items, keeping the existing order:
+	// objects that disappeared are kept (marked Deleted) until their highlight expires,
+	// new objects are appended and marked New
+	//
+	auto tick = ::GetTickCount64();
+	auto& old = m_Objects.GetRealAll();
+	auto objects = EnumCurrentObjects();
+
+	std::unordered_map<std::wstring_view, size_t> current;
+	current.reserve(objects.size());
+	for (size_t i = 0; i < objects.size(); i++)
+		current.emplace(View(objects[i].FullName), i);
+
+	std::vector<bool> matched(objects.size());
+	std::vector<ObjectData> merged;
+	merged.reserve(old.size() + objects.size());
+	bool changed = false;
+
+	for (auto& prev : old) {
+		if (auto it = current.find(View(prev.FullName)); it != current.end()) {
+			auto& obj = objects[it->second];
+			matched[it->second] = true;
+			obj.SymbolicLinkTarget = prev.SymbolicLinkTarget;
+			if (prev.State == ObjectState::Deleted) {
+				// recreated
+				obj.State = ObjectState::New;
+				obj.TargetTime = tick + HighlightDuration;
+				changed = true;
+			}
+			else if (prev.State == ObjectState::New && prev.TargetTime <= tick) {
+				changed = true;
+			}
+			else {
+				obj.State = prev.State;
+				obj.TargetTime = prev.TargetTime;
+			}
+			merged.push_back(std::move(obj));
+		}
+		else if (prev.State == ObjectState::Deleted) {
+			if (prev.TargetTime > tick)
+				merged.push_back(prev);
+			else
+				changed = true;
+		}
+		else {
+			auto& obj = merged.emplace_back(prev);
+			obj.State = ObjectState::Deleted;
+			obj.TargetTime = tick + HighlightDuration;
+			changed = true;
+		}
+	}
+
+	for (size_t i = 0; i < objects.size(); i++) {
+		if (matched[i])
+			continue;
+		auto& obj = objects[i];
+		if (obj.Type == L"SymbolicLink")
+			obj.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(obj.FullName);
+		obj.State = ObjectState::New;
+		obj.TargetTime = tick + HighlightDuration;
+		merged.push_back(std::move(obj));
+		changed = true;
+	}
+
+	if (!changed)
+		return;
+
+	//
+	// selection is by index, so remember selected items by name
+	//
+	std::unordered_set<std::wstring> selected;
+	for (int i = m_List.GetNextItem(-1, LVNI_SELECTED); i >= 0; i = m_List.GetNextItem(i, LVNI_SELECTED))
+		selected.insert(std::wstring(m_Objects[i].FullName));
+	std::wstring focused;
+	if (int i = m_List.GetNextItem(-1, LVNI_FOCUSED); i >= 0)
+		focused = m_Objects[i].FullName;
+
+	m_Objects.Set(std::move(merged));
+	ApplyFilter(m_FilterText);
+	DoSort(GetSortInfo(m_List));
+	m_List.SetItemCountEx(static_cast<int>(m_Objects.size()), LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
+
+	if (!selected.empty() || !focused.empty()) {
+		m_List.SetItemState(-1, 0, LVIS_SELECTED | LVIS_FOCUSED);
+		for (int i = 0; i < (int)m_Objects.size(); i++) {
+			auto name = View(m_Objects[i].FullName);
+			UINT state = 0;
+			if (selected.contains(std::wstring(name)))
+				state |= LVIS_SELECTED;
+			if (name == focused)
+				state |= LVIS_FOCUSED;
+			if (state)
+				m_List.SetItemState(i, state, state);
+		}
+	}
+	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+}
+
+LRESULT CObjectManagerView::OnListCustomDraw(int, LPNMHDR hdr, BOOL& bHandled) {
+	if (hdr->hwndFrom != m_List) {
+		bHandled = FALSE;
+		return 0;
+	}
+
+	auto cd = (LPNMLVCUSTOMDRAW)hdr;
+	switch (cd->nmcd.dwDrawStage) {
+		case CDDS_PREPAINT:
+			return CDRF_NOTIFYITEMDRAW;
+
+		case CDDS_ITEMPREPAINT:
+			if (auto row = (int)cd->nmcd.dwItemSpec; row < (int)m_Objects.size()) {
+				auto state = m_Objects[row].State;
+				if (state == ObjectState::New)
+					cd->clrTextBk = m_Green;
+				else if (state == ObjectState::Deleted)
+					cd->clrTextBk = m_Red;
+			}
+			break;
+	}
+	return CDRF_DODEFAULT;
+}
+
+LRESULT CObjectManagerView::OnUpdateTheme(UINT, WPARAM, LPARAM, BOOL& bHandled) {
+	auto dark = WTLHelper::IsDarkMode();
+	m_Green = dark ? RGB(0, 128, 0) : RGB(0, 255, 0);
+	m_Red = dark ? RGB(128, 0, 0) : RGB(255, 96, 0);
+	if (m_List)
+		m_List.Invalidate();
+	bHandled = FALSE;
+	return 0;
 }
 
 LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
@@ -201,7 +342,11 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	ObjectManager::EnumTypes();
 
+	SendMessage(::RegisterWindowMessage(L"WTLHelperUpdateTheme"));
+
 	InitTree();
+
+	Run(true);
 
 	return 0;
 }
@@ -274,16 +419,17 @@ void CObjectManagerView::InitTree() {
 	m_Tree.SetRedraw();
 }
 
-void CObjectManagerView::UpdateList(bool newNode) {
+std::vector<CObjectManagerView::ObjectData> CObjectManagerView::EnumCurrentObjects() {
+	std::vector<ObjectData> objects;
 	if (m_ListMode) {
-		EnumAllObjects();
+		objects.reserve(512);
+		EnumObjectsInDirectory(L"\\", objects);
 	}
 	else {
 		auto path = GetDirectoryPath();
 		if (path.IsEmpty())
 			path = L"\\";
-		m_Objects.clear();
-		m_Objects.reserve(128);
+		objects.reserve(128);
 		for (auto const& item : ObjectManager::EnumDirectoryObjects(path)) {
 			if (m_ShowDirectories || item.TypeName != L"Directory") {
 				ObjectData data;
@@ -292,12 +438,20 @@ void CObjectManagerView::UpdateList(bool newNode) {
 				data.FullName = path.Right(1) == L"\\" ? path + data.Name : path + L"\\" + data.Name;
 				if (data.FullName.Left(2) == L"\\\\")
 					data.FullName.Delete(0);
-				if(data.Type == L"SymbolicLink")
-					data.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(data.FullName);
-				m_Objects.push_back(std::move(data));
+				objects.push_back(std::move(data));
 			}
 		}
 	}
+	return objects;
+}
+
+void CObjectManagerView::UpdateList(bool newNode) {
+	auto objects = EnumCurrentObjects();
+	for (auto& data : objects) {
+		if (data.Type == L"SymbolicLink")
+			data.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(data.FullName);
+	}
+	m_Objects.Set(std::move(objects));
 	ApplyFilter(m_FilterText);
 	if (newNode) {
 		m_List.SetItemCount(static_cast<int>(m_Objects.size()));
@@ -314,7 +468,8 @@ void CObjectManagerView::UpdateList(bool newNode) {
 
 bool CObjectManagerView::ShowProperties(int index) const {
 	ATLASSERT(index >= 0);
-	auto& item = m_Objects[index];
+	// copy, as the timer may replace the items while the (modal) properties dialog is open
+	auto item = m_Objects[index];
 	return ShowProperties(item.FullName, item.Type, item.SymbolicLinkTarget);
 }
 
@@ -353,15 +508,7 @@ void CObjectManagerView::EnumDirectory(CTreeItem root, const CString& path) {
 	}
 }
 
-void CObjectManagerView::EnumAllObjects() {
-	m_Objects.clear();
-	m_Objects.reserve(512);
-
-	CString path = L"\\";
-	EnumObjectsInDirectory(path, m_Objects);
-}
-
-void CObjectManagerView::EnumObjectsInDirectory(CString const path, SortedFilteredVector<ObjectData>& objects) {
+void CObjectManagerView::EnumObjectsInDirectory(CString const path, std::vector<ObjectData>& objects) {
 	for (auto const& dir : ObjectManager::EnumDirectoryObjects(path)) {
 		ObjectData data;
 		data.FullName = path + L"\\" + dir.Name.c_str();
@@ -369,8 +516,6 @@ void CObjectManagerView::EnumObjectsInDirectory(CString const path, SortedFilter
 			data.FullName.Delete(0);
 		data.Name = dir.Name.c_str();
 		data.Type = dir.TypeName.c_str();
-		if (data.Type == L"SymbolicLink")
-			data.SymbolicLinkTarget = ObjectManager::GetSymbolicLinkTarget(data.FullName);
 		objects.push_back(std::move(data));
 		if (dir.TypeName == L"Directory") {
 			EnumObjectsInDirectory(path + (path == L"\\" ? L"" : L"\\") + dir.Name.c_str(), objects);
@@ -389,8 +534,11 @@ bool CObjectManagerView::CompareItems(const ObjectData& data1, const ObjectData&
 }
 
 LRESULT CObjectManagerView::OnViewProperties(WORD, WORD, HWND, BOOL&) {
-	if (m_Splitter.GetActivePane() == 1)
-		ShowProperties(m_List.GetSelectionMark());
+	if (m_Splitter.GetActivePane() == 1) {
+		int row = m_List.GetNextItem(-1, LVNI_SELECTED);
+		if (row >= 0)
+			ShowProperties(row);
+	}
 	else
 		ShowProperties(m_Tree.GetSelectedItem());
 	return 0;
@@ -485,14 +633,12 @@ LRESULT CObjectManagerView::OnSwitchToListMode(WORD, WORD, HWND, BOOL&) {
 			//
 			// find the item in the list
 			//
-			int n = 0;
-			for (auto& item : m_Objects) {
-				if (item.FullName == selected)
+			for (int n = 0; n < (int)m_Objects.size(); n++) {
+				if (m_Objects[n].FullName == selected) {
+					m_List.SelectItem(n);
 					break;
-				n++;
+				}
 			}
-			if (n < m_Objects.size())
-				m_List.SelectItem(n);
 		}
 		else {
 			JumpToObject(selected);

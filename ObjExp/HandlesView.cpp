@@ -323,10 +323,12 @@ LRESULT CHandlesView::OnViewRefresh(WORD, WORD, HWND, BOOL&) {
 }
 
 LRESULT CHandlesView::OnContinueUpdate(UINT, WPARAM, LPARAM, BOOL&) {
-	for (auto& hi : m_TempHandles)
-		m_Handles.push_back(hi);
-	DoSort(GetSortInfo(m_List));
-	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+	SortPreservingSelection(m_List, m_Handles, [&] {
+		for (auto& hi : m_TempHandles)
+			m_Handles.push_back(hi);
+		DoSort(GetSortInfo(m_List));
+		m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL | LVSICF_NOINVALIDATEALL);
+		});
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	if (IsActive() && IsRunning()) {
 		ActivateTimer(true);
