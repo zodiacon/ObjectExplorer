@@ -4,6 +4,39 @@
 #include "ProcessHelper.h"
 #include <SortHelper.h>
 #include "ImageIconCache.h"
+#include "DriverHelper.h"
+
+extern "C" NTSTATUS NTAPI NtCompareObjects(HANDLE FirstObjectHandle, HANDLE SecondObjectHandle);
+
+//
+// without SeDebugPrivilege, recent Windows versions zero the object addresses in the system handle list,
+// so find the handles to the object by duplicating each handle of its type and comparing the objects
+//
+void CHandlesPage::FindHandlesByComparing(std::vector<std::shared_ptr<HandleInfo>> const& handles) {
+    auto pid = ::GetCurrentProcessId();
+    std::unordered_map<ULONG, wil::unique_handle> processes;    // null if it can't be opened
+    for (auto& hi : handles) {
+        if (hi->ProcessId == pid && hi->HandleValue == HandleToULong(m_hObject))
+            continue;
+
+        auto [it, inserted] = processes.try_emplace(hi->ProcessId);
+        if (inserted) {
+            it->second.reset(::OpenProcess(PROCESS_DUP_HANDLE, FALSE, hi->ProcessId));
+            if (!it->second)
+                it->second.reset(DriverHelper::OpenProcess(hi->ProcessId, PROCESS_DUP_HANDLE));
+        }
+        if (!it->second)
+            continue;
+
+        // no access is needed for comparing
+        HANDLE hDup;
+        if (!::DuplicateHandle(it->second.get(), ULongToHandle(hi->HandleValue), ::GetCurrentProcess(), &hDup, 0, FALSE, 0))
+            continue;
+        if (NtCompareObjects(m_hObject, hDup) == 0)
+            m_Handles.push_back(*hi);
+        ::CloseHandle(hDup);
+    }
+}
 
 CString CHandlesPage::GetColumnText(HWND, int row, int col) const {
     auto& hi = m_Handles[row];
@@ -64,6 +97,9 @@ LRESULT CHandlesPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
                     m_Handles.push_back(*handle);
                 }
             }
+        }
+        else {
+            FindHandlesByComparing(handles);
         }
     }
     m_List.Attach(GetDlgItem(IDC_LIST));

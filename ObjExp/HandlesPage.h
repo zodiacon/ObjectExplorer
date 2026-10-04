@@ -39,6 +39,8 @@ public:
 	};
 
 private:
+	void FindHandlesByComparing(std::vector<std::shared_ptr<HandleInfo>> const& handles);
+
 	CListViewCtrl m_List;
 	std::vector<HandleInfo> m_Handles;
 	HANDLE m_hObject;
