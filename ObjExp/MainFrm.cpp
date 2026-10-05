@@ -105,7 +105,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	AddSimpleReBarBand(tb);
 	UIAddToolBar(tb);
 
-	m_view.m_bTabCloseButton = FALSE;
+	m_view.m_bTabCloseButton = TRUE;
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, nullptr, 
 		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, 0);
 	ViewFactory::Get().Init(this, m_view);
@@ -148,18 +148,23 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	if (auto lf = AppSettings::Get().Font(); lf.lfFaceName[0])
 		m_ViewFont.CreateFontIndirect(&lf);
 
-	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTMANAGERNAMESPACE);
-	PostMessage(WM_COMMAND, ID_OBJECTS_OBJECTTYPES);
+	PostMessage(WM_RESTORETABS);
 
 	return 0;
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	SingleInstance::Unregister(m_hWnd);
+	m_Destroying = true;
+	m_CurrentView = nullptr;
+	auto& settings = AppSettings::Get();
 	WINDOWPLACEMENT wp{ sizeof(wp) };
 	GetWindowPlacement(&wp);
-	AppSettings::Get().MainWindowPlacement(wp);
-	AppSettings::Get().Save();
+	settings.MainWindowPlacement(wp);
+	int activeTab;
+	settings.Set(L"OpenTabs", ViewFactory::Get().SaveViews(activeTab));
+	settings.Set(L"ActiveTab", activeTab);
+	// the settings are saved once the views are destroyed too (they save their list layouts), when the message loop ends
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
 	pLoop->RemoveMessageFilter(this);
@@ -261,8 +266,10 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int nActivePage = m_view.GetActivePage();
-	if (nActivePage != -1)
+	if (nActivePage != -1) {
+		PageClosing(nActivePage);
 		m_view.RemovePage(nActivePage);
+	}
 	else
 		::MessageBeep((UINT)-1);
 
@@ -270,9 +277,22 @@ LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	m_CurrentView = nullptr;
 	m_view.RemoveAllPages();
 
 	return 0;
+}
+
+LRESULT CMainFrame::OnTabCloseButton(int, LPNMHDR hdr, BOOL&) {
+	PageClosing(static_cast<int>(hdr->idFrom));
+	// 0: the tab view closes the page
+	return 0;
+}
+
+void CMainFrame::PageClosing(int page) {
+	// the view is destroyed with its page; don't deactivate it afterwards
+	if (m_view.GetPageData(page) == m_CurrentView)
+		m_CurrentView = nullptr;
 }
 
 LRESULT CMainFrame::OnWindowActivate(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -293,6 +313,21 @@ LRESULT CMainFrame::OnRunAsAdmin(WORD, WORD, HWND, BOOL&) {
 		SingleInstance::Register(m_hWnd);
 	}
 
+	return 0;
+}
+
+LRESULT CMainFrame::OnRestoreTabs(UINT, WPARAM, LPARAM, BOOL&) {
+	auto& settings = AppSettings::Get();
+	auto tabs = settings.GetMultiString(L"OpenTabs");
+	int active = ViewFactory::Get().RestoreViews(tabs, settings.GetValueOrDefault<int>(L"ActiveTab", -1));
+	if (m_view.GetPageCount() == 0) {
+		// first run, or nothing to restore
+		ViewFactory::Get().CreateView(ViewType::ObjectManager);
+		ViewFactory::Get().CreateView(ViewType::ObjectTypes);
+	}
+	else if (active >= 0) {
+		m_view.SetActivePage(active);
+	}
 	return 0;
 }
 
@@ -332,16 +367,28 @@ LRESULT CMainFrame::OnPageActivated(int, LPNMHDR hdr, BOOL&) {
 }
 
 void CMainFrame::ActivatePage(int page) {
-	if (m_CurrentPage >= 0 && m_CurrentPage < m_view.GetPageCount()) {
-		((IView*)m_view.GetPageData(m_CurrentPage))->PageActivated(false);
+	// the views are destroyed after the frame's WM_DESTROY, and the tab view still reports page changes while they go
+	if (m_Destroying)
+		return;
+
+	auto view = page >= 0 ? (IView*)m_view.GetPageData(page) : nullptr;
+	if (m_CurrentView && m_CurrentView != view) {
+		m_CurrentView->PageActivated(false);
 		UIEnable(ID_FILE_SAVE, FALSE);
 	}
-	if (page >= 0) {
-		auto view = (IView*)m_view.GetPageData(page);
-		ATLASSERT(view);
+	if (view) {
 		view->PageActivated(true);
 	}
-	m_CurrentPage = page;
+	else {
+		//
+		// no tabs left: nothing for the view commands to act on
+		//
+		SetStatusText(7, L"");
+		for (UINT id : { ID_EDIT_COPY, ID_VIEW_PROPERTIES, ID_FILE_SAVE, ID_RUN })
+			UIEnable(id, FALSE);
+		UISetCheck(ID_RUN, FALSE);
+	}
+	m_CurrentView = view;
 }
 
 

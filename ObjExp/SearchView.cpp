@@ -251,6 +251,7 @@ LRESULT CSearchView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Handle", LVCFMT_RIGHT, 80, ColumnType::Handle, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"Address", LVCFMT_RIGHT, 130, ColumnType::Address, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->UpdateColumns();
+	InitListLayout(m_List, L"Search");
 
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);

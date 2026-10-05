@@ -38,6 +38,7 @@ public:
 	// treeview overrides
 	//
 	void OnTreeSelChanged(HWND tree, HTREEITEM hOld, HTREEITEM hNew);
+	bool OnTreeItemExpanding(HWND tree, HTREEITEM hItem, DWORD state, DWORD action);
 	bool OnTreeRightClick(HWND tree, HTREEITEM hItem, POINT const& pt);
 	bool OnTreeDoubleClick(HWND tree, HTREEITEM hItem);
 
@@ -88,6 +89,18 @@ private:
 		CString Name, FullName, Type, SymbolicLinkTarget;
 		ObjectState State{ ObjectState::None };
 		DWORD64 TargetTime{ 0 };	// when the New/Deleted highlight expires
+		//
+		// details, from opening the object; fetched when the row is shown (and again on updates, for shown rows)
+		//
+		bool DetailsChecked{ false };
+		LONG Handles{ -1 }, Pointers{ -1 };	// -1: unknown
+		LARGE_INTEGER CreateTime{};			// symbolic links only
+		CString TargetChain;				// symbolic links whose target is another link
+	};
+
+	enum ListColumn {
+		NameColumn, TypeColumn, TargetColumn, FullNameColumn,
+		HandlesColumn, PointersColumn, CreatedColumn, TargetChainColumn,
 	};
 
 	static constexpr DWORD64 HighlightDuration = 2000;
@@ -98,6 +111,10 @@ private:
 	bool ShowProperties(HTREEITEM hItem) const;
 	bool ShowProperties(PCWSTR fullName, PCWSTR type, PCWSTR target = nullptr) const;
 	void EnumDirectory(CTreeItem root, const CString& path);
+	// updates the tree's directories: of the expanded nodes on updates, of a node when it's expanded
+	void SyncTree();
+	void SyncTreeChildren(HTREEITEM hItem);
+	void GetDetails(ObjectData& data) const;
 	std::vector<ObjectData> EnumCurrentObjects();
 	static void EnumObjectsInDirectory(CString const path, std::vector<ObjectData>& objects);
 	void ApplyFilter(PCWSTR filter);

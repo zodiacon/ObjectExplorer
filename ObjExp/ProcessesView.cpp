@@ -261,6 +261,7 @@ LRESULT CProcessesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		cm->AddColumn(L"Image Path", LVCFMT_LEFT, 350, ColumnType::ImagePath);
 	}
 	cm->UpdateColumns();
+	InitListLayout(m_List, m_Threads ? L"Threads" : L"Processes");
 
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.SetImageList(m_Threads ? ResourceManager::Get().GetTypesImageList() : ImageIconCache::Get().GetImageList(), LVSIL_SMALL);

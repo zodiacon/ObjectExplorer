@@ -25,9 +25,64 @@ void CObjectsView::Refresh() {
 	for (auto& obj : m_Objects) {
 		obj->Type = ObjectManager::GetType(obj->TypeIndex)->TypeName;
 	}
+	// assigning the items shows all of them
+	ApplyFilter();
 	DoSort(GetSortInfo(m_List));
 	m_List.SetItemCountEx((int)m_Objects.size(), LVSICF_NOSCROLL);
 	UpdateStatusText();
+}
+
+//
+// names are looked up when first shown; sorting and filtering need all of them (including filtered out ones)
+//
+void CObjectsView::ResolveObjectNames() {
+	if (m_UpdateObjectNames)
+		return;
+	CWaitCursor wait;
+	for (auto& obj : m_Objects) {
+		if (!obj->NameChecked) {
+			if (ObjectHelpers::IsNamedObjectType(obj->TypeIndex)) {
+				auto& hi = obj->FirstHandle;
+				obj->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId, obj->TypeIndex, obj->Object);
+			}
+			obj->NameChecked = true;
+		}
+	}
+	m_UpdateObjectNames = true;
+}
+
+void CObjectsView::ApplyFilter() {
+	CString text;
+	m_QuickFind.GetWindowText(text);
+	text.Trim();
+	if (text.IsEmpty()) {
+		m_Objects.Filter(nullptr);
+		return;
+	}
+	ResolveObjectNames();
+	text.MakeLower();
+	m_Objects.Filter([text](auto const& obj, auto) {
+		auto contains = [&](CString value) {
+			return value.MakeLower().Find(text) >= 0;
+		};
+		return contains(obj->Type) || contains(obj->Name.c_str());
+		});
+}
+
+LRESULT CObjectsView::OnQuickFilter(WORD, WORD, HWND, BOOL&) {
+	SortPreservingSelection(m_List, m_Objects, [&] {
+		ApplyFilter();
+		DoSort(GetSortInfo(m_List));
+		m_List.SetItemCountEx((int)m_Objects.size(), LVSICF_NOSCROLL);
+		});
+	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+	UpdateStatusText();
+	return 0;
+}
+
+LRESULT CObjectsView::OnQuickFind(WORD, WORD, HWND, BOOL&) {
+	m_QuickFind.SetFocus();
+	return 0;
 }
 
 void CObjectsView::DoSort(SortInfo const* si) {
@@ -35,19 +90,8 @@ void CObjectsView::DoSort(SortInfo const* si) {
 		return;
 
 	auto col = static_cast<ColumnType>(GetColumnManager(si->hWnd)->GetColumnTag(si->SortColumn));
-	if (col == ColumnType::Name && !m_UpdateObjectNames) {
-		CWaitCursor wait;
-		for (auto& obj : m_Objects) {
-			if (!obj->NameChecked) {
-				if (ObjectHelpers::IsNamedObjectType(obj->TypeIndex)) {
-					auto& hi = obj->FirstHandle;
-					obj->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId, obj->TypeIndex, obj->Object);
-				}
-				obj->NameChecked = true;
-			}
-		}
-		m_UpdateObjectNames = true;
-	}
+	if (col == ColumnType::Name)
+		ResolveObjectNames();
 	auto asc = si->SortAscending;
 	auto compare = [&](auto const& obj1, auto const& obj2) {
 		switch (col) {
@@ -106,6 +150,8 @@ LRESULT CObjectsView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Handles", LVCFMT_RIGHT, 90, ColumnType::Handles, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->AddColumn(L"References", LVCFMT_RIGHT, 140, ColumnType::RefCount, ColumnFlags::Visible | ColumnFlags::Numeric);
 	cm->UpdateColumns();
+	CreateQuickFind(m_QuickFind);
+	InitListLayout(m_List, L"Objects");
 
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);

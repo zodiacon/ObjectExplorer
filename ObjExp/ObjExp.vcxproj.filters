@@ -96,6 +96,9 @@
     <ClCompile Include="ZombieProcessesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="ListLayout.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
     <ClCompile Include="FindDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
@@ -217,6 +220,9 @@
     </ClInclude>
     <ClInclude Include="ZombieProcessesView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="ListLayout.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="FindDlg.h">
       <Filter>Dialogs</Filter>

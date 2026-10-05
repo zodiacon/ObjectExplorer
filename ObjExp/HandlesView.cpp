@@ -43,9 +43,76 @@ void CHandlesView::Refresh() {
 	for (auto& hi : m_Handles) {
 		hi->Type = ObjectManager::GetType(hi->ObjectTypeIndex)->TypeName;
 	}
+	// assigning the items shows all of them
+	ApplyFilter();
 	DoSort(GetSortInfo(m_List));
 	m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL);
 	UpdateStatusText();
+}
+
+//
+// names are looked up when first shown; sorting and filtering need all of them (including filtered out ones)
+//
+void CHandlesView::ResolveProcessNames() {
+	if (m_UpdateProcNames)
+		return;
+	CWaitCursor wait;
+	for (auto& hi : m_Handles) {
+		if (hi->ProcessName.IsEmpty())
+			hi->ProcessName = ProcessHelper::GetProcessName(hi->ProcessId);
+	}
+	m_UpdateProcNames = true;
+}
+
+void CHandlesView::ResolveObjectNames() {
+	if (m_UpdateObjectNames)
+		return;
+	CWaitCursor wait;
+	for (auto& hi : m_Handles) {
+		if (!hi->NameChecked) {
+			if (ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex))
+				hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, hi->Object);
+			hi->NameChecked = true;
+		}
+	}
+	m_UpdateObjectNames = true;
+}
+
+void CHandlesView::ApplyFilter() {
+	CString text;
+	m_QuickFind.GetWindowText(text);
+	text.Trim();
+	if (text.IsEmpty()) {
+		m_Handles.Filter(nullptr);
+		return;
+	}
+	ResolveObjectNames();
+	if (m_Pid == 0)
+		ResolveProcessNames();
+	text.MakeLower();
+	m_Handles.Filter([text](auto const& hi, auto) {
+		auto contains = [&](CString value) {
+			return value.MakeLower().Find(text) >= 0;
+		};
+		return contains(hi->Type) || contains(hi->Name.c_str()) || contains(hi->ProcessName) ||
+			std::to_wstring(hi->ProcessId) == (PCWSTR)text;
+		});
+}
+
+LRESULT CHandlesView::OnQuickFilter(WORD, WORD, HWND, BOOL&) {
+	SortPreservingSelection(m_List, m_Handles, [&] {
+		ApplyFilter();
+		DoSort(GetSortInfo(m_List));
+		m_List.SetItemCountEx((int)m_Handles.size(), LVSICF_NOSCROLL);
+		});
+	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+	UpdateStatusText();
+	return 0;
+}
+
+LRESULT CHandlesView::OnQuickFind(WORD, WORD, HWND, BOOL&) {
+	m_QuickFind.SetFocus();
+	return 0;
 }
 
 void CHandlesView::DoSort(SortInfo const* si) {
@@ -53,25 +120,10 @@ void CHandlesView::DoSort(SortInfo const* si) {
 		return;
 
 	auto col = static_cast<ColumnType>(GetColumnManager(si->hWnd)->GetColumnTag(si->SortColumn));
-	if (col == ColumnType::ProcessName && !m_UpdateProcNames) {
-		CWaitCursor wait;
-		for (auto& hi : m_Handles) {
-			if (hi->ProcessName.IsEmpty())
-				hi->ProcessName = ProcessHelper::GetProcessName(hi->ProcessId);
-		}
-		m_UpdateProcNames = true;
-	}
-	else if (col == ColumnType::Name && !m_UpdateObjectNames) {
-		CWaitCursor wait;
-		for (auto& hi : m_Handles) {
-			if (!hi->NameChecked) {
-				if (ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex))
-					hi->Name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, hi->Object);
-				hi->NameChecked = true;
-			}
-		}
-		m_UpdateObjectNames = true;
-	}
+	if (col == ColumnType::ProcessName)
+		ResolveProcessNames();
+	else if (col == ColumnType::Name)
+		ResolveObjectNames();
 	auto asc = si->SortAscending;
 	auto compare = [&](auto const& h1, auto const& h2) {
 		switch (col) {
@@ -310,6 +362,9 @@ LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Decoded Access", LVCFMT_LEFT, 350, ColumnType::DecodedAccess);
 
 	cm->UpdateColumns();
+	CreateQuickFind(m_QuickFind);
+	// a single process' handles have no process columns
+	InitListLayout(m_List, m_Pid ? L"ProcessHandles" : L"Handles");
 
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);

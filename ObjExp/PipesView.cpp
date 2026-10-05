@@ -190,6 +190,7 @@ LRESULT CPipesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	}
 	cm->AddColumn(L"Full Name", LVCFMT_LEFT, 450, ColumnType::FullName);
 	cm->UpdateColumns();
+	InitListLayout(m_List, m_Mailslots ? L"Mailslots" : L"Pipes");
 
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.SetImageList(ResourceManager::Get().GetTypesImageList(), LVSIL_SMALL);

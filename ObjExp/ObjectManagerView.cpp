@@ -27,6 +27,12 @@ void CObjectManagerView::DoSort(const SortInfo* si) {
 	if (si == nullptr)
 		return;
 
+	if (si->SortColumn >= HandlesColumn) {
+		// these come from opening each object
+		CWaitCursor wait;
+		for (size_t i = 0; i < m_Objects.size(); i++)
+			GetDetails(m_Objects[i]);
+	}
 	m_Objects.Sort(0, m_Objects.size(), [&](const auto& data1, const auto& data2) {
 		return CompareItems(data1, data2, si->SortColumn, si->SortAscending);
 		});
@@ -35,10 +41,20 @@ void CObjectManagerView::DoSort(const SortInfo* si) {
 CString CObjectManagerView::GetColumnText(HWND, int row, int col) {
 	auto& data = m_Objects[row];
 	switch (col) {
-		case 0:	return data.Name;
-		case 1:	return data.Type;
-		case 2:	return data.SymbolicLinkTarget;
-		case 3:	return data.FullName;
+		case NameColumn: return data.Name;
+		case TypeColumn: return data.Type;
+		case TargetColumn: return data.SymbolicLinkTarget;
+		case FullNameColumn: return data.FullName;
+	}
+
+	GetDetails(data);
+	switch (col) {
+		case HandlesColumn: return data.Handles < 0 ? CString() : CString(std::to_wstring(data.Handles).c_str());
+		case PointersColumn: return data.Pointers < 0 ? CString() : CString(std::to_wstring(data.Pointers).c_str());
+		case CreatedColumn:
+			// only symbolic links have a creation time
+			return data.CreateTime.QuadPart ? CTime(*(FILETIME*)&data.CreateTime).Format(L"%x %X") : CString();
+		case TargetChainColumn: return data.TargetChain;
 	}
 	return L"";
 }
@@ -157,6 +173,18 @@ void CObjectManagerView::DoTimerUpdate() {
 	// objects that disappeared are kept (marked Deleted) until their highlight expires,
 	// new objects are appended and marked New
 	//
+	if (!m_ListMode)
+		SyncTree();
+
+	// the counts of the shown rows are fetched again when they're drawn
+	auto refreshShownRows = [&] {
+		int top = m_List.GetTopIndex();
+		int end = std::min(top + m_List.GetCountPerPage() + 1, (int)m_Objects.size());
+		for (int i = top; i < end; i++)
+			m_Objects[i].DetailsChecked = false;
+		m_List.RedrawItems(top, end);
+	};
+
 	auto tick = ::GetTickCount64();
 	auto& old = m_Objects.GetRealAll();
 	auto objects = EnumCurrentObjects();
@@ -176,6 +204,11 @@ void CObjectManagerView::DoTimerUpdate() {
 			auto& obj = objects[it->second];
 			matched[it->second] = true;
 			obj.SymbolicLinkTarget = prev.SymbolicLinkTarget;
+			obj.DetailsChecked = prev.DetailsChecked;
+			obj.Handles = prev.Handles;
+			obj.Pointers = prev.Pointers;
+			obj.CreateTime = prev.CreateTime;
+			obj.TargetChain = prev.TargetChain;
 			if (prev.State == ObjectState::Deleted) {
 				// recreated
 				obj.State = ObjectState::New;
@@ -217,8 +250,10 @@ void CObjectManagerView::DoTimerUpdate() {
 		changed = true;
 	}
 
-	if (!changed)
+	if (!changed) {
+		refreshShownRows();
 		return;
+	}
 
 	//
 	// selection is by index, so remember selected items by name
@@ -248,7 +283,107 @@ void CObjectManagerView::DoTimerUpdate() {
 				m_List.SetItemState(i, state, state);
 		}
 	}
-	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+	refreshShownRows();
+}
+
+void CObjectManagerView::SyncTree() {
+	//
+	// the children of the root and of every expanded node (collapsed ones are updated when expanded)
+	//
+	std::vector<HTREEITEM> nodes{ m_Tree.GetRootItem() };
+	while (!nodes.empty()) {
+		auto hItem = nodes.back();
+		nodes.pop_back();
+		if (!hItem)
+			continue;
+		SyncTreeChildren(hItem);
+		if (m_Tree.GetItemState(hItem, TVIS_EXPANDED) & TVIS_EXPANDED) {
+			for (auto hChild = m_Tree.GetChildItem(hItem); hChild; hChild = m_Tree.GetNextSiblingItem(hChild))
+				nodes.push_back(hChild);
+		}
+	}
+}
+
+void CObjectManagerView::SyncTreeChildren(HTREEITEM hItem) {
+	auto path = GetDirectoryPath(hItem);
+	std::unordered_set<std::wstring> directories;
+	for (auto const& item : ObjectManager::EnumDirectoryObjects(path)) {
+		if (item.TypeName == L"Directory")
+			directories.insert(item.Name);
+	}
+
+	// remove the ones that are gone (a removed selected node selects another, which updates the list)
+	for (auto hChild = m_Tree.GetChildItem(hItem); hChild; ) {
+		auto hNext = m_Tree.GetNextSiblingItem(hChild);
+		CString text;
+		m_Tree.GetItemText(hChild, text);
+		if (!directories.erase(std::wstring(text)))
+			m_Tree.DeleteItem(hChild);
+		hChild = hNext;
+	}
+
+	// what's left is new
+	for (auto& name : directories) {
+		auto hNew = m_Tree.InsertItem(name.c_str(), 1, 0, hItem, TVI_SORT);
+		CString childPath = (path.Right(1) == L"\\" ? path : path + L"\\") + name.c_str();
+		EnumDirectory(CTreeItem(hNew, &m_Tree), childPath);
+		m_Tree.SortChildren(hNew, TRUE);
+	}
+}
+
+bool CObjectManagerView::OnTreeItemExpanding(HWND, HTREEITEM hItem, DWORD, DWORD action) {
+	if (action == TVE_EXPAND)
+		SyncTreeChildren(hItem);
+	// don't prevent expanding
+	return false;
+}
+
+void CObjectManagerView::GetDetails(ObjectData& data) const {
+	if (data.DetailsChecked)
+		return;
+	data.DetailsChecked = true;
+
+	//
+	// a link to another link: follow the chain (a few levels, in case of a loop)
+	//
+	if (data.Type == L"SymbolicLink" && data.TargetChain.IsEmpty() && !data.SymbolicLinkTarget.IsEmpty()) {
+		CString chain = data.SymbolicLinkTarget, target = data.SymbolicLinkTarget;
+		int links = 0;
+		for (int i = 0; i < 8; i++) {
+			auto next = ObjectManager::GetSymbolicLinkTarget(target);
+			if (next.IsEmpty() || next == target)
+				break;
+			chain += L" \x2192 " + next;
+			target = next;
+			links++;
+		}
+		if (links)
+			data.TargetChain = chain;
+	}
+
+	//
+	// only types that can be opened without side effects: opening a device or a file sends a create request to its driver,
+	// and an ALPC port is "opened" by connecting to it
+	//
+	static const PCWSTR types[] = {
+		L"Directory", L"SymbolicLink", L"Event", L"Mutant", L"Semaphore", L"Section", L"Job", L"Key", L"Session",
+		L"IoCompletion", L"EventPair", L"WindowStation",
+	};
+	if (std::none_of(std::begin(types), std::end(types), [&](auto type) { return data.Type == type; }))
+		return;
+
+	HANDLE hObject{ nullptr };
+	ObjectManager::OpenObject(data.FullName, data.Type, hObject, MAXIMUM_ALLOWED);
+	if (!hObject)
+		return;
+	NT::OBJECT_BASIC_INFORMATION info;
+	if (NT_SUCCESS(NT::NtQueryObject(hObject, NT::ObjectBasicInformation, &info, sizeof(info), nullptr))) {
+		// without the handle opened for the query
+		data.Handles = (LONG)info.HandleCount - 1;
+		data.Pointers = (LONG)info.PointerCount - 1;
+		data.CreateTime = info.CreationTime;
+	}
+	::CloseHandle(hObject);
 }
 
 LRESULT CObjectManagerView::OnListCustomDraw(int, LPNMHDR hdr, BOOL& bHandled) {
@@ -333,6 +468,12 @@ LRESULT CObjectManagerView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_List.InsertColumn(1, L"Type", LVCFMT_LEFT, 150);
 	m_List.InsertColumn(2, L"Symbolic Link Target", LVCFMT_LEFT, 600);
 	m_List.InsertColumn(3, L"Full Name", LVCFMT_LEFT, 600);
+	m_List.InsertColumn(4, L"Handles", LVCFMT_RIGHT, 70);
+	// like the Objects view: the pointer count (recent versions add a large bias per handle)
+	m_List.InsertColumn(5, L"References", LVCFMT_RIGHT, 80);
+	m_List.InsertColumn(6, L"Created", LVCFMT_LEFT, 150);
+	m_List.InsertColumn(7, L"Link Chain", LVCFMT_LEFT, 500);
+	InitListLayout(m_List, L"ObjectManager");
 
 	m_Splitter.SetSplitterPanes(m_Tree, m_List);
 	m_Splitter.SetSplitterPosPct(20);
@@ -519,10 +660,14 @@ void CObjectManagerView::EnumObjectsInDirectory(CString const path, std::vector<
 
 bool CObjectManagerView::CompareItems(const ObjectData& data1, const ObjectData& data2, int col, bool asc) {
 	switch (col) {
-		case 0: return SortHelper::Sort(data1.Name, data2.Name, asc);
-		case 1: return SortHelper::Sort(data1.Type, data2.Type, asc);
-		case 2: return SortHelper::Sort(data1.SymbolicLinkTarget, data2.SymbolicLinkTarget, asc);
-		case 3: return SortHelper::Sort(data1.FullName, data2.FullName, asc);
+		case NameColumn: return SortHelper::Sort(data1.Name, data2.Name, asc);
+		case TypeColumn: return SortHelper::Sort(data1.Type, data2.Type, asc);
+		case TargetColumn: return SortHelper::Sort(data1.SymbolicLinkTarget, data2.SymbolicLinkTarget, asc);
+		case FullNameColumn: return SortHelper::Sort(data1.FullName, data2.FullName, asc);
+		case HandlesColumn: return SortHelper::Sort(data1.Handles, data2.Handles, asc);
+		case PointersColumn: return SortHelper::Sort(data1.Pointers, data2.Pointers, asc);
+		case CreatedColumn: return SortHelper::Sort(data1.CreateTime.QuadPart, data2.CreateTime.QuadPart, asc);
+		case TargetChainColumn: return SortHelper::Sort(data1.TargetChain, data2.TargetChain, asc);
 	}
 	return false;
 }

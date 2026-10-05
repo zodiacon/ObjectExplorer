@@ -34,12 +34,28 @@ struct ViewFactory final {
 	IView* CreateView(ViewType type, DWORD pid = 0, PCWSTR sparam = nullptr);
 	// searches the names of all handles and namespace objects for the text
 	IView* CreateSearchView(PCWSTR text, bool matchCase);
+
+	//
+	// open tabs, kept across runs; process specific and search tabs aren't restored
+	// (a process ID may be another process by then, and searches can take a while)
+	//
+	std::vector<std::wstring> SaveViews(int& activeIndex) const;
+	// returns the page to activate, or -1
+	int RestoreViews(std::vector<std::wstring> const& views, int activeIndex);
 	void SetTabIcon(IView* view, ViewIconType iconType);
 	static void SetViewFont(HWND hView, HFONT font);
 
 private:
 	ViewFactory() = default;
-	IView* AddView(IView* view, int image);
+
+	struct ViewInfo {
+		ViewType Type;
+		CString Param;
+	};
+	IView* AddView(IView* view, int image, ViewInfo info);
+
+	// how each view was created; entries of closed views stay, but only open ones are looked up
+	std::unordered_map<IView*, ViewInfo> m_Views;
 
 	IMainFrame* m_pFrame{ nullptr };
 	CNativeCustomTabView* m_tabs;

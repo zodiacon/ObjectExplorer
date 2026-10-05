@@ -35,6 +35,8 @@ public:
 
 	BEGIN_MSG_MAP(CHandlesView)
 		MESSAGE_HANDLER(WM_CONTINUEUPDATE, OnContinueUpdate)
+		COMMAND_CODE_HANDLER(EN_DELAYCHANGE, OnQuickFilter)
+		COMMAND_ID_HANDLER(ID_VIEW_QUICKFIND, OnQuickFind)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnViewProperties)
 		COMMAND_ID_HANDLER(ID_HANDLELIST_CLOSE, OnCloseHandles)
@@ -52,6 +54,9 @@ private:
 	void ShowObjectProperties(int row) const;
 	void UpdateStatusText() const;
 	void DoTimerWorkAsync();
+	void ResolveProcessNames();
+	void ResolveObjectNames();
+	void ApplyFilter();
 
 	// Handler prototypes (uncomment arguments if needed):
 	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -66,6 +71,8 @@ private:
 	LRESULT OnPauseResume(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnQuickFilter(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnQuickFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	struct HandleInfoEx : HandleInfo {
 		CString ProcessName;
@@ -83,6 +90,7 @@ private:
 	};
 
 	CListViewCtrl m_List;
+	CQuickFindEdit m_QuickFind;
 	ProcessHandlesTracker<HandleInfoEx> m_Tracker;
 	SortedFilteredVector<std::shared_ptr<HandleInfoEx>> m_Handles;
 	std::vector<std::shared_ptr<HandleInfoEx>> m_NewHandles, m_TempHandles;

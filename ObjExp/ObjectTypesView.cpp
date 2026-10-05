@@ -81,6 +81,7 @@ LRESULT CObjectTypesView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	cm->AddColumn(L"Invalid Attributes", LVCFMT_LEFT, 180, ColumnType::InvalidAttributes);
 
 	cm->UpdateColumns();
+	InitListLayout(m_List, L"ObjectTypes");
 
 	SendMessage(::RegisterWindowMessage(L"WTLHelperUpdateTheme"));
 

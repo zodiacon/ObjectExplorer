@@ -58,6 +58,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lps
 	WTLHelper::InitDarkMode(settings.DarkMode() ? DarkModeKind::Dark : DarkModeKind::Light);
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 
+	// after the windows are destroyed: views save their layouts as they're destroyed
+	settings.Save();
+
 	_Module.Term();
 	::CoUninitialize();
 

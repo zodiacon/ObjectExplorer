@@ -109,6 +109,7 @@ LRESULT CSystemInfoView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_List.SetExtendedListViewStyle(LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 	m_List.InsertColumn(0, L"Property", LVCFMT_LEFT, 200);
 	m_List.InsertColumn(1, L"Value", LVCFMT_LEFT, 350);
+	InitListLayout(m_List, L"SystemInformation");
 
 	Refresh();
 	Run(true);

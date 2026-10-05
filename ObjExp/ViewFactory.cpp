@@ -11,6 +11,7 @@
 #include "ProcessesView.h"
 #include "SystemInfoView.h"
 #include "ResourceManager.h"
+#include "SecurityHelper.h"
 
 ViewFactory& ViewFactory::Get() {
     static ViewFactory factory;
@@ -128,22 +129,80 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
             break;
         }
     }
-    return AddView(view, image);
+    return AddView(view, image, { type, sparam });
 }
 
 IView* ViewFactory::CreateSearchView(PCWSTR text, bool matchCase) {
     auto p = new CSearchView(m_pFrame, text, matchCase);
     p->Create(*m_tabs, CWindow::rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-    return AddView(p, 7);
+    return AddView(p, 7, { ViewType::Search, text });
 }
 
-IView* ViewFactory::AddView(IView* view, int image) {
+IView* ViewFactory::AddView(IView* view, int image, ViewInfo info) {
     if (view) {
         if (auto font = m_pFrame->GetViewFont())
             SetViewFont(view->GetHwnd(), font);
+        m_Views[view] = std::move(info);
         m_tabs->AddPage(view->GetHwnd(), view->GetTitle(), image, view);
     }
     return view;
+}
+
+namespace {
+    // the views that are restored, by the names they're saved with
+    const std::pair<ViewType, PCWSTR> RestorableViews[] = {
+        { ViewType::ObjectTypes, L"ObjectTypes" },
+        { ViewType::ObjectManager, L"ObjectManager" },
+        { ViewType::AllHandles, L"AllHandles" },
+        { ViewType::HandlesOfType, L"HandlesOfType" },
+        { ViewType::Objects, L"Objects" },
+        { ViewType::ZombieProcesses, L"ZombieProcesses" },
+        { ViewType::ZombieThreads, L"ZombieThreads" },
+        { ViewType::Pipes, L"Pipes" },
+        { ViewType::Mailslots, L"Mailslots" },
+        { ViewType::Processes, L"Processes" },
+        { ViewType::Threads, L"Threads" },
+        { ViewType::SystemInformation, L"SystemInformation" },
+    };
+}
+
+std::vector<std::wstring> ViewFactory::SaveViews(int& activeIndex) const {
+    std::vector<std::wstring> views;
+    activeIndex = -1;
+    int active = m_tabs->GetActivePage();
+    for (int i = 0; i < m_tabs->GetPageCount(); i++) {
+        auto it = m_Views.find((IView*)m_tabs->GetPageData(i));
+        if (it == m_Views.end())
+            continue;
+        auto& [type, param] = it->second;
+        auto name = std::find_if(std::begin(RestorableViews), std::end(RestorableViews), [&](auto& v) { return v.first == type; });
+        if (name == std::end(RestorableViews))
+            continue;
+        if (i == active)
+            activeIndex = (int)views.size();
+        // the format is name|parameter
+        views.push_back(std::wstring(name->second) + L"|" + (PCWSTR)param);
+    }
+    return views;
+}
+
+int ViewFactory::RestoreViews(std::vector<std::wstring> const& views, int activeIndex) {
+    int activePage = -1;
+    for (int i = 0; i < (int)views.size(); i++) {
+        auto& view = views[i];
+        auto sep = view.find(L'|');
+        auto name = view.substr(0, sep);
+        auto param = sep == std::wstring::npos ? std::wstring() : view.substr(sep + 1);
+        auto it = std::find_if(std::begin(RestorableViews), std::end(RestorableViews), [&](auto& v) { return name == v.second; });
+        if (it == std::end(RestorableViews))
+            continue;
+        // all objects requires running elevated
+        if (it->first == ViewType::Objects && param.empty() && !SecurityHelper::IsRunningElevated())
+            continue;
+        if (CreateView(it->first, 0, param.empty() ? nullptr : param.c_str()) && i == activeIndex)
+            activePage = m_tabs->GetPageCount() - 1;
+    }
+    return activePage;
 }
 
 void ViewFactory::SetViewFont(HWND hView, HFONT font) {
