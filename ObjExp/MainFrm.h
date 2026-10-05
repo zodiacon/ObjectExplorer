@@ -27,6 +27,7 @@ protected:
 		MESSAGE_HANDLER(WM_RESTORETABS, OnRestoreTabs)
 		NOTIFY_CODE_HANDLER(TBVN_PAGEACTIVATED, OnPageActivated)
 		NOTIFY_CODE_HANDLER(TBVN_TABCLOSEBTN, OnTabCloseButton)
+		NOTIFY_CODE_HANDLER(TBVN_CONTEXTMENU, OnTabContextMenu)
 		if (uMsg == WM_COMMAND && m_view.GetPageCount() > 0) {
 			auto view = (IView*)m_view.GetPageData(m_view.GetActivePage());
 			bHandled = view->ProcessCommand((UINT)wParam);
@@ -101,6 +102,8 @@ private:
 	LRESULT OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnTabCloseButton(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnTabContextMenu(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	void ClosePage(int page);
 	void PageClosing(int page);
 	LRESULT OnAllHandles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;
 	LRESULT OnAllObjects(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const;

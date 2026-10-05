@@ -29,6 +29,21 @@ struct ObjectHelpers abstract final {
 		{ L"Driver", L"_DRIVER_OBJECT" },
 		{ L"Device", L"_DEVICE_OBJECT" },
 		{ L"Directory", L"_OBJECT_DIRECTORY" },
+		{ L"Timer", L"_ETIMER" },
+		{ L"IoCompletion", L"_KQUEUE" },
+		{ L"IoCompletionReserve", L"_IO_MINI_COMPLETION_PACKET_USER" },
+		{ L"EtwRegistration", L"_ETW_REG_ENTRY" },
+		{ L"EtwConsumer", L"_ETW_REALTIME_CONSUMER" },
+		{ L"TmTm", L"_KTM" },
+		{ L"TmTx", L"_KTRANSACTION" },
+		{ L"TmRm", L"_KRESOURCEMANAGER" },
+		{ L"TmEn", L"_KENLISTMENT" },
+		{ L"Controller", L"_CONTROLLER_OBJECT" },
+		{ L"Partition", L"_EPARTITION" },
+		//
+		// not in the public symbols: Desktop and WindowStation (win32k's tagDESKTOP / tagWINDOWSTATION),
+		// TpWorkerFactory, Callback, DebugObject, WmiGuid, WaitCompletionPacket, KeyedEvent
+		//
 	};
 };
 

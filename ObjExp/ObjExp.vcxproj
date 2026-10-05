@@ -414,6 +414,7 @@
     <ClInclude Include="PipesView.h" />
     <ClInclude Include="ProcessesView.h" />
     <ClInclude Include="SearchView.h" />
+    <ClInclude Include="SearchMatcher.h" />
     <ClInclude Include="SingleInstance.h" />
     <ClInclude Include="SystemInfoView.h" />
   </ItemGroup>

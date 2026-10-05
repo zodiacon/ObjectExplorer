@@ -159,6 +159,10 @@
 #define ID_OPTIONS_SINGLEINSTANCE       32821
 #define ID_OBJECTLIST_SECURITY          32822
 #define ID_PIPELIST_FINDHANDLES         32823
+#define ID_TAB_CLOSE                    32824
+#define ID_TAB_CLOSEOTHERS              32825
+#define ID_TAB_DUPLICATE                32826
+#define ID_TAB_REFRESH                  32827
 #define IDD_FIND                        287
 #define IDC_MATCHCASE                   1035
 
@@ -167,7 +171,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        288
-#define _APS_NEXT_COMMAND_VALUE         32824
+#define _APS_NEXT_COMMAND_VALUE         32828
 #define _APS_NEXT_CONTROL_VALUE         1036
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

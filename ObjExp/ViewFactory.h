@@ -42,6 +42,9 @@ struct ViewFactory final {
 	std::vector<std::wstring> SaveViews(int& activeIndex) const;
 	// returns the page to activate, or -1
 	int RestoreViews(std::vector<std::wstring> const& views, int activeIndex);
+
+	// a new view like the given one (same kind and parameters)
+	IView* DuplicateView(IView* view);
 	void SetTabIcon(IView* view, ViewIconType iconType);
 	static void SetViewFont(HWND hView, HFONT font);
 
@@ -51,6 +54,8 @@ private:
 	struct ViewInfo {
 		ViewType Type;
 		CString Param;
+		DWORD Pid{ 0 };
+		bool MatchCase{ false };	// search views
 	};
 	IView* AddView(IView* view, int image, ViewInfo info);
 

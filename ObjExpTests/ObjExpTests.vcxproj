@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}</ProjectGuid>
+    <RootNamespace>ObjExpTests</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <!-- Catch2 comes from vcpkg (x64-windows-static), linked automatically by the vcpkg MSBuild integration -->
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <!-- the ObjExp sources and their pch.h are compiled here as is; Catch2 needs exceptions (ObjExp builds without them) -->
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=1;_CONSOLE;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <AdditionalIncludeDirectories>..\ObjExp;..\DiaHelper;..\WTLHelper\WTLHelper;..\WinSys\WinSys;..\WinSys\WinSys\phnt;..\WTLHelper\WTL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <!--
+        DiaHelper loads msdia140.dll from the executable's folder, and DIA needs symsrv.dll next to it for
+        a symbol server path (SRV*...) in _NT_SYMBOL_PATH; the symbols tests skip without them
+      -->
+      <Command>if exist "$(VSInstallDir)DIA SDK\bin\amd64\msdia140.dll" copy /y "$(VSInstallDir)DIA SDK\bin\amd64\msdia140.dll" "$(OutDir)" &gt;nul
+if exist "$(WindowsSdkDir)Debuggers\x64\symsrv.dll" copy /y "$(WindowsSdkDir)Debuggers\x64\symsrv.dll" "$(OutDir)" &gt;nul
+exit /b 0</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <!-- the code under test -->
+    <ClCompile Include="..\ObjExp\AccessMaskDecoder.cpp" />
+    <ClCompile Include="..\ObjExp\DbgDriver.cpp" />
+    <ClCompile Include="..\ObjExp\DriverHelper.cpp" />
+    <ClCompile Include="..\ObjExp\NtDll.cpp" />
+    <ClCompile Include="..\ObjExp\ObjectManager.cpp" />
+    <ClCompile Include="..\ObjExp\ProcessHelper.cpp" />
+    <ClCompile Include="..\ObjExp\SymbolManager.cpp" />
+    <!-- the tests -->
+    <ClCompile Include="AccessMaskDecoderTests.cpp" />
+    <ClCompile Include="KernelTypesTests.cpp" />
+    <ClCompile Include="ObjectManagerTests.cpp" />
+    <ClCompile Include="ProcessHelperTests.cpp" />
+    <ClCompile Include="SearchMatcherTests.cpp" />
+    <ClCompile Include="SortedFilteredVectorTests.cpp" />
+    <ClCompile Include="TestGlobals.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DiaHelper\DiaHelper.vcxproj">
+      <Project>{d1e93c91-d2d9-460b-a00e-1dcabaafcb9f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\WTLHelper\WTLHelper\WTLHelper.vcxproj">
+      <Project>{ae53419f-a769-4548-8e15-e311904df7df}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

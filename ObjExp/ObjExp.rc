@@ -171,6 +171,14 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
+    POPUP "tab"
+    BEGIN
+        MENUITEM "&Close",                      ID_TAB_CLOSE
+        MENUITEM "Close &Others",               ID_TAB_CLOSEOTHERS
+        MENUITEM SEPARATOR
+        MENUITEM "&Duplicate",                  ID_TAB_DUPLICATE
+        MENUITEM "&Refresh",                    ID_TAB_REFRESH
+    END
 END
 
 
@@ -526,8 +534,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,2,0,0
- PRODUCTVERSION 2,2,0,0
+ FILEVERSION 2,3,0,0
+ PRODUCTVERSION 2,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -544,12 +552,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Scorpio Software"
             VALUE "FileDescription", "Kernel Objects Explorer"
-            VALUE "FileVersion", "2.2.0.0"
+            VALUE "FileVersion", "2.3.0.0"
             VALUE "InternalName", "ObjExp"
             VALUE "LegalCopyright", "©2021-2026 Pavel Yosifovich"
             VALUE "OriginalFilename", "ObjExp.exe"
             VALUE "ProductName", "Object Explorer"
-            VALUE "ProductVersion", "2.2.0.0"
+            VALUE "ProductVersion", "2.3.0.0"
         END
     END
     BLOCK "VarFileInfo"

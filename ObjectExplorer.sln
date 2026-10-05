@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DiaHelper", "DiaHelper\DiaH
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WTLHelper", "WTLHelper\WTLHelper\WTLHelper.vcxproj", "{AE53419F-A769-4548-8E15-E311904DF7DF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjExpTests", "ObjExpTests\ObjExpTests.vcxproj", "{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -55,6 +57,14 @@ Global
 		{AE53419F-A769-4548-8E15-E311904DF7DF}.ReleaseSigned|ARM64.Build.0 = ReleaseSigned|ARM64
 		{AE53419F-A769-4548-8E15-E311904DF7DF}.ReleaseSigned|x64.ActiveCfg = ReleaseSigned|x64
 		{AE53419F-A769-4548-8E15-E311904DF7DF}.ReleaseSigned|x64.Build.0 = ReleaseSigned|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.Debug|ARM64.ActiveCfg = Debug|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.Debug|x64.ActiveCfg = Debug|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.Debug|x64.Build.0 = Debug|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.Release|ARM64.ActiveCfg = Release|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.Release|x64.ActiveCfg = Release|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.Release|x64.Build.0 = Release|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.ReleaseSigned|ARM64.ActiveCfg = Release|x64
+		{AE47D0B9-81E6-478E-8252-BF1A9B8EF2E2}.ReleaseSigned|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

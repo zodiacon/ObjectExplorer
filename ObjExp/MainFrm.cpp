@@ -35,6 +35,9 @@ void CMainFrame::InitMenu(HMENU hMenu) {
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		{ ID_OPTIONS_ALWAYSONTOP, IDI_PIN },
 		{ ID_OPTIONS_FONT, IDI_FONT },
+		{ ID_TAB_CLOSE, IDI_DELETE },
+		{ ID_TAB_DUPLICATE, IDI_COPY },
+		{ ID_TAB_REFRESH, IDI_REFRESH },
 		{ ID_VIEW_REFRESH, IDI_REFRESH },
 		{ ID_FILE_SAVE, IDI_SAVE },
 		{ ID_VIEW_FIND, IDI_FIND },
@@ -266,10 +269,8 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnWindowClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int nActivePage = m_view.GetActivePage();
-	if (nActivePage != -1) {
-		PageClosing(nActivePage);
-		m_view.RemovePage(nActivePage);
-	}
+	if (nActivePage != -1)
+		ClosePage(nActivePage);
 	else
 		::MessageBeep((UINT)-1);
 
@@ -286,6 +287,46 @@ LRESULT CMainFrame::OnWindowCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 LRESULT CMainFrame::OnTabCloseButton(int, LPNMHDR hdr, BOOL&) {
 	PageClosing(static_cast<int>(hdr->idFrom));
 	// 0: the tab view closes the page
+	return 0;
+}
+
+void CMainFrame::ClosePage(int page) {
+	PageClosing(page);
+	m_view.RemovePage(page);
+}
+
+LRESULT CMainFrame::OnTabContextMenu(int, LPNMHDR hdr, BOOL&) {
+	auto cmi = reinterpret_cast<TBVCONTEXTMENUINFO*>(hdr);
+	int page = static_cast<int>(hdr->idFrom);
+	if (page < 0 || page >= m_view.GetPageCount())
+		return 0;
+
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	auto popup = menu.GetSubMenu(6);
+	popup.EnableMenuItem(ID_TAB_CLOSEOTHERS, m_view.GetPageCount() > 1 ? MF_ENABLED : MF_GRAYED);
+	// the commands act on the tab that was clicked, which may not be the active one
+	auto view = (IView*)m_view.GetPageData(page);
+	switch (TrackPopupMenu(popup, TPM_RETURNCMD | TPM_RIGHTBUTTON, cmi->pt.x, cmi->pt.y)) {
+		case ID_TAB_CLOSE:
+			ClosePage(page);
+			break;
+
+		case ID_TAB_CLOSEOTHERS:
+			for (int i = m_view.GetPageCount() - 1; i >= 0; i--) {
+				if (m_view.GetPageData(i) != view)
+					ClosePage(i);
+			}
+			break;
+
+		case ID_TAB_DUPLICATE:
+			ViewFactory::Get().DuplicateView(view);
+			break;
+
+		case ID_TAB_REFRESH:
+			view->ProcessCommand(ID_VIEW_REFRESH);
+			break;
+	}
 	return 0;
 }
 

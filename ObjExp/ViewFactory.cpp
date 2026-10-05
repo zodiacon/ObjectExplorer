@@ -129,13 +129,24 @@ IView* ViewFactory::CreateView(ViewType type, DWORD pid, PCWSTR sparam) {
             break;
         }
     }
-    return AddView(view, image, { type, sparam });
+    return AddView(view, image, { type, sparam, pid });
 }
 
 IView* ViewFactory::CreateSearchView(PCWSTR text, bool matchCase) {
     auto p = new CSearchView(m_pFrame, text, matchCase);
     p->Create(*m_tabs, CWindow::rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-    return AddView(p, 7, { ViewType::Search, text });
+    return AddView(p, 7, { ViewType::Search, text, 0, matchCase });
+}
+
+IView* ViewFactory::DuplicateView(IView* view) {
+    auto it = m_Views.find(view);
+    if (it == m_Views.end())
+        return nullptr;
+    // a copy: creating the view adds to the map
+    auto info = it->second;
+    if (info.Type == ViewType::Search)
+        return CreateSearchView(info.Param, info.MatchCase);
+    return CreateView(info.Type, info.Pid, info.Param.IsEmpty() ? nullptr : (PCWSTR)info.Param);
 }
 
 IView* ViewFactory::AddView(IView* view, int image, ViewInfo info) {
@@ -174,7 +185,8 @@ std::vector<std::wstring> ViewFactory::SaveViews(int& activeIndex) const {
         auto it = m_Views.find((IView*)m_tabs->GetPageData(i));
         if (it == m_Views.end())
             continue;
-        auto& [type, param] = it->second;
+        auto& type = it->second.Type;
+        auto& param = it->second.Param;
         auto name = std::find_if(std::begin(RestorableViews), std::end(RestorableViews), [&](auto& v) { return v.first == type; });
         if (name == std::end(RestorableViews))
             continue;

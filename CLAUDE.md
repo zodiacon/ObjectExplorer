@@ -8,14 +8,26 @@ Object Explorer is a native Windows GUI tool (C++20, WTL/ATL) for exploring kern
 
 ## Build
 
-Visual Studio solution `ObjectExplorer.sln` (toolset v145). Configurations: `Debug`, `Release`, `ReleaseSigned`; platforms `x64` (primary) and `Win32`. There are no tests or linters.
+Visual Studio solution `ObjectExplorer.sln` (toolset v145). Configurations: `Debug`, `Release`, `ReleaseSigned`; platform `x64` (the solution's ARM64 configurations build the x64 projects). There are no linters.
 
 ```
 git submodule update --init --recursive    # WTLHelper and WinSys are submodules
 msbuild ObjectExplorer.sln /p:Configuration=Debug /p:Platform=x64
+x64\Debug\ObjExpTests.exe                  # run the tests
+x64\Debug\ObjExpTests.exe "[ProcessHelper]"  # tests with a tag; or a test case name
 ```
 
-Output goes to `x64\<Configuration>\ObjExp.exe`. Run from a Developer Command Prompt (msbuild must be on PATH).
+Output goes to `x64\<Configuration>\`. Run from a Developer Command Prompt (msbuild must be on PATH).
+
+## Tests
+
+`ObjExpTests` is a Catch2 (v3) console project for code without UI. Catch2 comes from vcpkg (`x64-windows-static`, via the user-wide vcpkg MSBuild integration); the project has its own `main` since vcpkg doesn't link `Catch2Main` automatically.
+- It compiles the ObjExp sources under test directly (`ProcessHelper`, `AccessMaskDecoder`, `ObjectManager`, `DriverHelper`, `NtDll`) and references WTLHelper; add a source there when testing more ObjExp code.
+- It builds with exceptions (`_HAS_EXCEPTIONS=1`), which ObjExp's `pch.h` allows to override; ObjExp itself builds without them.
+- It's built only in the solution's `Debug|x64` and `Release|x64` configurations.
+- Tests run against the live system (handle list, object namespace, processes); they use objects the test process creates where possible, and don't need elevation.
+- UI classes aren't testable as is; logic worth testing is moved out of them (e.g. `SearchMatcher`, used by the Find view).
+- The `[symbols]` tests load the kernel's PDB through DIA: a post-build step copies `msdia140.dll` (VS DIA SDK) and `symsrv.dll` (Windows SDK debuggers) to the output folder, and `_NT_SYMBOL_PATH` must be set. They skip otherwise.
 
 Solution projects:
 - `ObjExp` — the application.

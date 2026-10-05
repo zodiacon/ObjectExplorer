@@ -236,6 +236,9 @@
     <ClInclude Include="SearchView.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="SearchMatcher.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="SingleInstance.h">
       <Filter>Helpers</Filter>
     </ClInclude>

@@ -10,7 +10,10 @@
 #define _WIN32_WINNT	0x0601
 #define _WIN32_IE	0x0700
 #define _RICHEDIT_VER	0x0500
+// the tests (ObjExpTests) build with exceptions, which Catch2 needs
+#ifndef _HAS_EXCEPTIONS
 #define _HAS_EXCEPTIONS 0
+#endif
 #define NOMINMAX
 
 #include <atlbase.h>

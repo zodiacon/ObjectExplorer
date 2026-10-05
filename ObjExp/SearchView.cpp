@@ -9,8 +9,7 @@
 #include "ClipboardHelper.h"
 
 CSearchView::CSearchView(IMainFrame* frame, PCWSTR text, bool matchCase)
-	: CViewBase(frame), m_Text(text), m_LowerText(text), m_MatchCase(matchCase) {
-	m_LowerText.MakeLower();
+	: CViewBase(frame), m_Text(text), m_Matcher(text, matchCase) {
 }
 
 CString CSearchView::GetTitle() const {
@@ -42,19 +41,12 @@ void CSearchView::StartSearch() {
 	UpdateStatusText();
 }
 
-bool CSearchView::Matches(CString const& name) const {
-	if (m_MatchCase)
-		return name.Find(m_Text) >= 0;
-	CString lower(name);
-	return lower.MakeLower().Find(m_LowerText) >= 0;
-}
-
 void CSearchView::SearchDirectory(CString const& path, std::vector<std::shared_ptr<Result>>& results) const {
 	for (auto const& item : ObjectManager::EnumDirectoryObjects(path)) {
 		if (m_Cancel)
 			return;
 		auto fullName = (path == L"\\" ? path : path + L"\\") + item.Name.c_str();
-		if (Matches(fullName)) {
+		if (m_Matcher.Matches(fullName)) {
 			auto r = std::make_shared<Result>();
 			r->Type = item.TypeName.c_str();
 			r->Name = fullName;
@@ -102,7 +94,7 @@ void CSearchView::Search() {
 		if (!ObjectHelpers::IsNamedObjectType(hi->ObjectTypeIndex))
 			continue;
 		auto name = ObjectManager::GetObjectName((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId, hi->ObjectTypeIndex, hi->Object);
-		if (name.IsEmpty() || !Matches(name))
+		if (name.IsEmpty() || !m_Matcher.Matches(name))
 			continue;
 
 		auto r = std::make_shared<Result>();

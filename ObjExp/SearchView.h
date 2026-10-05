@@ -4,6 +4,7 @@
 #include "ViewBase.h"
 #include "VirtualListView.h"
 #include <mutex>
+#include "SearchMatcher.h"
 
 //
 // results of searching the names of all handles and of the objects in the object manager namespace
@@ -57,7 +58,6 @@ private:
 	void StartSearch();
 	void Search();	// worker thread
 	void SearchDirectory(CString const& path, std::vector<std::shared_ptr<Result>>& results) const;
-	bool Matches(CString const& name) const;
 	void ShowProperties(int row) const;
 	void UpdateStatusText() const;
 
@@ -69,8 +69,8 @@ private:
 	LRESULT OnViewRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
-	CString m_Text, m_LowerText;
-	bool m_MatchCase;
+	CString m_Text;
+	SearchMatcher m_Matcher;
 	// shared_ptr so the selection can follow the items when they're re-sorted (SortPreservingSelection)
 	std::vector<std::shared_ptr<Result>> m_Results;
 
