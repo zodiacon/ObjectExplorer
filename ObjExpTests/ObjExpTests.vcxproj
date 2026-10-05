@@ -84,6 +84,7 @@ exit /b 0</Command>
   <ItemGroup>
     <!-- the code under test -->
     <ClCompile Include="..\ObjExp\AccessMaskDecoder.cpp" />
+    <ClCompile Include="..\ObjExp\AppSettings.cpp" />
     <ClCompile Include="..\ObjExp\DbgDriver.cpp" />
     <ClCompile Include="..\ObjExp\DriverHelper.cpp" />
     <ClCompile Include="..\ObjExp\NtDll.cpp" />
@@ -97,6 +98,7 @@ exit /b 0</Command>
     <ClCompile Include="ProcessHelperTests.cpp" />
     <ClCompile Include="SearchMatcherTests.cpp" />
     <ClCompile Include="SortedFilteredVectorTests.cpp" />
+    <ClCompile Include="SymbolPathTests.cpp" />
     <ClCompile Include="TestGlobals.cpp" />
   </ItemGroup>
   <ItemGroup>

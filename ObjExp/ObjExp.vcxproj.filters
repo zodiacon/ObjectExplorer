@@ -96,6 +96,9 @@
     <ClCompile Include="ZombieProcessesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
+    <ClCompile Include="SymbolSettingsDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="ListLayout.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
@@ -220,6 +223,9 @@
     </ClInclude>
     <ClInclude Include="ZombieProcessesView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolSettingsDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="ListLayout.h">
       <Filter>Helpers</Filter>

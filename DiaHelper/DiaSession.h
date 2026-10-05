@@ -14,6 +14,9 @@ public:
 	std::wstring LastError() const;
 	operator bool() const;
 
+	// where OpenImage looks for the PDB (DIA's search path syntax, e.g. "c:\pdbs;srv*c:\cache*https://..."); empty: DIA's defaults
+	void SetSymbolPath(PCWSTR path);
+
 	DiaSymbol GlobalScope() const;
 	std::vector<DiaSymbol> FindChildren(DiaSymbol const& parent, PCWSTR name = nullptr, SymbolTag tag = SymbolTag::Null, CompareOptions options = CompareOptions::None) const;
 	// global scope
@@ -25,5 +28,6 @@ private:
 private:
 	CComPtr<IDiaSession> m_spSession;
 	CComPtr<IDiaDataSource> m_spSource;
+	std::wstring m_SymbolPath;
 };
 

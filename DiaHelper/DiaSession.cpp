@@ -6,6 +6,10 @@
 
 HMODULE g_hDiaDll;
 
+void DiaSession::SetSymbolPath(PCWSTR path) {
+	m_SymbolPath = path ? path : L"";
+}
+
 bool DiaSession::OpenImage(PCWSTR path) {
 	return OpenCommon(path, true);
 }
@@ -91,7 +95,7 @@ bool DiaSession::OpenCommon(PCWSTR path, bool image) {
 	if (FAILED(hr))
 		return false;
 	if (image)
-		hr = spSource->loadDataForExe(path, nullptr, nullptr);
+		hr = spSource->loadDataForExe(path, m_SymbolPath.empty() ? nullptr : m_SymbolPath.c_str(), nullptr);
 	else
 		hr = spSource->loadDataFromPdb(path);
 	if (FAILED(hr))

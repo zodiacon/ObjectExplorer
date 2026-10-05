@@ -163,6 +163,16 @@
 #define ID_TAB_CLOSEOTHERS              32825
 #define ID_TAB_DUPLICATE                32826
 #define ID_TAB_REFRESH                  32827
+#define ID_OPTIONS_SYMBOLS              32828
+#define IDD_SYMBOLS                     288
+#define IDC_SYM_USE_SERVER              1036
+#define IDC_SYM_SERVER_URL              1037
+#define IDC_SYM_CACHE                   1038
+#define IDC_SYM_BROWSE                  1039
+#define IDC_SYM_EXTRA                   1040
+#define IDC_SYM_USE_ENV                 1041
+#define IDC_SYM_PREVIEW                 1042
+#define IDC_SYM_DEFAULTS                1043
 #define IDD_FIND                        287
 #define IDC_MATCHCASE                   1035
 
@@ -170,9 +180,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        288
-#define _APS_NEXT_COMMAND_VALUE         32828
-#define _APS_NEXT_CONTROL_VALUE         1036
+#define _APS_NEXT_RESOURCE_VALUE        289
+#define _APS_NEXT_COMMAND_VALUE         32829
+#define _APS_NEXT_CONTROL_VALUE         1044
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

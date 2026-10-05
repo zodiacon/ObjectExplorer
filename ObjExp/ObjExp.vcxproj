@@ -366,6 +366,7 @@
     <ClCompile Include="SymbolToTreeView.cpp" />
     <ClCompile Include="ViewFactory.cpp" />
     <ClCompile Include="ZombieProcessesView.cpp" />
+    <ClCompile Include="SymbolSettingsDlg.cpp" />
     <ClCompile Include="ListLayout.cpp" />
     <ClCompile Include="FindDlg.cpp" />
     <ClCompile Include="PipesView.cpp" />
@@ -409,6 +410,7 @@
     <ClInclude Include="ViewBase.h" />
     <ClInclude Include="ViewFactory.h" />
     <ClInclude Include="ZombieProcessesView.h" />
+    <ClInclude Include="SymbolSettingsDlg.h" />
     <ClInclude Include="ListLayout.h" />
     <ClInclude Include="FindDlg.h" />
     <ClInclude Include="PipesView.h" />

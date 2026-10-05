@@ -13,6 +13,8 @@
 #include "AppSettings.h"
 #include "SingleInstance.h"
 #include "FindDlg.h"
+#include "SymbolSettingsDlg.h"
+#include "SymbolManager.h"
 #include <thread>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
@@ -369,6 +371,13 @@ LRESULT CMainFrame::OnRestoreTabs(UINT, WPARAM, LPARAM, BOOL&) {
 	else if (active >= 0) {
 		m_view.SetActivePage(active);
 	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnSymbolSettings(WORD, WORD, HWND, BOOL&) {
+	CSymbolSettingsDlg dlg;
+	if (dlg.DoModal(m_hWnd) == IDOK)
+		SymbolManager::Invalidate();
 	return 0;
 }
 

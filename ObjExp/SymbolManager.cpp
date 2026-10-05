@@ -1,10 +1,19 @@
 #include "pch.h"
 #include "SymbolManager.h"
 #include "DbgDriver.h"
+#include "AppSettings.h"
 
 SymbolManager& SymbolManager::Get() {
 	static SymbolManager sm;
+	if (s_Stale) {
+		CWaitCursor wait;
+		sm.Reload();
+	}
 	return sm;
+}
+
+void SymbolManager::Invalidate() {
+	s_Stale = true;
 }
 
 SymbolManager::operator bool() const {
@@ -20,10 +29,17 @@ const DiaSymbol SymbolManager::GetSymbol(PCWSTR name) const {
 }
 
 SymbolManager::SymbolManager() {
+	Reload();
+}
+
+bool SymbolManager::Reload() {
+	s_Stale = false;
+	m_session.Close();
+	m_session.SetSymbolPath(AppSettings::Get().BuildSymbolSearchPath().c_str());
 	WCHAR path[MAX_PATH];
 	::GetSystemDirectory(path, _countof(path));
 	wcscat_s(path, L"\\ntoskrnl.exe");
-	m_session.OpenImage(path);
+	return m_session.OpenImage(path);
 }
 
 std::wstring SymbolManager::ReadUnicodeString(PVOID address) {
