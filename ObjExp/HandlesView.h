@@ -56,6 +56,7 @@ private:
 	void DoTimerWorkAsync();
 	void ResolveProcessNames();
 	void ResolveObjectNames();
+	void ResolveMoreInfo();
 	void ApplyFilter();
 
 	// Handler prototypes (uncomment arguments if needed):
@@ -79,6 +80,8 @@ private:
 		CString Type;
 		DWORD64 TargetTime;
 		bool NameChecked{ false };
+		CString MoreInfo;
+		bool MoreInfoChecked{ false };
 		// written by the update worker while the list is painted
 		std::atomic<bool> NewHandle{ false };
 		std::atomic<bool> ClosedHandle{ false };
@@ -86,8 +89,10 @@ private:
 
 	enum class ColumnType {
 		None,
-		Type, Handle, Name, Address, Attributes, Access, DecodedAccess, ProcessName, PID,
+		Type, Handle, Name, Address, Attributes, Access, DecodedAccess, ProcessName, PID, MoreInfo,
 	};
+
+	CString const& GetMoreInfo(HandleInfoEx& hi) const;
 
 	CListViewCtrl m_List;
 	CQuickFindEdit m_QuickFind;

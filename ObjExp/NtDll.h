@@ -286,6 +286,9 @@ typedef struct _PROCESS_BASIC_INFORMATION {
 #define OBJ_IGNORE_IMPERSONATED_DEVICEMAP   0x00000800L
 #define OBJ_DONT_REPARSE                    0x00001000L
 
+#define FILE_SYNCHRONOUS_IO_ALERT           0x00000010
+#define FILE_SYNCHRONOUS_IO_NONALERT        0x00000020
+
 extern "C" {
 	namespace NT {
 		typedef struct _OBJECT_DIRECTORY_INFORMATION {
@@ -801,6 +804,69 @@ extern "C" {
 			_In_ ULONG HandleAttributes,
 			_In_ ULONG Flags,
 			_Out_ PHANDLE NewThreadHandle);
+
+		typedef enum _FILE_INFORMATION_CLASS {
+			FileBasicInformation = 4, // q: FILE_BASIC_INFORMATION
+			FileStandardInformation = 5, // q: FILE_STANDARD_INFORMATION
+			FileModeInformation = 16, // q: FILE_MODE_INFORMATION
+			FilePipeLocalInformation = 24, // q: FILE_PIPE_LOCAL_INFORMATION
+		} FILE_INFORMATION_CLASS;
+
+		typedef struct _FILE_BASIC_INFORMATION {
+			LARGE_INTEGER CreationTime;
+			LARGE_INTEGER LastAccessTime;
+			LARGE_INTEGER LastWriteTime;
+			LARGE_INTEGER ChangeTime;
+			ULONG FileAttributes;
+		} FILE_BASIC_INFORMATION, * PFILE_BASIC_INFORMATION;
+
+		typedef struct _FILE_STANDARD_INFORMATION {
+			LARGE_INTEGER AllocationSize;
+			LARGE_INTEGER EndOfFile;
+			ULONG NumberOfLinks;
+			BOOLEAN DeletePending;
+			BOOLEAN Directory;
+		} FILE_STANDARD_INFORMATION, * PFILE_STANDARD_INFORMATION;
+
+		typedef struct _FILE_MODE_INFORMATION {
+			ULONG Mode;
+		} FILE_MODE_INFORMATION, * PFILE_MODE_INFORMATION;
+
+		typedef struct _FILE_PIPE_LOCAL_INFORMATION {
+			ULONG NamedPipeType;
+			ULONG NamedPipeConfiguration;
+			ULONG MaximumInstances;
+			ULONG CurrentInstances;
+			ULONG InboundQuota;
+			ULONG ReadDataAvailable;
+			ULONG OutboundQuota;
+			ULONG WriteQuotaAvailable;
+			ULONG NamedPipeState;
+			ULONG NamedPipeEnd;
+		} FILE_PIPE_LOCAL_INFORMATION, * PFILE_PIPE_LOCAL_INFORMATION;
+
+		typedef enum _FSINFOCLASS {
+			FileFsDeviceInformation = 4, // q: FILE_FS_DEVICE_INFORMATION
+		} FS_INFORMATION_CLASS;
+
+		typedef struct _FILE_FS_DEVICE_INFORMATION {
+			ULONG DeviceType;
+			ULONG Characteristics;
+		} FILE_FS_DEVICE_INFORMATION, * PFILE_FS_DEVICE_INFORMATION;
+
+		NTSTATUS NTAPI NtQueryInformationFile(
+			_In_ HANDLE FileHandle,
+			_Out_ PIO_STATUS_BLOCK IoStatusBlock,
+			_Out_writes_bytes_(Length) PVOID FileInformation,
+			_In_ ULONG Length,
+			_In_ FILE_INFORMATION_CLASS FileInformationClass);
+
+		NTSTATUS NTAPI NtQueryVolumeInformationFile(
+			_In_ HANDLE FileHandle,
+			_Out_ PIO_STATUS_BLOCK IoStatusBlock,
+			_Out_writes_bytes_(Length) PVOID FsInformation,
+			_In_ ULONG Length,
+			_In_ FS_INFORMATION_CLASS FsInformationClass);
 
 		NTSTATUS NTAPI NtQueryInformationThread(
 			_In_ HANDLE ThreadHandle,

@@ -87,13 +87,17 @@ exit /b 0</Command>
     <ClCompile Include="..\ObjExp\AppSettings.cpp" />
     <ClCompile Include="..\ObjExp\DbgDriver.cpp" />
     <ClCompile Include="..\ObjExp\DriverHelper.cpp" />
+    <ClCompile Include="..\ObjExp\FileQuery.cpp" />
     <ClCompile Include="..\ObjExp\NtDll.cpp" />
+    <ClCompile Include="..\ObjExp\ObjectDetails.cpp" />
     <ClCompile Include="..\ObjExp\ObjectManager.cpp" />
     <ClCompile Include="..\ObjExp\ProcessHelper.cpp" />
+    <ClCompile Include="..\ObjExp\StringHelper.cpp" />
     <ClCompile Include="..\ObjExp\SymbolManager.cpp" />
     <!-- the tests -->
     <ClCompile Include="AccessMaskDecoderTests.cpp" />
     <ClCompile Include="KernelTypesTests.cpp" />
+    <ClCompile Include="ObjectDetailsTests.cpp" />
     <ClCompile Include="ObjectManagerTests.cpp" />
     <ClCompile Include="ProcessHelperTests.cpp" />
     <ClCompile Include="SearchMatcherTests.cpp" />

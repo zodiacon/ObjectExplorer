@@ -9,6 +9,7 @@
 #include "StringHelper.h"
 #include "AccessMaskDecoder.h"
 #include "ViewFactory.h"
+#include "ObjectDetails.h"
 
 CHandlesView::CHandlesView(IMainFrame* frame, DWORD pid, PCWSTR type)
 	: CViewBase(frame), m_Tracker(type, m_Pid = pid), m_TypeName(type) {
@@ -78,6 +79,24 @@ void CHandlesView::ResolveObjectNames() {
 	m_UpdateObjectNames = true;
 }
 
+// not marked as done: handles added by updates are resolved when sorted again
+void CHandlesView::ResolveMoreInfo() {
+	CWaitCursor wait;
+	for (auto& hi : m_Handles)
+		GetMoreInfo(*hi);
+}
+
+//
+// computed when first needed, as it requires duplicating the handle; the object's state may change after that
+//
+CString const& CHandlesView::GetMoreInfo(HandleInfoEx& hi) const {
+	if (!hi.MoreInfoChecked) {
+		hi.MoreInfo = ObjectDetails::GetDetails((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId, hi.Type, hi.Object);
+		hi.MoreInfoChecked = true;
+	}
+	return hi.MoreInfo;
+}
+
 void CHandlesView::ApplyFilter() {
 	CString text;
 	m_QuickFind.GetWindowText(text);
@@ -124,6 +143,8 @@ void CHandlesView::DoSort(SortInfo const* si) {
 		ResolveProcessNames();
 	else if (col == ColumnType::Name)
 		ResolveObjectNames();
+	else if (col == ColumnType::MoreInfo)
+		ResolveMoreInfo();
 	auto asc = si->SortAscending;
 	auto compare = [&](auto const& h1, auto const& h2) {
 		switch (col) {
@@ -134,6 +155,7 @@ void CHandlesView::DoSort(SortInfo const* si) {
 			case ColumnType::Handle: return SortHelper::Sort(h1->HandleValue, h2->HandleValue, asc);
 			case ColumnType::Attributes: return SortHelper::Sort(h1->HandleAttributes, h2->HandleAttributes, asc);
 			case ColumnType::PID: return SortHelper::Sort(h1->ProcessId, h2->ProcessId, asc);
+			case ColumnType::MoreInfo: return SortHelper::Sort(h1->MoreInfo, h2->MoreInfo, asc);
 			case ColumnType::Access:
 			case ColumnType::DecodedAccess:
 				return SortHelper::Sort(h1->GrantedAccess, h2->GrantedAccess, asc);
@@ -164,6 +186,7 @@ CString CHandlesView::GetColumnText(HWND h, int row, int col) const {
 		case ColumnType::PID: return std::to_wstring(hi->ProcessId).c_str();
 		case ColumnType::Attributes: return StringHelper::HandleAttributesToString(hi->HandleAttributes);
 		case ColumnType::DecodedAccess: return AccessMaskDecoder::DecodeAccessMask(hi->Type, hi->GrantedAccess);
+		case ColumnType::MoreInfo: return GetMoreInfo(*hi);
 
 	}
 	ATLASSERT(false);
@@ -360,6 +383,7 @@ LRESULT CHandlesView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 		cm->AddColumn(L"PID", LVCFMT_RIGHT, 80, ColumnType::PID);
 	}
 	cm->AddColumn(L"Decoded Access", LVCFMT_LEFT, 350, ColumnType::DecodedAccess);
+	cm->AddColumn(L"More Info", LVCFMT_LEFT, 450, ColumnType::MoreInfo);
 
 	cm->UpdateColumns();
 	CreateQuickFind(m_QuickFind);

@@ -84,6 +84,12 @@
     <ClCompile Include="ProcessHelper.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectDetails.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="FileQuery.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
     <ClCompile Include="HandlesView.cpp">
       <Filter>Views</Filter>
     </ClCompile>
@@ -204,6 +210,12 @@
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="ProcessHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectDetails.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="FileQuery.h">
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
