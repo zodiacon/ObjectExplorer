@@ -23,7 +23,7 @@ LRESULT CObjectTypePage::OnRefresh(WORD, WORD, HWND, BOOL&) {
 void CObjectTypePage::Refresh() {
 	m_List.SetRedraw(FALSE);
 	m_List.DeleteAllItems();
-	auto props = TypeProperties::GetProperties(m_hObject, m_TypeName);
+	auto props = TypeProperties::GetProperties(m_hObject, m_TypeName, m_Pid);
 	if (props.empty())
 		props.push_back({ L"Error", L"Insufficient access to query the object" });
 	int i = 0;

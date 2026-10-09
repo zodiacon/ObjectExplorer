@@ -16,7 +16,7 @@
 #include "SecurityInfo.h"
 #include <WTLHelper.h>
 
-UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target, DWORD handleCount) {
+UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target, DWORD handleCount, DWORD pid) {
 	CString title = typeName;
 	if (name && name[0])
 		title += L" (" + CString(name) + L")";
@@ -25,7 +25,7 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 	page1.Create(::GetActiveWindow());
 	handleCount = page1.GetHandleCount();
 	dlg.AddPage(L"General", page1, CObjectPropertiesDlg::GeneralImage);
-	CObjectTypePage typePage(hObject, typeName);
+	CObjectTypePage typePage(hObject, typeName, pid);
 	if (hObject && TypeProperties::HasProperties(typeName)) {
 		typePage.Create(::GetActiveWindow());
 		dlg.AddPage(TypeProperties::GetPageTitle(typeName), typePage, CObjectPropertiesDlg::TypeImage);

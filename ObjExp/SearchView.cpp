@@ -216,7 +216,7 @@ void CSearchView::ShowProperties(int row) const {
 	}
 	auto hObject = ObjectManager::DupHandle(ULongToHandle(r->HandleValue), r->ProcessId);
 	if (hObject) {
-		ObjectHelpers::ShowObjectProperties(hObject, r->Type, r->Name);
+		ObjectHelpers::ShowObjectProperties(hObject, r->Type, r->Name, nullptr, 0, r->ProcessId);
 		::CloseHandle(hObject);
 		return;
 	}

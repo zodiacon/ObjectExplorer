@@ -207,7 +207,7 @@ void CObjectsView::ShowObjectProperties(int row) const {
 	auto& hi = obj->FirstHandle;
 	auto hObject = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)hi.HandleValue, hi.ProcessId);
 	if (hObject) {
-		ObjectHelpers::ShowObjectProperties(hObject, obj->Type, obj->Name.c_str());
+		ObjectHelpers::ShowObjectProperties(hObject, obj->Type, obj->Name.c_str(), nullptr, 0, hi.ProcessId);
 		::CloseHandle(hObject);
 		return;
 	}

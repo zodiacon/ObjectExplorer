@@ -14,7 +14,8 @@ class CObjectTypePage :
 public:
 	enum { IDD = IDD_TYPEINFO };
 
-	CObjectTypePage(HANDLE hObject, PCWSTR typeName) : m_hObject(hObject), m_TypeName(typeName) {}
+	// pid: the process the handle was duplicated from, if any
+	CObjectTypePage(HANDLE hObject, PCWSTR typeName, DWORD pid = 0) : m_hObject(hObject), m_TypeName(typeName), m_Pid(pid) {}
 
 	BEGIN_MSG_MAP(CObjectTypePage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -31,4 +32,5 @@ private:
 	CListViewCtrl m_List;
 	HANDLE m_hObject;
 	CString m_TypeName;
+	DWORD m_Pid;
 };

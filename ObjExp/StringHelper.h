@@ -14,5 +14,10 @@ struct StringHelper final {
 	static CString IntegrityLevelToString(DWORD rid);
 	// an IMAGE_FILE_MACHINE_* value
 	static CString MachineToString(USHORT machine);
+	// a FILE_DEVICE_* value; nullptr if unknown
+	static PCWSTR DeviceTypeToString(ULONG type);
+	static CString FileAttributesToString(ULONG attributes);
+	// a FILE_PIPE_*_STATE value; nullptr if unknown
+	static PCWSTR PipeStateToString(ULONG state);
 };
 

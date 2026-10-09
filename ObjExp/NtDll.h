@@ -21,6 +21,10 @@
 #define TIMER_QUERY_STATE               (0x0001)
 #endif
 
+// KEY_FLAGS_INFORMATION KeyFlags
+#define REG_FLAG_VOLATILE               0x0001
+#define REG_FLAG_LINK                   0x0002
+
 typedef _Return_type_success_(return >= 0) LONG NTSTATUS;
 
 #ifndef NT_SUCCESS
@@ -299,6 +303,11 @@ typedef struct _PROCESS_BASIC_INFORMATION {
 #define FILE_SYNCHRONOUS_IO_ALERT           0x00000010
 #define FILE_SYNCHRONOUS_IO_NONALERT        0x00000020
 
+// FILE_FS_DEVICE_INFORMATION Characteristics
+#ifndef FILE_REMOTE_DEVICE
+#define FILE_REMOTE_DEVICE                  0x00000010
+#endif
+
 extern "C" {
 	namespace NT {
 		typedef struct _OBJECT_DIRECTORY_INFORMATION {
@@ -537,6 +546,48 @@ extern "C" {
 			PortDumpInformation
 		} PORT_INFORMATION_CLASS;
 
+		typedef enum _ALPC_PORT_INFORMATION_CLASS {
+			AlpcBasicInformation, // q: ALPC_BASIC_INFORMATION
+			AlpcPortInformation, // s: ALPC_PORT_ATTRIBUTES
+			AlpcAssociateCompletionPortInformation,
+			AlpcConnectedSIDInformation,
+			AlpcServerInformation, // q: ALPC_SERVER_INFORMATION
+			AlpcMessageZoneInformation,
+			AlpcRegisterCompletionListInformation,
+			AlpcUnregisterCompletionListInformation,
+			AlpcAdjustCompletionListConcurrencyCountInformation,
+			AlpcRegisterCallbackInformation,
+			AlpcCompletionListRundownInformation,
+			AlpcWaitForPortReferences,
+			AlpcServerSessionInformation, // q: ALPC_SERVER_SESSION_INFORMATION // since 19H2
+		} ALPC_PORT_INFORMATION_CLASS;
+
+		typedef struct _ALPC_BASIC_INFORMATION {
+			ULONG Flags;
+			ULONG SequenceNo;
+			PVOID PortContext;
+		} ALPC_BASIC_INFORMATION, * PALPC_BASIC_INFORMATION;
+
+		typedef struct _ALPC_SERVER_SESSION_INFORMATION {
+			ULONG SessionId;
+			ULONG ProcessId;
+		} ALPC_SERVER_SESSION_INFORMATION, * PALPC_SERVER_SESSION_INFORMATION;
+
+		typedef struct _ALPC_PORT_ATTRIBUTES {
+			ULONG Flags;
+			SECURITY_QUALITY_OF_SERVICE SecurityQos;
+			SIZE_T MaxMessageLength;
+			SIZE_T MemoryBandwidth;
+			SIZE_T MaxPoolUsage;
+			SIZE_T MaxSectionSize;
+			SIZE_T MaxViewSize;
+			SIZE_T MaxTotalSectionSize;
+			ULONG DupObjectTypes;
+#ifdef _WIN64
+			ULONG Reserved;
+#endif
+		} ALPC_PORT_ATTRIBUTES, * PALPC_PORT_ATTRIBUTES;
+
 		typedef enum _SECTION_INFORMATION_CLASS {
 			SectionBasicInformation, // q; SECTION_BASIC_INFORMATION
 			SectionImageInformation, // q; SECTION_IMAGE_INFORMATION
@@ -565,6 +616,21 @@ extern "C" {
 			KeyLayerInformation, // KEY_LAYER_INFORMATION
 			MaxKeyInfoClass
 		} KEY_INFORMATION_CLASS;
+
+		typedef struct _KEY_FLAGS_INFORMATION {
+			ULONG Wow64Flags;
+			ULONG KeyFlags; // REG_FLAG_*
+			ULONG ControlFlags; // REG_KEY_*
+		} KEY_FLAGS_INFORMATION, * PKEY_FLAGS_INFORMATION;
+
+		typedef struct _KEY_VIRTUALIZATION_INFORMATION {
+			ULONG VirtualizationCandidate : 1; // Tells whether the key is part of the virtualization namespace scope (only HKLM\Software for now).
+			ULONG VirtualizationEnabled : 1; // Tells whether virtualization is enabled on this key. Can be 1 only if above flag is 1.
+			ULONG VirtualTarget : 1; // Tells if the key is a virtual key. Can be 1 only if above 2 are 0. Valid only on the virtual store key handles.
+			ULONG VirtualStore : 1; // Tells if the key is a part of the virtual store path. Valid only on the virtual store key handles.
+			ULONG VirtualSource : 1; // Tells if the key has ever been virtualized, can be 1 only if VirtualizationCandidate is 1.
+			ULONG Reserved : 27;
+		} KEY_VIRTUALIZATION_INFORMATION, * PKEY_VIRTUALIZATION_INFORMATION;
 
 		typedef struct _KEY_BASIC_INFORMATION {
 			LARGE_INTEGER LastWriteTime;
@@ -818,6 +884,8 @@ extern "C" {
 		typedef enum _FILE_INFORMATION_CLASS {
 			FileBasicInformation = 4, // q: FILE_BASIC_INFORMATION
 			FileStandardInformation = 5, // q: FILE_STANDARD_INFORMATION
+			FileInternalInformation = 6, // q: FILE_INTERNAL_INFORMATION
+			FilePositionInformation = 14, // q: FILE_POSITION_INFORMATION
 			FileModeInformation = 16, // q: FILE_MODE_INFORMATION
 			FilePipeLocalInformation = 24, // q: FILE_PIPE_LOCAL_INFORMATION
 		} FILE_INFORMATION_CLASS;
@@ -837,6 +905,14 @@ extern "C" {
 			BOOLEAN DeletePending;
 			BOOLEAN Directory;
 		} FILE_STANDARD_INFORMATION, * PFILE_STANDARD_INFORMATION;
+
+		typedef struct _FILE_INTERNAL_INFORMATION {
+			LARGE_INTEGER IndexNumber;
+		} FILE_INTERNAL_INFORMATION, * PFILE_INTERNAL_INFORMATION;
+
+		typedef struct _FILE_POSITION_INFORMATION {
+			LARGE_INTEGER CurrentByteOffset;
+		} FILE_POSITION_INFORMATION, * PFILE_POSITION_INFORMATION;
 
 		typedef struct _FILE_MODE_INFORMATION {
 			ULONG Mode;
@@ -883,6 +959,18 @@ extern "C" {
 			_In_ THREADINFOCLASS ThreadInformationClass,
 			_Out_writes_bytes_(ThreadInformationLength) PVOID ThreadInformation,
 			_In_ ULONG ThreadInformationLength,
+			_Out_opt_ PULONG ReturnLength);
+
+		NTSTATUS NTAPI NtAlpcCreatePort(
+			_Out_ PHANDLE PortHandle,
+			_In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
+			_In_opt_ PALPC_PORT_ATTRIBUTES PortAttributes);
+
+		NTSTATUS NTAPI NtAlpcQueryInformation(
+			_In_opt_ HANDLE PortHandle,
+			_In_ ALPC_PORT_INFORMATION_CLASS PortInformationClass,
+			_Inout_updates_bytes_to_(Length, *ReturnLength) PVOID PortInformation,
+			_In_ ULONG Length,
 			_Out_opt_ PULONG ReturnLength);
 
 	}

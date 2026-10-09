@@ -458,7 +458,7 @@ STYLE DS_SETFONT | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "Tahoma", 400, 0, 0x0
 BEGIN
     PUSHBUTTON      "Refresh",IDC_REFRESH,7,7,60,14
-    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,26,257,147
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,26,257,147
 END
 
 IDD_STRUCT DIALOGEX 0, 0, 271, 180
@@ -574,8 +574,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,0
- PRODUCTVERSION 2,3,0,0
+ FILEVERSION 2,5,0,0
+ PRODUCTVERSION 2,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -592,12 +592,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Scorpio Software"
             VALUE "FileDescription", "Kernel Objects Explorer"
-            VALUE "FileVersion", "2.3.0.0"
+            VALUE "FileVersion", "2.5.0.0"
             VALUE "InternalName", "ObjExp"
             VALUE "LegalCopyright", "©2021-2026 Pavel Yosifovich"
             VALUE "OriginalFilename", "ObjExp.exe"
             VALUE "ProductName", "Object Explorer"
-            VALUE "ProductVersion", "2.3"
+            VALUE "ProductVersion", "2.5.0.0"
         END
     END
     BLOCK "VarFileInfo"

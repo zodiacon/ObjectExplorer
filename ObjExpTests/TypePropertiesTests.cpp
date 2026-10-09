@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "TypeProperties.h"
 #include "ProcessHelper.h"
+#include "NtDll.h"
 #include <thread>
 #include <atomic>
 
@@ -11,6 +12,14 @@ namespace {
 			if (prop.Name == name)
 				return prop.Value;
 		return L"<missing>";
+	}
+
+	// for INFO
+	std::string Dump(std::vector<TypeProperties::Property> const& props) {
+		std::string text;
+		for (auto& [name, value] : props)
+			text += std::string(CW2A(name)) + " = " + std::string(CW2A(value)) + "\n";
+		return text;
 	}
 }
 
@@ -242,4 +251,224 @@ TEST_CASE("Job properties", "[TypeProperties]") {
 	CHECK(GetValue(props, L"Limits") == L"Active Processes, Kill on Job Close");
 	CHECK(GetValue(props, L"Active Process Limit") == L"5");
 	CHECK(GetValue(props, L"Job Memory Limit") == L"<missing>");
+}
+
+TEST_CASE("Window station properties", "[TypeProperties]") {
+	auto hWinSta = ::GetProcessWindowStation();	// not to be closed
+	REQUIRE(hWinSta);
+	WCHAR name[256];
+	DWORD len;
+	REQUIRE(::GetUserObjectInformation(hWinSta, UOI_NAME, name, sizeof(name), &len));
+	auto h = ReadControlHandle(hWinSta);
+	REQUIRE(h);
+
+	SECTION("in this session") {
+		auto props = TypeProperties::GetProperties(h.get(), L"WindowStation");
+		CHECK(GetValue(props, L"Name") == name);
+		CHECK(GetValue(props, L"Interactive") != L"<missing>");
+		CHECK(GetValue(props, L"Desktops") != L"<missing>");
+		CHECK(GetValue(props, L"Note") == L"<missing>");
+	}
+
+	SECTION("duplicated from a process (here: this one)") {
+		auto props = TypeProperties::GetProperties(h.get(), L"WindowStation", ::GetCurrentProcessId());
+		CHECK(GetValue(props, L"Name") == name);
+	}
+}
+
+TEST_CASE("Desktop properties", "[TypeProperties]") {
+	auto hDesktop = ::GetThreadDesktop(::GetCurrentThreadId());	// not to be closed
+	REQUIRE(hDesktop);
+	WCHAR name[256];
+	DWORD len;
+	REQUIRE(::GetUserObjectInformation(hDesktop, UOI_NAME, name, sizeof(name), &len));
+	auto h = ReadControlHandle(hDesktop);
+	REQUIRE(h);
+
+	SECTION("in this session") {
+		auto props = TypeProperties::GetProperties(h.get(), L"Desktop");
+		CHECK(GetValue(props, L"Name") == name);
+		CHECK(GetValue(props, L"Heap Size") != L"<missing>");
+		CHECK(GetValue(props, L"Receives Input") != L"<missing>");
+	}
+
+	SECTION("from a process in another session isn't queried") {
+		// the System process is in session 0, and the tests don't run there
+		DWORD session;
+		REQUIRE(::ProcessIdToSessionId(::GetCurrentProcessId(), &session));
+		if (session == 0)
+			SKIP("running in session 0");
+		auto props = TypeProperties::GetProperties(h.get(), L"Desktop", 4);
+		CHECK(GetValue(props, L"Name") == L"<missing>");
+		// the System process can't be opened without elevation, so the session may be unknown
+		CHECK((GetValue(props, L"Session") == L"0" || GetValue(props, L"Session") == L"Unknown"));
+		CHECK(GetValue(props, L"Note") != L"<missing>");
+	}
+}
+
+TEST_CASE("Key properties", "[TypeProperties]") {
+	auto path = std::format(L"Software\\ObjExpTests-{}", ::GetCurrentProcessId());
+	wil::unique_hkey hKey;
+	REQUIRE(::RegCreateKeyEx(HKEY_CURRENT_USER, path.c_str(), 0, nullptr, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, nullptr, hKey.addressof(), nullptr) == ERROR_SUCCESS);
+	wil::unique_hkey hSubKey;
+	REQUIRE(::RegCreateKeyEx(hKey.get(), L"Sub", 0, nullptr, REG_OPTION_VOLATILE, KEY_ALL_ACCESS, nullptr, hSubKey.addressof(), nullptr) == ERROR_SUCCESS);
+	DWORD value = 42;
+	REQUIRE(::RegSetValueEx(hKey.get(), L"Answer", 0, REG_DWORD, (BYTE*)&value, sizeof(value)) == ERROR_SUCCESS);
+
+	auto h = ReadControlHandle(hKey.get());
+	REQUIRE(h);
+	auto props = TypeProperties::GetProperties(h.get(), L"Key");
+	hSubKey.reset();
+	::RegDeleteTree(hKey.get(), nullptr);
+	hKey.reset();
+	::RegDeleteKey(HKEY_CURRENT_USER, path.c_str());
+	INFO(Dump(props));
+
+	CHECK(GetValue(props, L"Subkeys") == L"1");
+	CHECK(GetValue(props, L"Values") == L"1");
+	CHECK(GetValue(props, L"Longest Subkey Name") == L"3 characters");
+	CHECK(GetValue(props, L"Longest Value Name") == L"6 characters");
+	CHECK(GetValue(props, L"Largest Value Data") == L"4 bytes (0x4)");
+	CHECK(GetValue(props, L"Last Write") != L"<missing>");
+	CHECK(GetValue(props, L"Volatile") == L"Yes");
+	CHECK(GetValue(props, L"Symbolic Link") == L"No");
+	CHECK(GetValue(props, L"Virtualization") != L"<missing>");
+}
+
+TEST_CASE("ALPC port properties", "[TypeProperties]") {
+	NT::ALPC_PORT_ATTRIBUTES attributes{};
+	attributes.Flags = 0x10000 | 0x40000;	// allow impersonation, waitable
+	attributes.MaxMessageLength = 0x1000;
+	attributes.SecurityQos.Length = sizeof(attributes.SecurityQos);
+	attributes.SecurityQos.ImpersonationLevel = SecurityImpersonation;
+	attributes.SecurityQos.ContextTrackingMode = SECURITY_DYNAMIC_TRACKING;
+	HANDLE hPort;
+	REQUIRE(NT_SUCCESS(NT::NtAlpcCreatePort(&hPort, nullptr, &attributes)));
+	wil::unique_handle port(hPort);
+
+	auto h = ReadControlHandle(port.get());
+	REQUIRE(h);
+	auto props = TypeProperties::GetProperties(h.get(), L"ALPC Port");
+	auto flags = GetValue(props, L"Flags");
+	INFO(Dump(props));
+	CHECK(Contains(flags, L"Allow Impersonation"));
+	CHECK(Contains(flags, L"Waitable"));
+	CHECK(GetValue(props, L"Sequence Number") != L"<missing>");
+	// a connection port's server is the process that created it
+	auto pid = ::GetCurrentProcessId();
+	CHECK(GetValue(props, L"Server Process") == std::format(L"{} (0x{:X}) {}", pid, pid, (PCWSTR)ProcessHelper::GetProcessName(pid)).c_str());
+}
+
+TEST_CASE("Token properties", "[TypeProperties]") {
+	wil::unique_handle hToken;
+	REQUIRE(::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY | TOKEN_DUPLICATE, hToken.addressof()));
+	auto h = ReadControlHandle(hToken.get());
+	REQUIRE(h);
+	auto props = TypeProperties::GetProperties(h.get(), L"Token");
+	INFO(Dump(props));
+
+	WCHAR user[256], domain[256];
+	DWORD userSize = _countof(user), domainSize = _countof(domain);
+	BYTE buffer[256];
+	DWORD len;
+	REQUIRE(::GetTokenInformation(hToken.get(), TokenUser, buffer, sizeof(buffer), &len));
+	SID_NAME_USE use;
+	REQUIRE(::LookupAccountSid(nullptr, reinterpret_cast<TOKEN_USER*>(buffer)->User.Sid, user, &userSize, domain, &domainSize, &use));
+	CHECK(GetValue(props, L"User") == CString(domain) + L"\\" + user);
+
+	DWORD session;
+	REQUIRE(::ProcessIdToSessionId(::GetCurrentProcessId(), &session));
+	CHECK(GetValue(props, L"Session") == std::to_wstring(session).c_str());
+	CHECK(GetValue(props, L"Type") == L"Primary");
+	CHECK(GetValue(props, L"Integrity Level") != L"<missing>");
+	CHECK(GetValue(props, L"Logon Session") != L"<missing>");
+	CHECK(GetValue(props, L"AppContainer") == L"No");
+	CHECK(Contains(GetValue(props, L"Enabled Privileges"), L"SeChangeNotifyPrivilege"));
+
+	SECTION("an impersonation token") {
+		wil::unique_handle hImp;
+		REQUIRE(::DuplicateTokenEx(hToken.get(), TOKEN_QUERY, nullptr, SecurityIdentification, TokenImpersonation, hImp.addressof()));
+		auto hi = ReadControlHandle(hImp.get());
+		REQUIRE(hi);
+		CHECK(GetValue(TypeProperties::GetProperties(hi.get(), L"Token"), L"Type") == L"Impersonation (Identification)");
+	}
+}
+
+TEST_CASE("Session properties", "[TypeProperties]") {
+	DWORD session;
+	REQUIRE(::ProcessIdToSessionId(::GetCurrentProcessId(), &session));
+	auto name = std::format(L"\\KernelObjects\\Session{}", session);
+	UNICODE_STRING uname;
+	::RtlInitUnicodeString(&uname, name.c_str());
+	OBJECT_ATTRIBUTES attr;
+	InitializeObjectAttributes(&attr, &uname, 0, nullptr, nullptr);
+	HANDLE hSession;
+	NTSTATUS status = STATUS_ACCESS_DENIED;
+	for (ACCESS_MASK access : { (ACCESS_MASK)READ_CONTROL, (ACCESS_MASK)0x1 /* SESSION_QUERY_ACCESS */, (ACCESS_MASK)0 })
+		if (status = NT::NtOpenSession(&hSession, access, &attr); NT_SUCCESS(status))
+			break;
+	if (!NT_SUCCESS(status))
+		SKIP("Can't open the session object: 0x" << std::hex << status);
+	wil::unique_handle h(hSession);
+
+	auto props = TypeProperties::GetProperties(h.get(), L"Session");
+	INFO(Dump(props));
+	CHECK(GetValue(props, L"Session ID") == std::to_wstring(session).c_str());
+	CHECK(GetValue(props, L"State") != L"<missing>");
+
+	WCHAR user[256];
+	DWORD size = _countof(user);
+	REQUIRE(::GetUserName(user, &size));
+	CHECK(Contains(GetValue(props, L"User"), user));
+}
+
+TEST_CASE("File properties", "[TypeProperties]") {
+	SECTION("a disk file") {
+		WCHAR path[MAX_PATH];
+		::GetModuleFileName(nullptr, path, _countof(path));
+		wil::unique_hfile file(::CreateFile(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, 0, nullptr));
+		REQUIRE(file);
+		LARGE_INTEGER size;
+		REQUIRE(::GetFileSizeEx(file.get(), &size));
+		LARGE_INTEGER offset{ .QuadPart = 100 };
+		REQUIRE(::SetFilePointerEx(file.get(), offset, nullptr, FILE_BEGIN));
+
+		auto h = ReadControlHandle(file.get());
+		REQUIRE(h);
+		auto props = TypeProperties::GetProperties(h.get(), L"File");
+		INFO(Dump(props));
+		CHECK(GetValue(props, L"Device Type") == L"Disk");
+		CHECK(GetValue(props, L"I/O") == L"Synchronous");
+		CHECK(GetValue(props, L"Position") == L"100 (0x64)");
+		CHECK(GetValue(props, L"Directory") == L"No");
+		CHECK(GetValue(props, L"Size") == std::format(L"{} bytes (0x{:X})", size.QuadPart, size.QuadPart).c_str());
+		CHECK(GetValue(props, L"Delete Pending") == L"No");
+		CHECK(GetValue(props, L"File ID") != L"<missing>");
+		// requires FILE_READ_ATTRIBUTES, which the file is opened again for
+		CHECK(GetValue(props, L"Modified") != L"<missing>");
+		CHECK(GetValue(props, L"Attributes") != L"<missing>");
+	}
+
+	SECTION("a named pipe's server end") {
+		auto name = std::format(L"\\\\.\\pipe\\ObjExpTests-{}", ::GetCurrentProcessId());
+		wil::unique_hfile server(::CreateNamedPipe(name.c_str(), PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE,
+			3, 4096, 4096, 0, nullptr));
+		REQUIRE(server);
+		wil::unique_hfile client(::CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+		REQUIRE(client);
+
+		auto h = ReadControlHandle(server.get());
+		REQUIRE(h);
+		auto props = TypeProperties::GetProperties(h.get(), L"File");
+		INFO(Dump(props));
+		CHECK(GetValue(props, L"Device Type") == L"Named Pipe");
+		CHECK(GetValue(props, L"I/O") == L"Asynchronous");
+		// requires FILE_READ_ATTRIBUTES; pipes aren't opened again, so only with the handle's own access
+		props = TypeProperties::GetProperties(server.get(), L"File");
+		INFO(Dump(props));
+		CHECK(GetValue(props, L"Pipe End") == L"Server");
+		CHECK(GetValue(props, L"Pipe State") == L"Connected");
+		CHECK(GetValue(props, L"Pipe Type") == L"Message");
+		CHECK(GetValue(props, L"Instances") == L"1 of 3");
+	}
 }

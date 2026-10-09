@@ -119,3 +119,56 @@ CString StringHelper::MachineToString(USHORT machine) {
 	}
 	return std::format(L"0x{:04X}", machine).c_str();
 }
+
+PCWSTR StringHelper::DeviceTypeToString(ULONG type) {
+	// FILE_DEVICE_* values (winioctl.h)
+	switch (type) {
+		case 0x02: return L"CD-ROM";
+		case 0x03: return L"CD-ROM File System";
+		case 0x07: return L"Disk";
+		case 0x08: return L"Disk File System";
+		case 0x0C: return L"Mailslot";
+		case 0x11: return L"Named Pipe";
+		case 0x12: return L"Network";
+		case 0x14: return L"Network File System";
+		case 0x15: return L"Null";
+		case 0x2F: return L"Kernel Streaming";
+		case 0x39: return L"KSecDD";
+		case 0x50: return L"Console";
+	}
+	return nullptr;
+}
+
+CString StringHelper::FileAttributesToString(ULONG attributes) {
+	static const std::pair<ULONG, PCWSTR> names[] = {
+		{ FILE_ATTRIBUTE_READONLY, L"Read Only" },
+		{ FILE_ATTRIBUTE_HIDDEN, L"Hidden" },
+		{ FILE_ATTRIBUTE_SYSTEM, L"System" },
+		{ FILE_ATTRIBUTE_ARCHIVE, L"Archive" },
+		{ FILE_ATTRIBUTE_TEMPORARY, L"Temporary" },
+		{ FILE_ATTRIBUTE_SPARSE_FILE, L"Sparse" },
+		{ FILE_ATTRIBUTE_REPARSE_POINT, L"Reparse Point" },
+		{ FILE_ATTRIBUTE_COMPRESSED, L"Compressed" },
+		{ FILE_ATTRIBUTE_ENCRYPTED, L"Encrypted" },
+		{ FILE_ATTRIBUTE_OFFLINE, L"Offline" },
+	};
+	CString text;
+	for (auto& [value, name] : names) {
+		if (attributes & value) {
+			if (!text.IsEmpty())
+				text += L" | ";
+			text += name;
+		}
+	}
+	return text;
+}
+
+PCWSTR StringHelper::PipeStateToString(ULONG state) {
+	switch (state) {
+		case 1: return L"Disconnected";
+		case 2: return L"Listening";
+		case 3: return L"Connected";
+		case 4: return L"Closing";
+	}
+	return nullptr;
+}

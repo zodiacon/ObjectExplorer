@@ -244,7 +244,7 @@ void CHandlesView::ShowObjectProperties(int row) const {
 	auto& hi = m_Handles[row];
 	auto hObject = ObjectManager::DupHandle((HANDLE)(ULONG_PTR)hi->HandleValue, hi->ProcessId);
 	if (hObject) {
-		ObjectHelpers::ShowObjectProperties(hObject, hi->Type, hi->Name.c_str());
+		ObjectHelpers::ShowObjectProperties(hObject, hi->Type, hi->Name.c_str(), nullptr, 0, hi->ProcessId);
 		::CloseHandle(hObject);
 		return;
 	}
