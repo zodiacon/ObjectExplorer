@@ -11,31 +11,6 @@ namespace {
 		return CTime(ft).Format(L"%c");
 	}
 
-	CString IntegrityLevelToString(DWORD rid) {
-		if (rid >= SECURITY_MANDATORY_PROTECTED_PROCESS_RID)
-			return L"Protected";
-		if (rid >= SECURITY_MANDATORY_SYSTEM_RID)
-			return L"System";
-		if (rid >= SECURITY_MANDATORY_HIGH_RID)
-			return L"High";
-		if (rid > SECURITY_MANDATORY_MEDIUM_RID)
-			return L"Medium+";
-		if (rid == SECURITY_MANDATORY_MEDIUM_RID)
-			return L"Medium";
-		if (rid >= SECURITY_MANDATORY_LOW_RID)
-			return L"Low";
-		return L"Untrusted";
-	}
-
-	CString SidToName(PSID sid) {
-		WCHAR name[128], domain[64];
-		DWORD nameSize = _countof(name), domainSize = _countof(domain);
-		SID_NAME_USE use;
-		if (!::LookupAccountSid(nullptr, sid, name, &nameSize, domain, &domainSize, &use))
-			return L"";
-		return domain[0] ? CString(domain) + L"\\" + name : CString(name);
-	}
-
 	void Append(CString& text, PCWSTR label, CString const& value) {
 		if (value.IsEmpty())
 			return;
@@ -285,7 +260,7 @@ CString ObjectDetails::GetTokenDetails(HANDLE hToken) {
 	BYTE buffer[256];
 	DWORD len;
 	if (::GetTokenInformation(hToken, TokenUser, buffer, sizeof(buffer), &len))
-		Append(text, L"User", SidToName(reinterpret_cast<TOKEN_USER*>(buffer)->User.Sid));
+		Append(text, L"User", StringHelper::SidToName(reinterpret_cast<TOKEN_USER*>(buffer)->User.Sid));
 	if (TOKEN_TYPE type; ::GetTokenInformation(hToken, TokenType, &type, sizeof(type), &len))
 		Append(text, L"Type", type == TokenPrimary ? L"Primary" : L"Impersonation");
 	if (DWORD session; ::GetTokenInformation(hToken, TokenSessionId, &session, sizeof(session), &len))
@@ -294,7 +269,7 @@ CString ObjectDetails::GetTokenDetails(HANDLE hToken) {
 		auto sid = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(buffer)->Label.Sid;
 		auto count = *::GetSidSubAuthorityCount(sid);
 		if (count)
-			Append(text, L"Integrity", IntegrityLevelToString(*::GetSidSubAuthority(sid, count - 1)));
+			Append(text, L"Integrity", StringHelper::IntegrityLevelToString(*::GetSidSubAuthority(sid, count - 1)));
 	}
 	if (TOKEN_ELEVATION elevation; ::GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &len))
 		Append(text, L"Elevated", elevation.TokenIsElevated ? L"Yes" : L"No");
@@ -357,7 +332,7 @@ CString ObjectDetails::GetWindowStationDetails(HANDLE hWinSta) {
 	if (USEROBJECTFLAGS flags; ::GetUserObjectInformation(hWinSta, UOI_FLAGS, &flags, sizeof(flags), &len))
 		Append(text, L"Interactive", (flags.dwFlags & WSF_VISIBLE) ? L"Yes" : L"No");
 	if (BYTE sid[SECURITY_MAX_SID_SIZE]; ::GetUserObjectInformation(hWinSta, UOI_USER_SID, sid, sizeof(sid), &len) && len)
-		Append(text, L"User", SidToName((PSID)sid));
+		Append(text, L"User", StringHelper::SidToName((PSID)sid));
 
 	CString desktops;
 	::EnumDesktops((HWINSTA)hWinSta, [](auto name, auto param) {

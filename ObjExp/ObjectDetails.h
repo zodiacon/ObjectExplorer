@@ -4,7 +4,7 @@
 // a one line summary of an object's state by its type (e.g. a process' ID, threads and user),
 // for list views showing many objects; the properties dialog shows more
 //
-struct ObjectDetails abstract final {
+struct ObjectDetails final {
 	// hObject is a handle in this process; the information available depends on its access
 	// key identifies the object for queries that may block (files); see FileQuery
 	static CString GetDetails(HANDLE hObject, PCWSTR type, ULONG64 key = 0);

@@ -11,6 +11,16 @@
 
 #define DIRECTORY_ALL_ACCESS (STANDARD_RIGHTS_REQUIRED | 0xF)
 
+#ifndef EVENT_QUERY_STATE
+#define EVENT_QUERY_STATE               (0x0001)
+#endif
+#ifndef SEMAPHORE_QUERY_STATE
+#define SEMAPHORE_QUERY_STATE           (0x0001)
+#endif
+#ifndef TIMER_QUERY_STATE
+#define TIMER_QUERY_STATE               (0x0001)
+#endif
+
 typedef _Return_type_success_(return >= 0) LONG NTSTATUS;
 
 #ifndef NT_SUCCESS

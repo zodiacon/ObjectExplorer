@@ -87,6 +87,12 @@
     <ClCompile Include="ObjectDetails.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="TypeProperties.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectTypePage.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="FileQuery.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
@@ -215,6 +221,12 @@
     <ClInclude Include="ObjectDetails.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="TypeProperties.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectTypePage.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="FileQuery.h">
       <Filter>Helpers</Filter>
     </ClInclude>
@@ -229,9 +241,6 @@
     </ClInclude>
     <ClInclude Include="ObjectsView.h">
       <Filter>Views</Filter>
-    </ClInclude>
-    <ClInclude Include="ProcessObjectTracker.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ZombieProcessesView.h">
       <Filter>Views</Filter>
@@ -286,6 +295,9 @@
     </ClInclude>
     <ClInclude Include="NtDll.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessObjectTracker.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

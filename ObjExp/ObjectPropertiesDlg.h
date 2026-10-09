@@ -15,6 +15,7 @@ public:
 	// tab images, in the order they're added to the image list
 	enum PageImage {
 		GeneralImage, HandlesImage, ObjectImage,
+		TypeImage,	// the object type's icon
 	};
 	bool AddPage(PCWSTR title, HWND hPage, PageImage image);
 	bool AddPage(PCWSTR title, HPROPSHEETPAGE hPage);

@@ -132,8 +132,8 @@ private:
 	ObjectManager m_mgr;
 	CString m_FilterText;
 	CString m_SelectedObjectFullName;
+	COLORREF m_Green, m_Red;
 	bool m_ShowDirectories{ false };
 	bool m_ListMode{ false };
-	COLORREF m_Green, m_Red;
 };
 

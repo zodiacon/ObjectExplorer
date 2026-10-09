@@ -32,6 +32,7 @@ LRESULT CObjectPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     };
     for(auto icon : icons)
         ResourceManager::AddIcon(m_TabImages, icon);
+    m_TabImages.AddIcon(ResourceManager::Get().GetTypeIcon(m_Type));
     m_Tabs.SetImageList(m_TabImages);
 
     for(int i = 0; i < m_Pages.size(); i++) {

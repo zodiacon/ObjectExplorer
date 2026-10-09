@@ -174,13 +174,14 @@
 #define IDC_SYM_PREVIEW                 1042
 #define IDC_SYM_DEFAULTS                1043
 #define IDD_FIND                        287
+#define IDD_TYPEINFO                    289
 #define IDC_MATCHCASE                   1035
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        289
+#define _APS_NEXT_RESOURCE_VALUE        290
 #define _APS_NEXT_COMMAND_VALUE         32829
 #define _APS_NEXT_CONTROL_VALUE         1044
 #define _APS_NEXT_SYMED_VALUE           101

@@ -356,6 +356,8 @@
     </ClCompile>
     <ClCompile Include="FileQuery.cpp" />
     <ClCompile Include="ObjectDetails.cpp" />
+    <ClCompile Include="TypeProperties.cpp" />
+    <ClCompile Include="ObjectTypePage.cpp" />
     <ClCompile Include="ProcessHandleTracker.cpp" />
     <ClCompile Include="ProcessHelper.cpp" />
     <ClCompile Include="ProcessSelectorDlg.cpp" />
@@ -392,6 +394,8 @@
     <ClInclude Include="NtDll.h" />
     <ClInclude Include="FileQuery.h" />
     <ClInclude Include="ObjectDetails.h" />
+    <ClInclude Include="TypeProperties.h" />
+    <ClInclude Include="ObjectTypePage.h" />
     <ClInclude Include="ObjectHelpers.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="ObjectManagerView.h" />

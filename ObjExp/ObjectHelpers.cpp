@@ -9,6 +9,8 @@
 #include "HandlesPage.h"
 #include "ObjectManager.h"
 #include "StructurePage.h"
+#include "ObjectTypePage.h"
+#include "TypeProperties.h"
 #include "SymbolManager.h"
 #include "DriverHelper.h"
 #include "SecurityInfo.h"
@@ -23,6 +25,11 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 	page1.Create(::GetActiveWindow());
 	handleCount = page1.GetHandleCount();
 	dlg.AddPage(L"General", page1, CObjectPropertiesDlg::GeneralImage);
+	CObjectTypePage typePage(hObject, typeName);
+	if (hObject && TypeProperties::HasProperties(typeName)) {
+		typePage.Create(::GetActiveWindow());
+		dlg.AddPage(TypeProperties::GetPageTitle(typeName), typePage, CObjectPropertiesDlg::TypeImage);
+	}
 	CHandlesPage page2(hObject, typeName, handleCount);
 	if (handleCount) {
 		CWaitCursor wait;	// handle count may be large
@@ -47,39 +54,8 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 	std::vector<std::pair<CString, CString>> props;
 	props.reserve(4);
 	CString text;
-	if (::_wcsicmp(type, L"Mutant") == 0) {
-		NT::MUTANT_BASIC_INFORMATION info;
-		if (NT_SUCCESS(NT::NtQueryMutant(hObject, NT::MutantBasicInformation, &info, sizeof(info), nullptr))) {
-			props.push_back({ L"Held:", info.CurrentCount <= 0 ? L"Yes" : L"No" });
-			props.push_back({ L"Abandoned:", info.AbandonedState ? L"Yes" : L"No" });
-		}
-		NT::MUTANT_OWNER_INFORMATION owner;
-		if (NT_SUCCESS(NT::NtQueryMutant(hObject, NT::MutantOwnerInformation, &owner, sizeof(owner), nullptr))) {
-			if (owner.ClientId.UniqueThread) {
-				auto pid = HandleToUlong(owner.ClientId.UniqueProcess);
-				text.Format(L"%u (%s)", pid, (PCWSTR)ProcessHelper::GetProcessName(pid));
-				props.push_back({ L"Owner PID:", text });
-				props.push_back({ L"Owner TID:", std::to_wstring(HandleToUlong(owner.ClientId.UniqueThread)).c_str() });
-			}
-		}
-	}
-	else if (::_wcsicmp(type, L"Event") == 0) {
-		NT::EVENT_BASIC_INFORMATION info;
-		if (NT_SUCCESS(NT::NtQueryEvent(hObject, NT::EventBasicInformation, &info, sizeof(info), nullptr))) {
-			props.push_back({ L"Type:", info.EventType == NT::NotificationEvent ? L"Notification (Manual Reset)" : L"Synchronization (Auto Reset)" });
-			props.push_back({ L"Signaled:", info.EventState ? L"Yes" : L"No" });
-		}
-	}
-	else if (::_wcsicmp(type, L"Semaphore") == 0) {
-		NT::SEMAPHORE_BASIC_INFORMATION info;
-		if (NT_SUCCESS(NT::NtQuerySemaphore(hObject, NT::SemaphoreBasicInformation, &info, sizeof(info), nullptr))) {
-			text.Format(L"%u (0x%X)", info.CurrentCount, info.CurrentCount);
-			props.push_back({ L"Count:", text });
-			text.Format(L"%u (0x%X)", info.MaximumCount, info.MaximumCount);
-			props.push_back({ L"Maximum:", text });
-		}
-	}
-	else if (::_wcsicmp(type, L"SymbolicLink") == 0) {
+	// Event, Mutant, Semaphore, Timer, Section, Process, Thread and Job have pages of their own (see TypeProperties)
+	if (::_wcsicmp(type, L"SymbolicLink") == 0) {
 		NT::OBJECT_BASIC_INFORMATION info;
 		if (NT_SUCCESS(NT::NtQueryObject(hObject, NT::ObjectBasicInformation, &info, sizeof(info), nullptr))) {
 			CString starget(target);
@@ -98,15 +74,6 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 			props.push_back({ L"Creation Time:", CTime(*(FILETIME*)&info.CreationTime).Format(L"%c") });
 		}
 	}
-	else if (::_wcsicmp(type, L"Section") == 0) {
-		NT::SECTION_BASIC_INFORMATION info;
-		if (NT_SUCCESS(NT::NtQuerySection(hObject, NT::SectionBasicInformation, &info, sizeof(info), nullptr))) {
-			text.Format(L"0x%llX Bytes", info.MaximumSize.QuadPart);
-			props.push_back({ L"Size:", text });
-			text.Format(L"0x%08X (%s)", info.AllocationAttributes, (PCWSTR)StringHelper::SectionAttributesToString(info.AllocationAttributes));
-			props.push_back({ L"Attributes:", text });
-		}
-	}
 	else if (::_wcsicmp(type, L"Type") == 0) {
 		ObjectManager::EnumTypes();
 		auto info = ObjectManager::GetType(name);
@@ -116,55 +83,6 @@ std::vector<std::pair<CString, CString>> ObjectHelpers::GetSimpleProps(HANDLE hO
 			props.push_back({ L"Objects: ", text });
 			text.Format(L"%u", info->TotalNumberOfHandles);
 			props.push_back({ L"Handles: ", text });
-		}
-	}
-	else if (::_wcsicmp(type, L"Process") == 0) {
-		auto pid = ::GetProcessId(hObject);
-		auto name = ProcessHelper::GetProcessName2(pid);
-		props.push_back({ L"Process ID: ", std::to_wstring(pid).c_str() });
-		if (!name.IsEmpty())
-			props.push_back({ L"Image Name: ", name });
-		FILETIME create, exit, kernel, user;
-		if (::GetProcessTimes(hObject, &create, &exit, &kernel, &user)) {
-			props.push_back({ L"Started: ", CTime(create).Format(L"%c") });
-			auto total = (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user) / 10000;	// msec
-			auto seconds = CTimeSpan(total / 1000).Format(L"%H:%M:%S");
-			props.push_back({ L"CPU Time: ", std::format(L"{}.{:03}", (PCWSTR)seconds, total % 1000).c_str() });
-			if (::WaitForSingleObject(hObject, 0) == WAIT_OBJECT_0) {
-				//
-				// process dead
-				//
-				props.push_back({ L"Exited: ", CTime(exit).Format(L"%c") });
-			}
-		}
-	}
-	else if (::_wcsicmp(type, L"Thread") == 0) {
-		auto name = ProcessHelper::GetProcessName2(::GetProcessIdOfThread(hObject));
-		if (!name.IsEmpty())
-			props.push_back({ L"Process Image Name: ", name });
-		FILETIME create, exit, kernel, user;
-		if (::GetThreadTimes(hObject, &create, &exit, &kernel, &user)) {
-			props.push_back({ L"Started: ", CTime(create).Format(L"%c") });
-			auto total = (*(ULONGLONG*)&kernel + *(ULONGLONG*)&user) / 10000;	// msec
-			auto seconds = CTimeSpan(total / 1000).Format(L"%H:%M:%S");
-			props.push_back({ L"CPU Time: ", std::format(L"{}.{:03}", (PCWSTR)seconds, total % 1000).c_str() });
-			if (::WaitForSingleObject(hObject, 0) == WAIT_OBJECT_0) {
-				//
-				// thread dead
-				//
-				props.push_back({ L"Exited: ", CTime(exit).Format(L"%c") });
-			}
-		}
-	}
-	else if (::_wcsicmp(type, L"Job") == 0) {
-		JOBOBJECT_BASIC_ACCOUNTING_INFORMATION info;
-		if (::QueryInformationJobObject(hObject, JobObjectBasicAccountingInformation, &info, sizeof(info), nullptr)) {
-			props.push_back({ L"Active Processes: ", std::to_wstring(info.ActiveProcesses).c_str() });
-			props.push_back({ L"Total Processes: ", std::to_wstring(info.TotalProcesses).c_str() });
-			auto total = (info.TotalUserTime.QuadPart + info.TotalKernelTime.QuadPart) / 10000;
-			auto seconds = CTimeSpan(total / 1000).Format(L"%H:%M:%S");
-			props.push_back({ L"CPU Time: ", std::format(L"{}.{:03}", (PCWSTR)seconds, total % 1000).c_str() });
-			props.push_back({ L"Page Faults: ", std::to_wstring(info.TotalPageFaultCount).c_str() });
 		}
 	}
 

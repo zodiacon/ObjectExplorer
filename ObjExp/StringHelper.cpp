@@ -84,3 +84,38 @@ CString StringHelper::ObjectAttributesToString(DWORD attr) {
 		text = text.Left(text.GetLength() - 2);
 	return text;
 }
+
+CString StringHelper::SidToName(PSID sid) {
+	WCHAR name[128], domain[64];
+	DWORD nameSize = _countof(name), domainSize = _countof(domain);
+	SID_NAME_USE use;
+	if (!::LookupAccountSid(nullptr, sid, name, &nameSize, domain, &domainSize, &use))
+		return L"";
+	return domain[0] ? CString(domain) + L"\\" + name : CString(name);
+}
+
+CString StringHelper::IntegrityLevelToString(DWORD rid) {
+	if (rid >= SECURITY_MANDATORY_PROTECTED_PROCESS_RID)
+		return L"Protected";
+	if (rid >= SECURITY_MANDATORY_SYSTEM_RID)
+		return L"System";
+	if (rid >= SECURITY_MANDATORY_HIGH_RID)
+		return L"High";
+	if (rid > SECURITY_MANDATORY_MEDIUM_RID)
+		return L"Medium+";
+	if (rid == SECURITY_MANDATORY_MEDIUM_RID)
+		return L"Medium";
+	if (rid >= SECURITY_MANDATORY_LOW_RID)
+		return L"Low";
+	return L"Untrusted";
+}
+
+CString StringHelper::MachineToString(USHORT machine) {
+	switch (machine) {
+		case IMAGE_FILE_MACHINE_I386: return L"x86";
+		case IMAGE_FILE_MACHINE_AMD64: return L"x64";
+		case IMAGE_FILE_MACHINE_ARM64: return L"ARM64";
+		case IMAGE_FILE_MACHINE_ARMNT: return L"ARM";
+	}
+	return std::format(L"0x{:04X}", machine).c_str();
+}
