@@ -35,6 +35,7 @@ int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SecurityHelper::EnablePrivilege(SE_DEBUG_NAME, true);
 	SecurityHelper::EnablePrivilege(SE_SECURITY_NAME, true);
+	SecurityHelper::EnablePrivilege(SE_TCB_NAME, true);	// longshot :)
 
 	HRESULT hRes = ::CoInitialize(nullptr);
 	ATLASSERT(SUCCEEDED(hRes));

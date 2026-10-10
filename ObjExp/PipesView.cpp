@@ -138,10 +138,12 @@ void CPipesView::ShowProperties(int row) const {
 	// which its server would see; use a handle that already exists instead (normally the server's)
 	//
 	HANDLE hObject = nullptr;
+	PVOID address = nullptr;
 	{
 		CWaitCursor wait;
 		for (auto& hi : ObjectManager::EnumHandles2<>(L"File", 0, false, true)) {
 			auto name = ObjectManager::GetObjectName(ULongToHandle(hi->HandleValue), hi->ProcessId, hi->ObjectTypeIndex, hi->Object);
+			address = hi->Object;
 			if (name.CompareNoCase(fullName) == 0) {
 				hObject = ObjectManager::DupHandle(ULongToHandle(hi->HandleValue), hi->ProcessId);
 				if (hObject)
@@ -154,7 +156,7 @@ void CPipesView::ShowProperties(int row) const {
 			IDS_TITLE, MB_ICONINFORMATION);
 		return;
 	}
-	ObjectHelpers::ShowObjectProperties(hObject, L"File", fullName);
+	ObjectHelpers::ShowObjectProperties(hObject, L"File", address, fullName);
 	::CloseHandle(hObject);
 }
 

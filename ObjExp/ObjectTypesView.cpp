@@ -161,7 +161,7 @@ LRESULT CObjectTypesView::OnViewProperties(WORD, WORD, HWND, BOOL&) const {
 	if (row < 0)
 		return 0;
 	auto& item = m_Items[row];
-	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
+	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", nullptr, item->TypeName);
 	return 0;
 }
 
@@ -232,7 +232,7 @@ bool CObjectTypesView::OnDoubleClickList(HWND, int row, int col, POINT const& pt
 	if (row < 0)
 		return false;
 	auto& item = m_Items[row];
-	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", item->TypeName);
+	ObjectHelpers::ShowObjectProperties(nullptr, L"Type", nullptr, item->TypeName);
 	return true;
 }
 

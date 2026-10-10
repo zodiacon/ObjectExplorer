@@ -16,7 +16,7 @@
 #include "SecurityInfo.h"
 #include <WTLHelper.h>
 
-UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR name, PCWSTR target, DWORD handleCount, DWORD pid) {
+UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PVOID address, PCWSTR name, PCWSTR target, DWORD handleCount, DWORD pid) {
 	CString title = typeName;
 	if (name && name[0])
 		title += L" (" + CString(name) + L")";
@@ -40,7 +40,7 @@ UINT ObjectHelpers::ShowObjectProperties(HANDLE hObject, PCWSTR typeName, PCWSTR
 	if(auto it = KernelTypes.find(typeName); it != KernelTypes.end()) {
 		auto sym = SymbolManager::Get().GetSymbol(it->second);
 		if (sym) {
-			page3.SetSymbol(std::move(sym), DriverHelper::GetObjectAddress(hObject));
+			page3.SetSymbol(std::move(sym), address ? address : DriverHelper::GetObjectAddress(hObject));
 			page3.Create(::GetActiveWindow());
 			dlg.AddPage(L"Object", page3, CObjectPropertiesDlg::ObjectImage);
 		}
@@ -142,13 +142,13 @@ bool ObjectHelpers::ShowNamespaceObjectProperties(HWND hParent, PCWSTR fullName,
 		// type objects can't be opened; their properties come from the type information
 		//
 		auto name = wcsrchr(fullName, L'\\');
-		ShowObjectProperties(nullptr, type, name ? name + 1 : fullName);
+		ShowObjectProperties(nullptr, type, nullptr, name ? name + 1 : fullName);
 		return true;
 	}
 	HANDLE hObject{ nullptr };
 	ObjectManager::OpenObject(fullName, type, hObject);
 	if (hObject) {
-		ShowObjectProperties(hObject, type, fullName, target);
+		ShowObjectProperties(hObject, type, nullptr, fullName, target);
 		::CloseHandle(hObject);
 		return true;
 	}

@@ -225,7 +225,7 @@ void CProcessesView::ShowProperties(int row) const {
 		AtlMessageBox(m_hWnd, L"Error opening object.", IDS_TITLE, MB_ICONERROR);
 		return;
 	}
-	ObjectHelpers::ShowObjectProperties(hObject, m_Threads ? L"Thread" : L"Process", std::format(L"{} ({})", (PCWSTR)name, id).c_str());
+	ObjectHelpers::ShowObjectProperties(hObject, m_Threads ? L"Thread" : L"Process", nullptr, std::format(L"{} ({})", (PCWSTR)name, id).c_str());
 	::CloseHandle(hObject);
 }
 
